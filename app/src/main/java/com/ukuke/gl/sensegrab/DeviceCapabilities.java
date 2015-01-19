@@ -23,23 +23,6 @@ public class DeviceCapabilities extends ActionBarActivity {
     private SensorManager mSensorManager;
     public List<ServiceComponent> serviceComponentList = new ArrayList<ServiceComponent>();
 
-    ListView list;
-    String[] web = {
-            "Google Plus",
-            "Twitter",
-            "Windows",
-            "Bing",
-            "Itunes",
-            "Wordpress",
-            "Drupal"
-    } ;
-    Integer[] imageId = {
-            R.drawable.ic_check_grey600_24dp,
-            R.drawable.ic_close_grey600_24dp
-    };
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
