@@ -2,16 +2,23 @@ package com.ukuke.gl.sensegrab;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.content.SharedPreferences;
+import android.content.Intent;
 
 public class MainActivity extends ActionBarActivity {
 
+    SharedPreferences prefs = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // TODO: Check on file if it's the first app launch. If yes launch Initial setup
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Check shared preferences
+        prefs = getSharedPreferences("com.ukuke.gl.sensegrab", MODE_PRIVATE);
     }
 
 
@@ -30,10 +37,30 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_device_capabilities) {
+            Intent intent = new Intent(this, DeviceCapabilities.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (prefs.getBoolean("firstrun", true)) {
+            // Do first run stuff here then set 'firstrun' as false
+            // using the following line to edit/commit prefs
+            Log.i("MainActivity","This is a first run. Set up everything!");
+            prefs.edit().putBoolean("firstrun", false).commit();
+
+            // TODO: Launch initial setup activity
+            Intent intent = new Intent(this, DeviceCapabilities.class);
+            startActivity(intent);
+        }
+        else {
+            Log.v("MainActivity", "This is not a first run. Let's continue");
+        }
     }
 }

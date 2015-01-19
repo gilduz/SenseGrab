@@ -11,15 +11,18 @@
             android:name=".MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
+
+                <!-- This is the launcher activity! -->
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".InitialSetupActivity"
-            android:label="@string/title_activity_initial_setup" >
+            android:name=".DeviceCapabilities"
+            android:label="@string/title_activity_device_capabilities" >
         </activity>
+
     </application>
 
 </manifest>
