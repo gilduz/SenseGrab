@@ -52,7 +52,7 @@ public class MainActivity extends ActionBarActivity {
             // Do first run stuff here then set 'firstrun' as false
             // using the following line to edit/commit prefs
             Log.i("MainActivity","This is a first run. Set up everything!");
-            prefs.edit().putBoolean("firstrun", false).commit();
+            prefs.edit().putBoolean("firstrun", false).apply();
 
             // TODO: Launch initial setup activity
             startDeviceCapabilities();

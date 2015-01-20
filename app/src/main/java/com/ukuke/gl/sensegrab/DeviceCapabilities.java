@@ -21,7 +21,7 @@ import java.util.List;
 public class DeviceCapabilities extends ActionBarActivity {
 
     /*private SensorManager mSensorManager;*/
-    public List<ServiceComponent> serviceComponentList = new ArrayList<ServiceComponent>();
+    public List<ServiceComponent> serviceComponentList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
