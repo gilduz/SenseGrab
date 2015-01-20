@@ -38,8 +38,7 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_device_capabilities) {
-            Intent intent = new Intent(this, DeviceCapabilities.class);
-            startActivity(intent);
+            startDeviceCapabilities();
         }
 
         return super.onOptionsItemSelected(item);
@@ -56,11 +55,18 @@ public class MainActivity extends ActionBarActivity {
             prefs.edit().putBoolean("firstrun", false).commit();
 
             // TODO: Launch initial setup activity
-            Intent intent = new Intent(this, DeviceCapabilities.class);
-            startActivity(intent);
+            startDeviceCapabilities();
         }
         else {
             Log.v("MainActivity", "This is not a first run. Let's continue");
         }
+    }
+
+    private boolean startDeviceCapabilities () {
+
+        Intent intent = new Intent(this, DeviceCapabilities.class);
+        startActivity(intent);
+
+        return true;
     }
 }

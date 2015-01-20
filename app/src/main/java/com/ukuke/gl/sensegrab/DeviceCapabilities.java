@@ -20,7 +20,7 @@ import java.util.List;
 
 public class DeviceCapabilities extends ActionBarActivity {
 
-    private SensorManager mSensorManager;
+    /*private SensorManager mSensorManager;*/
     public List<ServiceComponent> serviceComponentList = new ArrayList<ServiceComponent>();
 
     @Override
@@ -67,7 +67,7 @@ public class DeviceCapabilities extends ActionBarActivity {
         // Check Sensors
         int numServices = 0;
 
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        SensorManager mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
             Log.i("DeviceCapabilities", "YES TYPE_MAGNETIC_FIELD!");
