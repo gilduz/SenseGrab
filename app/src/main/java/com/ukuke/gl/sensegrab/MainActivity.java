@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.content.SharedPreferences;
 import android.content.Intent;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -40,6 +41,9 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_device_capabilities) {
             startDeviceCapabilities();
         }
+        else if (id == R.id.action_test) {
+            Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -64,7 +68,7 @@ public class MainActivity extends ActionBarActivity {
 
     private boolean startDeviceCapabilities () {
 
-        Intent intent = new Intent(this, DeviceCapabilities.class);
+        Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
         startActivity(intent);
 
         return true;
