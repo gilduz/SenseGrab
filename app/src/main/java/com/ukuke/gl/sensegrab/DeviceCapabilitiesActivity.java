@@ -1,5 +1,6 @@
 package com.ukuke.gl.sensegrab;
 
+import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,7 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class DeviceCapabilitiesActivity extends ActionBarActivity {
+//public class DeviceCapabilitiesActivity extends ActionBarActivity {
+public class DeviceCapabilitiesActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,20 +59,23 @@ public class DeviceCapabilitiesActivity extends ActionBarActivity {
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(DeviceCapabilitiesActivity.this, R.layout.item_view, ServiceManager.getInstance().getServiceComponentList());
+            super(DeviceCapabilitiesActivity.this, R.layout.item_view_2img, ServiceManager.getInstance().getServiceComponentList());
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View itemView = convertView;
             if (itemView == null) {
-                itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
+                itemView = getLayoutInflater().inflate(R.layout.item_view_2img, parent, false);
             }
 
             ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance().getServiceComponentList().get(position);
 
-            ImageView  imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
-            imageView.setImageResource(currentServiceComponent.getAvailableImageID());
+            ImageView  imageView_1 = (ImageView) itemView.findViewById(R.id.item_imageView_1);
+            imageView_1.setImageResource(currentServiceComponent.getComponentImageID());
+
+            ImageView  imageView_2 = (ImageView) itemView.findViewById(R.id.item_imageView_2);
+            imageView_2.setImageResource(currentServiceComponent.getAvailableImageID());
 
             TextView myText = (TextView) itemView.findViewById(R.id.item_textView);
             myText.setText(currentServiceComponent.getDysplayName());

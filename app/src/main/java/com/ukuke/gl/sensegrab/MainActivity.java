@@ -1,5 +1,6 @@
 package com.ukuke.gl.sensegrab;
 
+import android.app.Activity;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
+//    public class MainActivity extends ActionBarActivity {
 
     SharedPreferences prefs = null;
 

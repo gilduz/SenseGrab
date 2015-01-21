@@ -1,5 +1,6 @@
 package com.ukuke.gl.sensegrab;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -14,8 +15,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView;
 
+//public class AddDeviceActivity extends ActionBarActivity {
 
-public class AddDeviceActivity extends ActionBarActivity {
+public class AddDeviceActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
