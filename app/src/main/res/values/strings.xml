@@ -10,5 +10,8 @@
     <string name="start_button">Start grabbing!</string>
     <string name="stop_button">Stop grabbing!</string>
     <string name="action_test">TASTO DI TEST</string>
+    <string name="action_add_new_service">+</string>
+    <string name="title_activity_add_device">Add device</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
