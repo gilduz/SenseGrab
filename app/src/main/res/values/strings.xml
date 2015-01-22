@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Sense Grab</string>
+    <string name="app_name">Sensormind</string>
     <string name="main_title">Use the controls below</string>
     <string name="action_settings">Settings</string>
     <string name="action_device_capabilities">Device Capabilities</string>

@@ -1,7 +1,6 @@
-package com.ukuke.gl.sensegrab;
+package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -12,7 +11,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 
 //public class DeviceCapabilitiesActivity extends ActionBarActivity {

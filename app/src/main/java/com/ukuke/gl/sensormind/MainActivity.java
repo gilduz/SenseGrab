@@ -1,38 +1,44 @@
-package com.ukuke.gl.sensegrab;
+package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.content.SharedPreferences;
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView;
 
-//public class AddDeviceActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
+//    public class MainActivity extends ActionBarActivity {
 
-public class AddDeviceActivity extends Activity {
+    SharedPreferences prefs = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // TODO: Check on file if it's the first app launch. If yes launch Initial setup
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_device);
+        setContentView(R.layout.activity_main);
+        // Check shared preferences
+        prefs = getSharedPreferences("com.ukuke.gl.sensegrab", MODE_PRIVATE);
 
-        populateListView();
-        registerClickCallback();
+        // Search for services
+        int numAvailableServices = ServiceManager.getInstance().populateServiceComponentList(this);
+        Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_add_device, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -44,15 +50,51 @@ public class AddDeviceActivity extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_device_capabilities) {
+            startDeviceCapabilities();
+        }
+        else if (id == R.id.action_add_new_service) {
+            Intent intent = new Intent(this, AddDeviceActivity.class);
+            startActivity(intent);
+        }
+        else if (id == R.id.action_test) {
+            Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (prefs.getBoolean("firstrun", true)) {
+            // Do first run stuff here then set 'firstrun' as false
+            // using the following line to edit/commit prefs
+            Log.i("MainActivity","This is a first run. Set up everything!");
+            prefs.edit().putBoolean("firstrun", false).apply();
+
+            // TODO: Launch initial setup activity
+            startDeviceCapabilities();
+        }
+        else {
+            Log.v("MainActivity", "This is not a first run. Let's continue");
+        }
+
+        populateListView();
+        //registerClickCallback();
+    }
+
+    private boolean startDeviceCapabilities () {
+
+        Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
+        startActivity(intent);
+
+        return true;
+    }
+
     private void registerClickCallback() {
-        ListView list = (ListView) findViewById(R.id.listViewAddDevice);
+        ListView list = (ListView) findViewById(R.id.listViewMain);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
@@ -61,7 +103,7 @@ public class AddDeviceActivity extends Activity {
                 ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
                 // Add service component to active services component
                 ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
-                Toast.makeText(AddDeviceActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
                 // Come back to Main Activity
                 //Intent intent = new Intent(this, MainActivity.class);
                 //startActivity(intent);
@@ -71,13 +113,13 @@ public class AddDeviceActivity extends Activity {
 
     private void populateListView() {
         ArrayAdapter<ServiceManager.ServiceComponent> adapter = new MyListAdapter();
-        ListView list = (ListView) findViewById(R.id.listViewAddDevice);
+        ListView list = (ListView) findViewById(R.id.listViewMain);
         list.setAdapter(adapter);
     }
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance().getAvailableServiceComponentList());
+            super(MainActivity.this, R.layout.item_view, ServiceManager.getInstance().getserviceComponentActiveList());
         }
 
         @Override
@@ -87,7 +129,7 @@ public class AddDeviceActivity extends Activity {
                 itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
+            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance().getserviceComponentActiveList().get(position);
 
             ImageView imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
             imageView.setImageResource(currentServiceComponent.getComponentImageID());

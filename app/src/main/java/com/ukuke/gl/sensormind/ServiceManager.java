@@ -1,10 +1,8 @@
-package com.ukuke.gl.sensegrab;
+package com.ukuke.gl.sensormind;
 
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-import android.util.Log;
-import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
