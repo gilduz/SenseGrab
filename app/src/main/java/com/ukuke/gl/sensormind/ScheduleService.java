@@ -17,6 +17,8 @@ import android.widget.ToggleButton;
 
 import com.ukuke.gl.sensormind.services.*;
 
+import java.util.ArrayList;
+
 
 /**
  * A Fragment for managing the background service
@@ -24,9 +26,8 @@ import com.ukuke.gl.sensormind.services.*;
 public class ScheduleService extends Activity {
 
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final String KEY_SENSOR_TYPE = "sensor_type";
 
-    Intent launchActivityIntent;
+    Intent intentAddDevice;
     int typeSensor;
 
     EditText editMin;
@@ -34,18 +35,8 @@ public class ScheduleService extends Activity {
     EditText editInterval;
     CheckBox chkLogging;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment ScheduleServiceFragment.
-     */
-    public static ScheduleService newInstance() {
-        ScheduleService fragment = new ScheduleService();
-        //Bundle args = new Bundle();
-        //fragment.setArguments(args);
-        return fragment;
-    }
+//    AlarmManager mgrAlarm = (AlarmManager) getSystemService(ALARM_SERVICE);
+//    ArrayList<PendingIntent> intentArray = new ArrayList<PendingIntent>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,14 +48,13 @@ public class ScheduleService extends Activity {
         editInterval = (EditText)findViewById(R.id.editInterval);
         chkLogging = (CheckBox)findViewById(R.id.chkLogging);
 
-        launchActivityIntent = getIntent();
-        typeSensor = launchActivityIntent.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
+        intentAddDevice = getIntent();
+        typeSensor = intentAddDevice.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
 
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_schedule_service, menu);
         return true;
 
@@ -72,33 +62,27 @@ public class ScheduleService extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_test) {
             Intent intent = new Intent(this,MainActivity.class);
             startActivity(intent);
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     public void onToggleClicked(View view) {
-        // Is the toggle on?
+
         boolean on = ((ToggleButton) view).isChecked();
 
-
-
         if (on) {
-            // Enable vibrate
+
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(this, SensorBackgroundService.class);
 
-            // add some extras for config
             Bundle args = new Bundle();
+
             try {
                 float value = Float.parseFloat(editMin.getText().toString());
                 args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MIN_VALUE, value);
@@ -126,25 +110,21 @@ public class ScheduleService extends Activity {
             try {
                 interval = Long.parseLong(editInterval.getText().toString());
             } catch (Exception e) {
-                // use the default in that case
                 interval = 1000L;
-
             }
 
-            try {
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            // start the service
+            // Start the service
+
+            PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
-            } catch (Exception e) {
-                Log.v(TAG,"ERRORE: " + e);
 
-            }
-        } else {
-            // Disable vibrate
+
+        }
+
+        else {
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(this, SensorBackgroundService.class);
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
+            PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             scheduler.cancel(scheduledIntent);
         }
     }

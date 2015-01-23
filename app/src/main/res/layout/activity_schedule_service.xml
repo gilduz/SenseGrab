@@ -39,7 +39,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/toggle"
-        android:text="enable log" />
+        android:text="enable log"
+        android:enabled="false"
+        android:checked="true" />
 
     <EditText
         android:id="@+id/editInterval"

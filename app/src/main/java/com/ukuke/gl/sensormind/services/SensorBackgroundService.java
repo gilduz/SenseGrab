@@ -17,43 +17,19 @@ import android.util.Log;
  */
 public class SensorBackgroundService extends Service implements SensorEventListener {
 
-    /**
-     * a tag for logging
-     */
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-
-    /**
-     * again we need the sensor manager and sensor reference
-     */
     private SensorManager mSensorManager = null;
-
-    /**
-     * an optional flag for logging
-     */
     private boolean mLogging = false;
-
-    /**
-     * also keep track of the previous value
-     */
     private static float previousValue;
 
-    /**
-     * treshold values
-     */
-    private float mThresholdMin, mThresholdMax;
-
     public static final String KEY_SENSOR_TYPE = "sensor_type";
-
     public static final String KEY_THRESHOLD_MIN_VALUE = "threshold_min_value";
-
     public static final String KEY_THRESHOLD_MAX_VALUE = "threshold_max_value";
-
     public static final String KEY_LOGGING = "logging";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        //Log.d(TAG, " GILDO SONO QUI!!");
         // get sensor manager on starting the service
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -66,26 +42,15 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         if (args != null) {
 
             // set sensortype from bundle
-            if (args.containsKey(KEY_SENSOR_TYPE))
+            if (args.containsKey(KEY_SENSOR_TYPE)) {
                 sensorType = args.getInt(KEY_SENSOR_TYPE);
-
+            }
             // optional logging
             mLogging = args.getBoolean(KEY_LOGGING);
-
-            // treshold values
-            // since we want to take them into account only when configured use min and max
-            // values for the type to disable
-            mThresholdMin = args.containsKey(KEY_THRESHOLD_MIN_VALUE) ? args.getFloat(KEY_THRESHOLD_MIN_VALUE) : Float.MIN_VALUE;
-            mThresholdMax = args.containsKey(KEY_THRESHOLD_MAX_VALUE) ? args.getFloat(KEY_THRESHOLD_MAX_VALUE) : Float.MAX_VALUE;
         }
 
-        // we need the light sensor
         Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
-
-        // TODO we could have the sensor reading delay configurable also though that won't do much
-        // in this use case since we work with the alarm manager
-        mSensorManager.registerListener(this, sensor,
-                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 
         return START_STICKY;
     }
@@ -102,31 +67,24 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         // do nothing
     }
 
+
     @Override
     public void onSensorChanged(SensorEvent event) {
 
-        // for recording of data use an AsyncTask, we just need to compare some values so no
-        // background stuff needed for this
+        StringBuilder sb = new StringBuilder();
+        for (float value : event.values)
+            sb.append(String.valueOf(value)).append(" | ");
+        Log.d(TAG, "SENSOR: " + sb.toString()+ " and previous  was: " + previousValue);
 
-        // Log that information for so we can track it in the console (for production code remove
-        // this since this will take a lot of resources!!)
 
-        if (mLogging) {
-            // grab the values
-            StringBuilder sb = new StringBuilder();
-            for (float value : event.values)
-                sb.append(String.valueOf(value)).append(" | ");
-            Log.d(TAG, "Sensor Acquired: " + sb.toString()+ " and previosValue was: "+previousValue);
-        }
-
-        // get the value
-        // TODO we could make the value index also configurable, make it simple for now
         float sensorValue = event.values[0];
         previousValue = sensorValue;
         // stop the sensor and service
         mSensorManager.unregisterListener(this);
         stopSelf();
+
     }
+
 
 
 }

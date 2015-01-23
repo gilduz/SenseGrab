@@ -1,6 +1,7 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,11 +13,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView;
-import android.content.Intent;
 
 //public class AddDeviceActivity extends ActionBarActivity {
 
 public class AddDeviceActivity extends Activity {
+
+    public final static String TYPE_SENSOR = "sensor_type";
+    public final static String ENABLES_SENSOR = "sensor_enable";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +59,14 @@ public class AddDeviceActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
-
                 ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
                 // Add service component to active services component
                 ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
                 Toast.makeText(AddDeviceActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
                 // Come back to Main Activity
-                //Intent intent = new Intent(this, MainActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
+                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getSensorType());
+                startActivity(intent);
             }
         });
     }

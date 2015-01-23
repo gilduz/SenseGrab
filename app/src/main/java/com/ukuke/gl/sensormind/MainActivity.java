@@ -1,6 +1,9 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +20,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ukuke.gl.sensormind.services.SensorBackgroundService;
+
 public class MainActivity extends Activity {
 //    public class MainActivity extends ActionBarActivity {
 
@@ -28,13 +33,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Check shared preferences
-        prefs = getSharedPreferences("com.ukuke.gl.sensegrab", MODE_PRIVATE);
+        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
         // Search for services
         int numAvailableServices = ServiceManager.getInstance().populateServiceComponentList(this);
         Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -61,6 +65,11 @@ public class MainActivity extends Activity {
         else if (id == R.id.action_test) {
 
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, SensorBackgroundService.class);
+            PendingIntent scheduledIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.cancel(scheduledIntent);
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -84,7 +93,7 @@ public class MainActivity extends Activity {
         }
 
         populateListView();
-        //registerClickCallback();
+        registerClickCallback();
     }
 
     private boolean startDeviceCapabilities () {
@@ -101,14 +110,11 @@ public class MainActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
-
-                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
-                // Add service component to active services component
-                ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
-                Toast.makeText(MainActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
                 // Come back to Main Activity
-                //Intent intent = new Intent(this, MainActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
+                intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance().getserviceComponentActiveList().get(position).getSensorType());
+                intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
+                startActivity(intent);
             }
         });
     }
