@@ -72,7 +72,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         StringBuilder sb = new StringBuilder();
         for (float value : event.values)
             sb.append(String.valueOf(value)).append(" | ");
-        Log.d(TAG, "SENSOR: " + sb.toString()+ " and previous  was: " + previousValue);
+        Log.d(TAG, "SENSOR: " + sb.toString());
 
 
         float sensorValue = event.values[0];
