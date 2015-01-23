@@ -1,6 +1,7 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -58,6 +59,7 @@ public class MainActivity extends Activity {
             startActivity(intent);
         }
         else if (id == R.id.action_test) {
+
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
         }
 
@@ -140,5 +142,11 @@ public class MainActivity extends Activity {
             return itemView;
             //return super.getView(position, convertView, parent);
         }
+    }
+
+    private int testWork() {
+        int a;
+        a = 3+2;
+        return a;
     }
 }

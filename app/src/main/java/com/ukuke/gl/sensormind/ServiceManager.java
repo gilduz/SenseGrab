@@ -2,6 +2,8 @@ package com.ukuke.gl.sensormind;
 
 import android.content.Context;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 import java.util.ArrayList;
@@ -14,14 +16,12 @@ public class ServiceManager {
     // Singleton Class
 
     private static ServiceManager mInstance = null;
-    private String txt;
     private List<ServiceComponent> serviceComponentList = new ArrayList<>();
     private List<ServiceComponent> serviceComponentActiveList = new ArrayList<>();
 
+    SensorManager sensorManager;
     private boolean scanDone = false;
 
-    ServiceManager () {
-    }
 
     public static ServiceManager getInstance(){
         if(mInstance == null)
@@ -61,11 +61,11 @@ public class ServiceManager {
         // Discovery Components
         int numAvailableServices = 0;
 
-        SensorManager mSensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
 
         serviceComponentList.clear();
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
             serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
             numAvailableServices++;
         }
@@ -73,7 +73,7 @@ public class ServiceManager {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", false));
         }
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
             serviceComponentList.add(new ServiceComponent("Accelerometer", true));
             numAvailableServices++;
         }
@@ -81,7 +81,7 @@ public class ServiceManager {
             serviceComponentList.add(new ServiceComponent("Accelerometer", false));
         }
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null){
             serviceComponentList.add(new ServiceComponent("Temperature", true));
             numAvailableServices++;
         }
@@ -90,7 +90,7 @@ public class ServiceManager {
         }
 
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
             serviceComponentList.add(new ServiceComponent("Gyroscope", true));
             numAvailableServices++;
         }
@@ -98,7 +98,7 @@ public class ServiceManager {
             serviceComponentList.add(new ServiceComponent("Gyroscope", false));
         }
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null){
             serviceComponentList.add(new ServiceComponent("Light Sensor", true));
             numAvailableServices++;
         }
@@ -106,7 +106,7 @@ public class ServiceManager {
             serviceComponentList.add(new ServiceComponent("Light Sensor", true));
         }
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null){
             serviceComponentList.add(new ServiceComponent("Proximity Sensor", true));
             numAvailableServices++;
         }
@@ -114,7 +114,7 @@ public class ServiceManager {
             serviceComponentList.add(new ServiceComponent("Proximity Sensor", false));
         }
 
-        if (mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
             serviceComponentList.add(new ServiceComponent("Pressure Sensor", true));
             numAvailableServices++;
         }
@@ -124,6 +124,18 @@ public class ServiceManager {
 
         scanDone = true;
         return numAvailableServices;
+    }
+
+    class sensorListener implements SensorEventListener {
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            // TODO
+        }
+
+        @Override
+        public void onSensorChanged(SensorEvent event) {
+            // TODO
+        }
     }
 
     public class ServiceComponent {
