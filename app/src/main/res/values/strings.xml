@@ -17,6 +17,8 @@
     <!-- TODO find right place for these -->
     <string name="main_title">Use the controls below</string>
     <string name="action_device_capabilities">Device Capabilities</string>
+    <string name="title_activity_device_capabilities">Device Capabilities</string>
+    <string name="title_activity_schedule_service">Schedule Service</string>
     <string name="supported_sensors">Sensors status</string>
     <string name="start_button">Start grabbing!</string>
     <string name="stop_button">Stop grabbing!</string>
@@ -29,5 +31,8 @@
     <string name="conf_samp">Sampling time</string>
     <string name="conf_window">Window amplitude</string> <!-- TODO trovare nome migliore -->
     <string name="conf_gps">Attach GPS location</string>
+    <string name="title_activity_add_device">Add device</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_sensor_background_service">Sensor Background Service</string>
 
 </resources>

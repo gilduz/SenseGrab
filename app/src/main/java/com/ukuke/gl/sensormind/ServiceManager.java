@@ -144,6 +144,7 @@ public class ServiceManager {
         private boolean exists;
         private int availableImageID;
         private int componentImageID;
+        private int sensorType;
 
         ServiceComponent(String dysplayName, boolean exists) {
             this.dysplayName = dysplayName;
@@ -156,25 +157,43 @@ public class ServiceManager {
             }
 
             switch (dysplayName) {
-                case "Magnetic Field": componentImageID = R.drawable.ic_language_grey600_48dp;
+                case "Magnetic Field":
+                    componentImageID = R.drawable.ic_language_grey600_48dp;
+                    sensorType = Sensor.TYPE_MAGNETIC_FIELD;
                     break;
-                case "Accelerometer": componentImageID = R.drawable.ic_vibration_grey600_48dp;
+                case "Accelerometer":
+                    componentImageID = R.drawable.ic_vibration_grey600_48dp;
+                    sensorType = Sensor.TYPE_ACCELEROMETER;
                     break;
-                case "Temperature": componentImageID = R.drawable.ic_whatshot_grey600_48dp;
+                case "Temperature":
+                    componentImageID = R.drawable.ic_whatshot_grey600_48dp;
+                    sensorType = Sensor.TYPE_AMBIENT_TEMPERATURE;
                     break;
-                case "Gyroscope": componentImageID = R.drawable.ic_autorenew_grey600_48dp;
+                case "Gyroscope":
+                    componentImageID = R.drawable.ic_autorenew_grey600_48dp;
+                    sensorType = Sensor.TYPE_GYROSCOPE;
                     break;
-                case "Light Sensor": componentImageID = R.drawable.ic_flare_grey600_48dp;
+                case "Light Sensor":
+                    componentImageID = R.drawable.ic_flare_grey600_48dp;
+                    sensorType = Sensor.TYPE_LIGHT;
                     break;
-                case "Proximity Sensor": componentImageID = R.drawable.ic_filter_list_grey600_48dp;
+                case "Proximity Sensor":
+                    componentImageID = R.drawable.ic_filter_list_grey600_48dp;
+                    sensorType = Sensor.TYPE_PROXIMITY;
                     break;
-                case "Pressure Sensor": componentImageID = R.drawable.ic_filter_hdr_grey600_48dp;
+                case "Pressure Sensor":
+                    componentImageID = R.drawable.ic_filter_hdr_grey600_48dp;
+                    sensorType = Sensor.TYPE_PRESSURE;
                     break;
                 default: componentImageID = R.drawable.ic_close_grey600_48dp;
                     break;
             }
 
 
+        }
+
+        public int getSensorType() {
+            return sensorType;
         }
 
         public int getAvailableImageID() {
