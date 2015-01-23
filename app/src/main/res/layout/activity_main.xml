@@ -13,10 +13,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listViewMain"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/toggleButton" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true" />
 
     <at.markushi.ui.CircleButton
         android:id="@+id/button0"
@@ -25,15 +25,8 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_add_white_48dp"
-        app:cb_color="#FF7A23" />
-
-    <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/toggleButton"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:background="#FF7A23" />
+        app:cb_color="#FF7A23"
+        android:onClick="onPlusCircleClicked"
+        android:clickable="false" />
 
 </RelativeLayout>

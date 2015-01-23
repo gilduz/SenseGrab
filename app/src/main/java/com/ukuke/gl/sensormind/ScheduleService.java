@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.ukuke.gl.sensormind.services.*;
@@ -72,62 +73,63 @@ public class ScheduleService extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onToggleClicked(View view) {
+    public void onButtonStartClicked(View view) {
+        AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, SensorBackgroundService.class);
 
-        boolean on = ((ToggleButton) view).isChecked();
+        Bundle args = new Bundle();
 
-        if (on) {
+        try {
+            float value = Float.parseFloat(editMin.getText().toString());
+            args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MIN_VALUE, value);
+        } catch (Exception e) {}
+        try {
+            float value = Float.parseFloat(editMax.getText().toString());
+            args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MAX_VALUE, value);
+        } catch (Exception e) {}
+        try {
+            args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
+        } catch (Exception e) {}
+        try {
+            args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
+        } catch (Exception e) {}
+        try {
+            args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
+        } catch (Exception e) {}
 
-            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, SensorBackgroundService.class);
+        intent.putExtras(args);
 
-            Bundle args = new Bundle();
-
-            try {
-                float value = Float.parseFloat(editMin.getText().toString());
-                args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MIN_VALUE, value);
-            } catch (Exception e) {}
-            try {
-                float value = Float.parseFloat(editMax.getText().toString());
-                args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MAX_VALUE, value);
-            } catch (Exception e) {}
-            try {
-                args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
-            } catch (Exception e) {}
-            try {
-                args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
-            } catch (Exception e) {}
-            try {
-                args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
-            } catch (Exception e) {
-                Log.d(TAG,"Occhio mi ha dato errore in sensor type");
-            }
-
-            intent.putExtras(args);
-
-            // try getting interval option
-            long interval;
-            try {
-                interval = Long.parseLong(editInterval.getText().toString());
-            } catch (Exception e) {
-                interval = 1000L;
-            }
-
-            // Start the service
-
-            PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
-
-
+        // try getting interval option
+        long interval;
+        try {
+            interval = Long.parseLong(editInterval.getText().toString());
+        } catch (Exception e) {
+            interval = 1000L;
         }
 
-        else {
-            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, SensorBackgroundService.class);
-            PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.cancel(scheduledIntent);
-        }
+        // Start the service
+
+        PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+
+        // Go back to main activity
+        Toast.makeText(ScheduleService.this, "Service added", Toast.LENGTH_LONG).show();
+        Intent intentMain = new Intent(this, MainActivity.class);
+        startActivity(intentMain);
     }
+
+    public void onButtonDeleteClicked(View view) {
+        AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, SensorBackgroundService.class);
+        PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.cancel(scheduledIntent);
+
+        ServiceManager.getInstance().removeServiceComponentActive(typeSensor);
+        // Go back to main activity
+        Toast.makeText(ScheduleService.this, "Service deleted", Toast.LENGTH_LONG).show();        Intent intentMain = new Intent(this, MainActivity.class);
+        startActivity(intentMain);
+    }
+
 
 
 }

@@ -62,7 +62,6 @@ public class AddDeviceActivity extends Activity {
                 ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
                 // Add service component to active services component
                 ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
-                Toast.makeText(AddDeviceActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
                 // Come back to Main Activity
                 Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
                 intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getSensorType());

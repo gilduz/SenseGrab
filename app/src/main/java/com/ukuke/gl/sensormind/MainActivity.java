@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
 
         // Search for services
         int numAvailableServices = ServiceManager.getInstance().populateServiceComponentList(this);
-        Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -57,10 +57,6 @@ public class MainActivity extends Activity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_device_capabilities) {
             startDeviceCapabilities();
-        }
-        else if (id == R.id.action_add_new_service) {
-            Intent intent = new Intent(this, AddDeviceActivity.class);
-            startActivity(intent);
         }
         else if (id == R.id.action_test) {
 
@@ -102,6 +98,11 @@ public class MainActivity extends Activity {
         startActivity(intent);
 
         return true;
+    }
+
+    public void onPlusCircleClicked(View view) {
+        Intent intent = new Intent(this, AddDeviceActivity.class);
+        startActivity(intent);
     }
 
     private void registerClickCallback() {

@@ -39,6 +39,15 @@ public class ServiceManager {
         serviceComponentActiveList.add(serviceComponent);
     }
 
+    public void removeServiceComponentActive(int sensorType) {
+        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
+            if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
+                serviceComponentActiveList.remove(i);
+            }
+
+        }
+    }
+
     public List<ServiceComponent> getserviceComponentActiveList() {
         return serviceComponentActiveList;
     }
@@ -49,7 +58,7 @@ public class ServiceManager {
         //}
         List<ServiceComponent> mList = new ArrayList<>();
 
-        for (int i = 0; i < serviceComponentList.size()-1; i++) {
+        for (int i = 0; i < serviceComponentList.size(); i++) {
             if (serviceComponentList.get(i).exists) {
                 mList.add(serviceComponentList.get(i));
             }
