@@ -12,6 +12,7 @@
     <!-- default values -->
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_add_device">Add device</string>
 
     <!-- TODO find right place for these -->
     <string name="main_title">Use the controls below</string>
@@ -22,14 +23,13 @@
     <string name="stop_button">Stop grabbing!</string>
     <string name="action_test">TASTO DI TEST</string>
     <string name="action_add_new_service">Add new service</string>
+    <string name="title_sensor_background_service">Sensor Background Service</string>
 
     <!-- Configuration Activity -->
     <string name="conf_help">Set up a name for this sampling configuration.\nRemember to use different names for each configuration.</string>
-    <string name="conf_name">Name</string>
+    <string name="conf_name">Name </string>
     <string name="conf_samp">Sampling time</string>
     <string name="conf_window">Window amplitude</string> <!-- TODO trovare nome migliore -->
     <string name="conf_gps">Attach GPS location</string>
-    <string name="title_activity_add_device">Add device</string>
-    <string name="title_sensor_background_service">Sensor Background Service</string>
 
 </resources>
