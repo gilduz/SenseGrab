@@ -7,21 +7,6 @@
     tools:context="com.ukuke.gl.sensormind.DeviceCapabilitiesActivity"
     android:elevation="2dp">
 
-    <EditText
-        android:id="@+id/editMin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/chkLogging"
-        android:hint="min_threshold"
-        android:inputType="number"/>
-
-    <EditText
-        android:id="@+id/editMax"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/editMin"
-        android:hint="max_threshold"
-        android:inputType="number"/>
 
     <CheckBox
         android:id="@+id/chkLogging"
@@ -35,7 +20,7 @@
         android:id="@+id/editInterval"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/editMax"
+        android:layout_below="@+id/chkLogging"
         android:hint="interval in ms"
         android:inputType="number"/>
 

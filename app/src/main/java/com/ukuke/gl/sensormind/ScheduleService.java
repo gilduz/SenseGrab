@@ -80,17 +80,6 @@ public class ScheduleService extends Activity {
         Bundle args = new Bundle();
 
         try {
-            float value = Float.parseFloat(editMin.getText().toString());
-            args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MIN_VALUE, value);
-        } catch (Exception e) {}
-        try {
-            float value = Float.parseFloat(editMax.getText().toString());
-            args.putFloat(SensorBackgroundService.KEY_THRESHOLD_MAX_VALUE, value);
-        } catch (Exception e) {}
-        try {
-            args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
-        } catch (Exception e) {}
-        try {
             args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
         } catch (Exception e) {}
         try {

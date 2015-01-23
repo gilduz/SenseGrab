@@ -23,8 +23,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private static float previousValue;
 
     public static final String KEY_SENSOR_TYPE = "sensor_type";
-    public static final String KEY_THRESHOLD_MIN_VALUE = "threshold_min_value";
-    public static final String KEY_THRESHOLD_MAX_VALUE = "threshold_max_value";
     public static final String KEY_LOGGING = "logging";
 
     @Override
