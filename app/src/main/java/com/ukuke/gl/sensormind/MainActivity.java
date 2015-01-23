@@ -41,6 +41,13 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onDestroy() {
+        Intent intent = new Intent(this, SensorBackgroundService.class);
+        startService(intent);
+        stopService(intent);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -56,7 +63,8 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_device_capabilities) {
-            startDeviceCapabilities();
+            Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
+            startActivity(intent);
         }
         else if (id == R.id.action_test) {
 
@@ -76,13 +84,11 @@ public class MainActivity extends Activity {
         super.onResume();
 
         if (prefs.getBoolean("firstrun", true)) {
-            // Do first run stuff here then set 'firstrun' as false
-            // using the following line to edit/commit prefs
             Log.i("MainActivity","This is a first run. Set up everything!");
             prefs.edit().putBoolean("firstrun", false).apply();
-
             // TODO: Launch initial setup activity
-            startDeviceCapabilities();
+            //Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
+            //startActivity(intent);
         }
         else {
             Log.v("MainActivity", "This is not a first run. Let's continue");
@@ -90,14 +96,6 @@ public class MainActivity extends Activity {
 
         populateListView();
         registerClickCallback();
-    }
-
-    private boolean startDeviceCapabilities () {
-
-        Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
-        startActivity(intent);
-
-        return true;
     }
 
     public void onPlusCircleClicked(View view) {
@@ -147,13 +145,7 @@ public class MainActivity extends Activity {
             myText.setText(currentServiceComponent.getDysplayName());
 
             return itemView;
-            //return super.getView(position, convertView, parent);
         }
     }
 
-    private int testWork() {
-        int a;
-        a = 3+2;
-        return a;
-    }
 }

@@ -21,9 +21,6 @@ import com.ukuke.gl.sensormind.services.*;
 import java.util.ArrayList;
 
 
-/**
- * A Fragment for managing the background service
- */
 public class ScheduleService extends Activity {
 
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
@@ -31,13 +28,8 @@ public class ScheduleService extends Activity {
     Intent intentAddDevice;
     int typeSensor;
 
-    EditText editMin;
-    EditText editMax;
     EditText editInterval;
     CheckBox chkLogging;
-
-//    AlarmManager mgrAlarm = (AlarmManager) getSystemService(ALARM_SERVICE);
-//    ArrayList<PendingIntent> intentArray = new ArrayList<PendingIntent>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
