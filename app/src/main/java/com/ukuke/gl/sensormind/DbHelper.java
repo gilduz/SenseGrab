@@ -101,9 +101,27 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Cursor getConfigurationById(int id){
+    public Cursor getConfCursorById(int id){
+        // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where id= "+id+"", null );
+        db.close();
+        return res;
+    }
+
+    public Cursor getConfCursorByName(String name){
+        // TODO Remember to close the cursor on upper level after use
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+
+                " where "+Samp_conf_name+" = "+name+"", null );
+        db.close();
+        return res;
+    }
+
+    public Cursor getAllConfCursor(){
+        // TODO Remember to close the cursor on upper level after use
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery( "select * from "+Samp_conf_table, null );
         db.close();
         return res;
     }
@@ -172,7 +190,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return del;
     }
 
-    // DELETE BY ID
+    // DELETE BY NAME
     public int deleteConfigurationByName(String Name){
         SQLiteDatabase db = this.getWritableDatabase();
         int del = db.delete(Samp_conf_table,Samp_conf_name+" = ?",new String[] {Name});
@@ -180,6 +198,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return del;
     }
 
+    @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsWithoutOrder(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
@@ -191,9 +210,11 @@ public class DbHelper extends SQLiteOpenHelper {
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
+        res.close();
         return array_list;
     }
 
+    @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsOrderedByName(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
@@ -205,9 +226,11 @@ public class DbHelper extends SQLiteOpenHelper {
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
+        res.close();
         return array_list;
     }
 
+    @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsOrderedByType(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
@@ -219,9 +242,11 @@ public class DbHelper extends SQLiteOpenHelper {
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
+        res.close();
         return array_list;
     }
 
+    @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsOrderedByTypeThenName(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
@@ -234,6 +259,40 @@ public class DbHelper extends SQLiteOpenHelper {
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
+        res.close();
+        return array_list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList getAllConfTypesWithoutOrder(){
+        ArrayList array_list = new ArrayList();
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+Samp_conf_table, null);
+        db.close();
+        res.moveToFirst();
+        while(!res.isAfterLast()){
+            array_list.add(res.getString(res.getColumnIndex(Samp_conf_type)));
+            res.moveToNext();
+        }
+        res.close();
+        return array_list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList getAllConfTypesOrderedByType(){
+        ArrayList array_list = new ArrayList();
+        //hp = new HashMap();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+
+                Samp_conf_type+" asc", null);
+        db.close();
+        res.moveToFirst();
+        while(!res.isAfterLast()){
+            array_list.add(res.getString(res.getColumnIndex(Samp_conf_type)));
+            res.moveToNext();
+        }
+        res.close();
         return array_list;
     }
 
