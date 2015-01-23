@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView;
+import android.content.Intent;
 
 //public class AddDeviceActivity extends ActionBarActivity {
 
@@ -49,6 +50,24 @@ public class AddDeviceActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void OldregisterClickCallback() {
+        ListView list = (ListView) findViewById(R.id.listViewAddDevice);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View viewClicked,
+                                    int position, long id) {
+
+                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
+                // Add service component to active services component
+                ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
+                Toast.makeText(AddDeviceActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
+                // OLD Come back to Main Activity
+                // OLD Intent intent = new Intent(this, MainActivity.class);
+                // OLD startActivity(intent);
+            }
+        });
+    }
+
     private void registerClickCallback() {
         ListView list = (ListView) findViewById(R.id.listViewAddDevice);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -60,9 +79,9 @@ public class AddDeviceActivity extends Activity {
                 // Add service component to active services component
                 ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
                 Toast.makeText(AddDeviceActivity.this, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getDysplayName() + " added to monitored services.", Toast.LENGTH_LONG).show();
-                // Come back to Main Activity
-                //Intent intent = new Intent(this, MainActivity.class);
-                //startActivity(intent);
+                //Go to Configuration activity
+                Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
+                startActivity(intent);
             }
         });
     }
