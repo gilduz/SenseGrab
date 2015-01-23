@@ -44,8 +44,6 @@ public class ScheduleService extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_service);
 
-        editMin = (EditText)findViewById(R.id.editMin);
-        editMax = (EditText)findViewById(R.id.editMax);
         editInterval = (EditText)findViewById(R.id.editInterval);
         chkLogging = (CheckBox)findViewById(R.id.chkLogging);
 
