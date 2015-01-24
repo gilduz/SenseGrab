@@ -14,6 +14,10 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+
 /**
  * for a background service not linked to an activity it's important to use the command approach
  * instead of the Binder. For starting use the alarm manager
@@ -28,8 +32,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_SENSOR_TYPE = "sensor_type";
     public static final String KEY_LOGGING = "logging";
 
+    private int count;
 
-   // LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+    private int lastStartId;
+       // LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
 //    // Define a listener that responds to location updates
 //    LocationListener locationListener = new LocationListener() {
@@ -51,6 +57,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+
+        lastStartId = startId;
+
         // get sensor manager on starting the service
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -70,8 +79,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             mLogging = args.getBoolean(KEY_LOGGING);
         }
 
+        //count++;
         Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
-        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+
+        mSensorManager.registerListener(this, sensor,  SensorManager.SENSOR_DELAY_NORMAL);
+
+        //Log.d(TAG,"Registrato sensore: " + sensor.getName());
 
         // Register the listener with the Location Manager to receive location updates
         //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
@@ -101,6 +115,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             sb.append(String.valueOf(value)).append(" | ");
         Log.d(TAG, sb.toString());
 
+        //count--;
+
 //        switch (event.sensor.getType()) {
 //            case Sensor.TYPE_LIGHT:
 //                Log.d(TAG,"SENSOR LIGHT: \t\t\t" + event.values[0]);
@@ -125,11 +141,14 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 //                break;
 //        }
 
+
+        mSensorManager.unregisterListener(this,event.sensor);
+
         float sensorValue = event.values[0];
         previousValue = sensorValue;
         // stop the sensor and service
-        mSensorManager.unregisterListener(this);
-        stopSelf();
+
+        stopSelfResult(lastStartId);
 
     }
 
