@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
-                    android:id="@+id/Conf_name"
+                    android:id="@+id/Conf_viewName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
@@ -43,15 +43,15 @@
                     android:textSize="15sp" />
 
                 <EditText
-                    android:id="@+id/editText"
+                    android:id="@+id/Conf_InsertName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignBottom="@+id/Conf_name"
+                    android:layout_alignBottom="@+id/Conf_viewName"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
                     android:layout_marginLeft="15sp"
-                    android:layout_toEndOf="@+id/Conf_name"
-                    android:layout_toRightOf="@+id/Conf_name"
+                    android:layout_toEndOf="@+id/Conf_viewName"
+                    android:layout_toRightOf="@+id/Conf_viewName"
                     android:inputType="text"
                     android:textSize="15sp" />
 
@@ -59,9 +59,9 @@
                     android:id="@+id/Conf_samp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignLeft="@+id/Conf_name"
-                    android:layout_alignStart="@+id/Conf_name"
-                    android:layout_below="@+id/Conf_name"
+                    android:layout_alignLeft="@+id/Conf_viewName"
+                    android:layout_alignStart="@+id/Conf_viewName"
+                    android:layout_below="@+id/Conf_viewName"
                     android:layout_marginTop="15dp"
                     android:text="@string/conf_samp"
                     android:textSize="15sp" />
@@ -88,11 +88,11 @@
                     android:gravity="center_vertical|center_horizontal"
                     android:maxWidth="30sp"
                     android:minWidth="30sp"
-                    android:text="5"
+                    android:text="@string/defaultNum5"
                     android:textSize="15sp" />
 
                 <RadioGroup
-                    android:id="@+id/radioGroup"
+                    android:id="@+id/Conf_radioGroup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/Conf_Sam_seekBar"
@@ -104,13 +104,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
-                        android:text="sec" />
+                        android:text="@string/conf_sec" />
 
                     <RadioButton
                         android:id="@+id/Conf_radioMin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="min" />
+                        android:text="@string/conf_min" />
                 </RadioGroup>
             </RelativeLayout>
 
@@ -150,7 +150,7 @@
                     android:gravity="center_vertical|center_horizontal"
                     android:maxWidth="30sp"
                     android:minWidth="30sp"
-                    android:text="5"
+                    android:text="@string/defaultNum5"
                     android:textSize="15sp" />
             </RelativeLayout>
 
@@ -177,7 +177,7 @@
         android:layout_alignRight="@+id/scrollView"
         android:maxWidth="150sp"
         android:minWidth="100sp"
-        android:text="Save" />
+        android:text="@string/conf_saveButton" />
 
     <Button
         android:id="@+id/Conf_delete"
@@ -188,7 +188,7 @@
         android:layout_alignParentStart="true"
         android:maxWidth="150sp"
         android:minWidth="100sp"
-        android:text="Delete" />
+        android:text="@string/conf_deleteButton" />
 
 
 </RelativeLayout>
