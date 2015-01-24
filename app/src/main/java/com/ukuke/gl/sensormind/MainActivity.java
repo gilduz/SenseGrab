@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO: Check on file if it's the first app launch. If yes launch Initial setup
+        // TODO: Carica le impostazioni da database impostazioni
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Check shared preferences

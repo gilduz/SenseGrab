@@ -135,18 +135,6 @@ public class ServiceManager {
         return numAvailableServices;
     }
 
-    class sensorListener implements SensorEventListener {
-        @Override
-        public void onAccuracyChanged(Sensor sensor, int accuracy) {
-            // TODO
-        }
-
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            // TODO
-        }
-    }
-
     public class ServiceComponent {
         // Object to describe a component
         private String dysplayName;

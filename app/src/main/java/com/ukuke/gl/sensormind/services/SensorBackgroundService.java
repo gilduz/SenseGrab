@@ -6,17 +6,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.util.Log;
+
+import com.ukuke.gl.sensormind.support.FeedJSON;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 /**
  * for a background service not linked to an activity it's important to use the command approach
@@ -26,33 +23,14 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     private SensorManager mSensorManager = null;
-    private boolean mLogging = false;
-    private static float previousValue;
+    private boolean logging = false;
 
     public static final String KEY_SENSOR_TYPE = "sensor_type";
     public static final String KEY_LOGGING = "logging";
 
-    private int count;
+    List<FeedJSON> listFeed = new ArrayList<FeedJSON>();
 
     private int lastStartId;
-       // LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-
-//    // Define a listener that responds to location updates
-//    LocationListener locationListener = new LocationListener() {
-//        public void onLocationChanged(Location location) {
-//            // Called when a new location is found by the network location provider.
-//            //makeUseOfNewLocation(location);
-//            Log.d(TAG, "LOCATION: " + location.toString());
-//        }
-//
-//        public void onStatusChanged(String provider, int status, Bundle extras) {}
-//
-//        public void onProviderEnabled(String provider) {}
-//
-//        public void onProviderDisabled(String provider) {}
-//    };
-
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -76,7 +54,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 sensorType = args.getInt(KEY_SENSOR_TYPE);
             }
             // optional logging
-            mLogging = args.getBoolean(KEY_LOGGING);
+            logging = args.getBoolean(KEY_LOGGING);
         }
 
         //count++;
@@ -86,9 +64,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         mSensorManager.registerListener(this, sensor,  SensorManager.SENSOR_DELAY_NORMAL);
 
         //Log.d(TAG,"Registrato sensore: " + sensor.getName());
-
-        // Register the listener with the Location Manager to receive location updates
-        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 
         return START_STICKY;
     }
@@ -109,49 +84,62 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onSensorChanged(SensorEvent event) {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(event.sensor.getName()+": \t\t");
-        for (float value : event.values)
-            sb.append(String.valueOf(value)).append(" | ");
-        Log.d(TAG, sb.toString());
-
-        //count--;
-
-//        switch (event.sensor.getType()) {
-//            case Sensor.TYPE_LIGHT:
-//                Log.d(TAG,"SENSOR LIGHT: \t\t\t" + event.values[0]);
-//                break;
-//            case Sensor.TYPE_PROXIMITY:
-//                Log.d(TAG,"SENSOR PROXIMITY: \t" + event.values[0]);
-//                break;
-//            case Sensor.TYPE_AMBIENT_TEMPERATURE:
-//                Log.d(TAG,"SENSOR TEMPERATURE: \t" + event.values[0]);
-//                break;
-//            case Sensor.TYPE_PRESSURE:
-//                Log.d(TAG,"SENSOR PRESSURE: \t\t" + event.values[0]);
-//                break;
-//            case Sensor.TYPE_ACCELEROMETER:
-//                Log.d(TAG,"SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-//                break;
-//            case Sensor.TYPE_GYROSCOPE:
-//                Log.d(TAG,"SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-//                break;
-//            case Sensor.TYPE_MAGNETIC_FIELD:
-//                Log.d(TAG,"SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-//                break;
-//        }
-
+        addFeedToList(event);
 
         mSensorManager.unregisterListener(this,event.sensor);
-
-        float sensorValue = event.values[0];
-        previousValue = sensorValue;
-        // stop the sensor and service
-
         stopSelfResult(lastStartId);
-
     }
 
+    // Call saveListFeedOnDB somethimes to transfer data on database
+    public int saveListFeedOnDB() {
+        int feedsSaved = 0;
+        FeedJSON currentFeed;
 
+        try {
+            for (int i = 0; i < listFeed.size(); i++) {
+                currentFeed = listFeed.remove(i);
+                // TODO: Leo, qui devi salvare il currentfeed su DB
+                feedsSaved++;
+            }
+        }catch (Exception e) {
+            Log.e(TAG, "Error saving on DB: " + e);
+        }
+
+        return feedsSaved;
+    }
+
+    private void addFeedToList(SensorEvent event) {
+        // TODO: Creare un feed ed aggiungerlo alla feedList prima di ogni if(logging)
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_LIGHT:
+                if (logging)
+                    Log.d(TAG, listFeed.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
+                break;
+            case Sensor.TYPE_PROXIMITY:
+                if (logging)
+                    Log.d(TAG, listFeed.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
+                break;
+            case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                if (logging)
+                    Log.d(TAG, listFeed.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
+                break;
+            case Sensor.TYPE_PRESSURE:
+                if (logging)
+                    Log.d(TAG, listFeed.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
+                break;
+            case Sensor.TYPE_ACCELEROMETER:
+                if (logging)
+                    Log.d(TAG, listFeed.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                break;
+            case Sensor.TYPE_GYROSCOPE:
+                if (logging)
+                    Log.d(TAG, listFeed.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                if (logging)
+                    Log.d(TAG, listFeed.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                break;
+        }
+    }
 
 }
