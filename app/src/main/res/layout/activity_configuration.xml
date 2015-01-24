@@ -1,178 +1,194 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.ukuke.gl.sensormind.ConfigurationActivity">
 
 
-
-    <TextView android:text="@string/conf_help" android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/Conf_help" />
-
-    <TextView android:text="@string/conf_name" android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/Conf_name"
-        android:layout_marginTop="15dp"
-        android:layout_marginRight="15dp"
-        android:textSize="15sp"
-        android:layout_below="@+id/Conf_help"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_alignBottom="@+id/Conf_name"
-        android:layout_alignRight="@+id/Conf_help"
-        android:layout_alignEnd="@+id/Conf_help"
-        android:inputType="text"
-        android:textSize="15sp"
-        android:layout_toRightOf="@+id/Conf_name"
-        android:layout_toEndOf="@+id/Conf_name" />
-
     <TextView
+        android:id="@+id/Conf_help"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/conf_samp"
-        android:id="@+id/Conf_samp"
-        android:textSize="15sp"
-        android:layout_below="@+id/Conf_name"
-        android:layout_alignLeft="@+id/Conf_name"
-        android:layout_alignStart="@+id/Conf_name"
-        android:layout_marginTop="15dp" />
+        android:text="@string/conf_help" />
 
-    <SeekBar
-        android:layout_width="wrap_content"
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/Conf_samp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/Conf_Sam_seekBar"
-        android:layout_toLeftOf="@+id/Conf_viewSeekbarValue"
-        android:layout_toStartOf="@+id/Conf_viewSeekbarValue"
-        android:layout_marginTop="10sp" />
+        android:layout_above="@+id/Conf_save"
+        android:layout_below="@+id/Conf_help">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="5"
-        android:textSize="15sp"
-        android:id="@+id/Conf_viewSeekbarValue"
-        android:layout_alignBottom="@+id/Conf_Sam_seekBar"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:maxWidth="30sp"
-        android:minWidth="30sp"
-        android:layout_alignTop="@+id/Conf_Sam_seekBar"
-        android:gravity="center_vertical|center_horizontal" />
-
-    <RadioGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/radioGroup"
-        android:layout_below="@+id/Conf_Sam_seekBar"
-        android:layout_centerHorizontal="true">
-
-        <RadioButton
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="sec"
-            android:id="@+id/Conf_radioSec"
-            android:checked="true"
-            android:layout_marginRight="15sp" />
+            android:orientation="vertical">
 
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="min"
-            android:id="@+id/Conf_radioMin" />
-    </RadioGroup>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/Conf_windowSetting"
-        android:layout_below="@+id/radioGroup">
+                <TextView
+                    android:id="@+id/Conf_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginTop="15dp"
+                    android:text="@string/conf_name"
+                    android:textSize="15sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/conf_window"
-            android:id="@+id/Conf_Win"
-            android:textSize="15sp"
-            android:layout_marginTop="15dp" />
+                <EditText
+                    android:id="@+id/editText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/Conf_name"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginLeft="15sp"
+                    android:layout_toEndOf="@+id/Conf_name"
+                    android:layout_toRightOf="@+id/Conf_name"
+                    android:inputType="text"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/Conf_samp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/Conf_name"
+                    android:layout_alignStart="@+id/Conf_name"
+                    android:layout_below="@+id/Conf_name"
+                    android:layout_marginTop="15dp"
+                    android:text="@string/conf_samp"
+                    android:textSize="15sp" />
+
+                <SeekBar
+                    android:id="@+id/Conf_Sam_seekBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/Conf_samp"
+                    android:layout_marginTop="10sp"
+                    android:layout_toLeftOf="@+id/Conf_viewSeekbarValue"
+                    android:layout_toStartOf="@+id/Conf_viewSeekbarValue" />
+
+                <TextView
+                    android:id="@+id/Conf_viewSeekbarValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/Conf_Sam_seekBar"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignTop="@+id/Conf_Sam_seekBar"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:maxWidth="30sp"
+                    android:minWidth="30sp"
+                    android:text="5"
+                    android:textSize="15sp" />
+
+                <RadioGroup
+                    android:id="@+id/radioGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/Conf_Sam_seekBar"
+                    android:layout_centerHorizontal="true"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/Conf_radioSec"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="sec" />
+
+                    <RadioButton
+                        android:id="@+id/Conf_radioMin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="min" />
+                </RadioGroup>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/Conf_windowSetting"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/Conf_Win"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:text="@string/conf_window"
+                    android:textSize="15sp" />
 
 
-        <SeekBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:id="@+id/Conf_Win_seekBar"
-            android:layout_below="@+id/Conf_Win"
-            android:layout_toLeftOf="@+id/Conf_viewWinSeekbarValue"
-            android:layout_toStartOf="@+id/Conf_viewWinSeekbarValue"
-            android:layout_marginTop="10sp" />
+                <SeekBar
+                    android:id="@+id/Conf_Win_seekBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/Conf_Win"
+                    android:layout_marginTop="10sp"
+                    android:layout_toLeftOf="@+id/Conf_viewWinSeekbarValue"
+                    android:layout_toStartOf="@+id/Conf_viewWinSeekbarValue" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="5"
-            android:textSize="15sp"
-            android:id="@+id/Conf_viewWinSeekbarValue"
-            android:layout_alignBottom="@+id/Conf_Win_seekBar"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:maxWidth="30sp"
-            android:minWidth="30sp"
-            android:layout_alignTop="@+id/Conf_Win_seekBar"
-            android:gravity="center_vertical|center_horizontal" />
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/Conf_viewWinSeekbarValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/Conf_Win_seekBar"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignTop="@+id/Conf_Win_seekBar"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:maxWidth="30sp"
+                    android:minWidth="30sp"
+                    android:text="5"
+                    android:textSize="15sp" />
+            </RelativeLayout>
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/conf_gps"
-        android:id="@+id/Conf_gps"
-        android:layout_below="@+id/Conf_windowSetting"
-        android:layout_alignRight="@+id/Conf_windowSetting"
-        android:layout_alignEnd="@+id/Conf_windowSetting"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="10sp"
-        android:checked="true"
-        android:clickable="true"
-        android:textSize="15sp" />
+            <Switch
+                android:id="@+id/Conf_gps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10sp"
+                android:checked="true"
+                android:clickable="true"
+                android:text="@string/conf_gps"
+                android:textSize="15sp" />
+
+
+        </LinearLayout>
+    </ScrollView>
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save"
         android:id="@+id/Conf_save"
-        android:layout_alignParentBottom="true"
-        android:layout_alignRight="@+id/Conf_gps"
-        android:layout_alignEnd="@+id/Conf_gps"
-        android:minWidth="100sp"
-        android:maxWidth="150sp" />
-
-    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Delete"
+        android:layout_alignEnd="@+id/scrollView"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/scrollView"
+        android:maxWidth="150sp"
+        android:minWidth="100sp"
+        android:text="Save" />
+
+    <Button
         android:id="@+id/Conf_delete"
-        android:layout_alignBottom="@+id/Conf_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:maxWidth="150sp"
         android:minWidth="100sp"
-        android:maxWidth="150sp"/>
+        android:text="Delete" />
 
 
 </RelativeLayout>

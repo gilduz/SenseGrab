@@ -17,8 +17,8 @@ public class ConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
 
-        SeekBar seekSamp = (SeekBar)findViewById(R.id.Conf_Sam_seekBar);
-        final TextView textSamp = (TextView)findViewById(R.id.Conf_viewSeekbarValue);
+        SeekBar seekSamp = (SeekBar) findViewById(R.id.Conf_Sam_seekBar);
+        final TextView textSamp = (TextView) findViewById(R.id.Conf_viewSeekbarValue);
 
         seekSamp.setMax(60);
 
@@ -26,6 +26,28 @@ public class ConfigurationActivity extends Activity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 textSamp.setText(String.valueOf(progress));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        SeekBar seekWin = (SeekBar) findViewById(R.id.Conf_Win_seekBar);
+        final TextView textWin = (TextView) findViewById(R.id.Conf_viewWinSeekbarValue);
+
+        seekWin.setMax(60);
+
+        seekWin.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                textWin.setText(String.valueOf(progress));
             }
 
             @Override
