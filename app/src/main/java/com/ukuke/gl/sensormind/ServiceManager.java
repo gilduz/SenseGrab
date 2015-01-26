@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -23,6 +24,7 @@ import java.util.List;
 
 public class ServiceManager {
     // Singleton Class
+    SharedPreferences prefs = null;
 
     private static ServiceManager mInstance = null;
     private List<ServiceComponent> serviceComponentList = new ArrayList<>();
@@ -44,6 +46,7 @@ public class ServiceManager {
 
     ServiceManager (Context cn) {
         this.cn = cn;
+        prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
     }
 
     public List<ServiceComponent> getServiceComponentList() {
@@ -169,7 +172,7 @@ public class ServiceManager {
         private int sensorType;
         boolean logging = false;
         long interval = 1000;
-        int numSamples = 1;
+        int window = 1;
 
         public void setLogging(boolean value) {
             this.logging = value;
@@ -179,8 +182,8 @@ public class ServiceManager {
             this.interval = interval;
         }
 
-        public void setNumSamples(int numSamples) {
-            this.numSamples = numSamples;
+        public void setWindow(int window) {
+            this.window = window;
         }
 
         public boolean getLogging() {
@@ -191,8 +194,8 @@ public class ServiceManager {
             return interval;
         }
 
-        public int getNumSamples() {
-            return numSamples;
+        public int getWindow() {
+            return window;
         }
 
         ServiceComponent(String dysplayName, boolean exists) {
@@ -269,48 +272,42 @@ public class ServiceManager {
     // Service related methods
 
     public void startScheduleService(int typeSensor) {
-        startScheduleService(typeSensor, getServiceComponentActiveBySensorType(typeSensor).getLogging(), getServiceComponentActiveBySensorType(typeSensor).getInterval(), getServiceComponentActiveBySensorType(typeSensor).getNumSamples());
+        startScheduleService(typeSensor, getServiceComponentActiveBySensorType(typeSensor).getLogging(), getServiceComponentActiveBySensorType(typeSensor).getInterval(), getServiceComponentActiveBySensorType(typeSensor).getWindow());
     }
 
-    public void startScheduleService(int typeSensor, boolean logging, long interval, int numSamples) {
-        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(cn, SensorBackgroundService.class);
+    public void startScheduleService(int typeSensor, boolean logging, long interval, int window) {
 
         getServiceComponentActiveBySensorType(typeSensor).setInterval(interval);
         getServiceComponentActiveBySensorType(typeSensor).setLogging(logging);
-        getServiceComponentActiveBySensorType(typeSensor).setNumSamples(numSamples);
+        getServiceComponentActiveBySensorType(typeSensor).setWindow(window);
 
-        Bundle args = new Bundle();
+        if (prefs.getBoolean("enableGrabbing",true)) {
 
-        try {
-            args.putBoolean(SensorBackgroundService.KEY_LOGGING, logging);
-        } catch (Exception e) {}
-        try {
-            args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
-        } catch (Exception e) {}
-        try {
-            args.putInt(SensorBackgroundService.KEY_NUM_SAMPLES, numSamples);
-        } catch (Exception e) {}
+            AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(cn, SensorBackgroundService.class);
 
-        intent.putExtras(args);
+            Bundle args = new Bundle();
 
-        // try getting interval option
-//        long interval;
-//        try {
-//            interval = int;
-//        } catch (Exception e) {
-//            interval = 1000L;
-//        }
+            try {
+                args.putBoolean(SensorBackgroundService.KEY_LOGGING, logging);
+            } catch (Exception e) {
+            }
+            try {
+                args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
+            } catch (Exception e) {
+            }
+            try {
+                args.putInt(SensorBackgroundService.KEY_WINDOW, window);
+            } catch (Exception e) {
+            }
 
-        // Start the service
+            intent.putExtras(args);
 
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+            // Start the service
 
-        // Go back to main activity
-        Toast.makeText(cn, "Service added", Toast.LENGTH_LONG).show();
-//        Intent intentMain = new Intent(cn, MainActivity.class);
-//        cn.startActivity(intentMain);
+            PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+        }
     }
 
     public void stopScheduleService(int typeSensor) {
@@ -318,12 +315,6 @@ public class ServiceManager {
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.cancel(scheduledIntent);
-
-
-        // Go back to main activity
-        Toast.makeText(cn, "Service deleted", Toast.LENGTH_LONG).show();
-//        Intent intentMain = new Intent(cn, MainActivity.class);
-//        cn.startActivity(intentMain);
     }
 
 }

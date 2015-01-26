@@ -27,7 +27,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     public static final String KEY_SENSOR_TYPE = "sensor_type";
     public static final String KEY_LOGGING = "logging";
-    public static final String KEY_NUM_SAMPLES = "num_samples";
+    public static final String KEY_WINDOW = "num_samples";
 
     List<FeedJSON> listFeed = new ArrayList<FeedJSON>();
 

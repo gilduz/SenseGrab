@@ -71,6 +71,7 @@ public class ScheduleService extends Activity {
             interval = 1000L;
         }
         ServiceManager.getInstance(ScheduleService.this).startScheduleService(typeSensor, chkLogging.isChecked(), interval, 1);
+        Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);
     }
@@ -78,6 +79,7 @@ public class ScheduleService extends Activity {
     public void onButtonDeleteClicked(View view) {
         ServiceManager.getInstance(ScheduleService.this).stopScheduleService(typeSensor);
         ServiceManager.getInstance(ScheduleService.this).removeServiceComponentActive(typeSensor);
+        Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);
     }

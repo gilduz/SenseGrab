@@ -93,6 +93,8 @@ public class MainActivity extends Activity {
         ToggleButton toggleButton;
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
 
+        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
+
         if (toggleButton.isChecked()) {
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
@@ -109,7 +111,7 @@ public class MainActivity extends Activity {
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service.getSensorType());
             }
         }
-        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
+
 
     }
 
