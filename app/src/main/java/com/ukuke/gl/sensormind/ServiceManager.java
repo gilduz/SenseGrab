@@ -1,10 +1,18 @@
 package com.ukuke.gl.sensormind;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +20,7 @@ import java.util.List;
 /**
  * Created by gildoandreoni on 20/01/15.
  */
+
 public class ServiceManager {
     // Singleton Class
 
@@ -21,14 +30,20 @@ public class ServiceManager {
 
     SensorManager sensorManager;
     private boolean scanDone = false;
+    Context cn;
 
 
-    public static ServiceManager getInstance(){
+    public static ServiceManager getInstance(Context cn){
         if(mInstance == null)
         {
-            mInstance = new ServiceManager();
+            mInstance = new ServiceManager(cn);
         }
+
         return mInstance;
+    }
+
+    ServiceManager (Context cn) {
+        this.cn = cn;
     }
 
     public List<ServiceComponent> getServiceComponentList() {
@@ -44,12 +59,22 @@ public class ServiceManager {
             if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
                 serviceComponentActiveList.remove(i);
             }
-
         }
     }
 
-    public List<ServiceComponent> getserviceComponentActiveList() {
+    public List<ServiceComponent> getServiceComponentActiveList() {
         return serviceComponentActiveList;
+    }
+
+    public ServiceComponent getServiceComponentActiveBySensorType(int serviceType) {
+        ServiceComponent service = new ServiceComponent("NULL",false);
+        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
+            service = serviceComponentActiveList.get(i);
+            if (service.getSensorType() == serviceType) {
+                return service;
+            }
+        }
+        return service;
     }
 
     public List<ServiceComponent> getAvailableServiceComponentList() {
@@ -66,7 +91,7 @@ public class ServiceManager {
         return mList;
     }
 
-    public int populateServiceComponentList(Context cn) {
+    public int populateServiceComponentList() {
         // Discovery Components
         int numAvailableServices = 0;
 
@@ -142,6 +167,33 @@ public class ServiceManager {
         private int availableImageID;
         private int componentImageID;
         private int sensorType;
+        boolean logging = false;
+        long interval = 1000;
+        int numSamples = 1;
+
+        public void setLogging(boolean value) {
+            this.logging = value;
+        }
+
+        public void setInterval(long interval) {
+            this.interval = interval;
+        }
+
+        public void setNumSamples(int numSamples) {
+            this.numSamples = numSamples;
+        }
+
+        public boolean getLogging() {
+            return logging;
+        }
+
+        public long getInterval() {
+            return interval;
+        }
+
+        public int getNumSamples() {
+            return numSamples;
+        }
 
         ServiceComponent(String dysplayName, boolean exists) {
             this.dysplayName = dysplayName;
@@ -212,6 +264,66 @@ public class ServiceManager {
         public boolean getExists() {
             return  exists;
         }
+    }
+
+    // Service related methods
+
+    public void startScheduleService(int typeSensor) {
+        startScheduleService(typeSensor, getServiceComponentActiveBySensorType(typeSensor).getLogging(), getServiceComponentActiveBySensorType(typeSensor).getInterval(), getServiceComponentActiveBySensorType(typeSensor).getNumSamples());
+    }
+
+    public void startScheduleService(int typeSensor, boolean logging, long interval, int numSamples) {
+        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+
+        getServiceComponentActiveBySensorType(typeSensor).setInterval(interval);
+        getServiceComponentActiveBySensorType(typeSensor).setLogging(logging);
+        getServiceComponentActiveBySensorType(typeSensor).setNumSamples(numSamples);
+
+        Bundle args = new Bundle();
+
+        try {
+            args.putBoolean(SensorBackgroundService.KEY_LOGGING, logging);
+        } catch (Exception e) {}
+        try {
+            args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
+        } catch (Exception e) {}
+        try {
+            args.putInt(SensorBackgroundService.KEY_NUM_SAMPLES, numSamples);
+        } catch (Exception e) {}
+
+        intent.putExtras(args);
+
+        // try getting interval option
+//        long interval;
+//        try {
+//            interval = int;
+//        } catch (Exception e) {
+//            interval = 1000L;
+//        }
+
+        // Start the service
+
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+
+        // Go back to main activity
+        Toast.makeText(cn, "Service added", Toast.LENGTH_LONG).show();
+//        Intent intentMain = new Intent(cn, MainActivity.class);
+//        cn.startActivity(intentMain);
+    }
+
+    public void stopScheduleService(int typeSensor) {
+        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.cancel(scheduledIntent);
+
+
+        // Go back to main activity
+        Toast.makeText(cn, "Service deleted", Toast.LENGTH_LONG).show();
+//        Intent intentMain = new Intent(cn, MainActivity.class);
+//        cn.startActivity(intentMain);
     }
 
 }

@@ -43,7 +43,7 @@
         </activity>
         <service
             android:name="com.ukuke.gl.sensormind.services.SensorBackgroundService"
-            android:label="@string/title_sensor_background_service" >
+            android:label="@string/title_sensor_background_service">
         </service>
 
         <activity

@@ -64,7 +64,7 @@ public class DbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // delete tables
-        //db.execSQL("drop table if exists"+Samp_type_table);
+        // db.execSQL("drop table if exists"+Samp_type_table);
         db.execSQL("drop table if exists"+Samp_conf_table);
         // create new tables
         onCreate(db);

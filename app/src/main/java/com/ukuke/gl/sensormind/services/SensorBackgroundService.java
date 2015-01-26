@@ -27,6 +27,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     public static final String KEY_SENSOR_TYPE = "sensor_type";
     public static final String KEY_LOGGING = "logging";
+    public static final String KEY_NUM_SAMPLES = "num_samples";
 
     List<FeedJSON> listFeed = new ArrayList<FeedJSON>();
 
@@ -83,11 +84,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-
         addFeedToList(event);
-
         mSensorManager.unregisterListener(this,event.sensor);
-        stopSelfResult(lastStartId);
+        //stopSelfResult(lastStartId);
     }
 
     // Call saveListFeedOnDB somethimes to transfer data on database
@@ -110,6 +109,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     private void addFeedToList(SensorEvent event) {
         // TODO: Creare un feed ed aggiungerlo alla feedList prima di ogni if(logging)
+
+        listFeed.add(new FeedJSON("Ciao",false,"Stringa","Stringa",1));
+
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
                 if (logging)

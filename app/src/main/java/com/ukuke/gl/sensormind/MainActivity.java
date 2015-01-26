@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -19,13 +18,18 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
 //    public class MainActivity extends ActionBarActivity {
 
     SharedPreferences prefs = null;
+    boolean toggleGrabbingEnabled = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,16 +40,17 @@ public class MainActivity extends Activity {
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
         // Search for services
-        int numAvailableServices = ServiceManager.getInstance().populateServiceComponentList(this);
+        int numAvailableServices = ServiceManager.getInstance(MainActivity.this).populateServiceComponentList();
         //Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
+
+        View v = new View(this);
+
+        ToggleButton toggle;
+        toggle = (ToggleButton) findViewById(R.id.toggleButton);
+        toggle.setChecked(prefs.getBoolean("enableGrabbing",true));
     }
 
-    @Override
-    public void onDestroy() {
-        Intent intent = new Intent(this, SensorBackgroundService.class);
-        startService(intent);
-        stopService(intent);
-    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -80,15 +85,41 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onDestroy() {
+
+    }
+
+    public void onClickedToggle(View view) {
+        ToggleButton toggleButton;
+        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
+
+        if (toggleButton.isChecked()) {
+            for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
+                ServiceManager.ServiceComponent service;
+                service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
+                ServiceManager.getInstance(MainActivity.this).startScheduleService(service.getSensorType());
+            }
+
+        }
+        else {
+            // STOP all schedules
+            for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
+                ServiceManager.ServiceComponent service;
+                service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
+                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service.getSensorType());
+            }
+        }
+        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
+
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
         if (prefs.getBoolean("firstrun", true)) {
             Log.i("MainActivity","This is a first run. Set up everything!");
             prefs.edit().putBoolean("firstrun", false).apply();
-            // TODO: Launch initial setup activity
-            //Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
-            //startActivity(intent);
         }
         else {
             Log.v("MainActivity", "This is not a first run. Let's continue");
@@ -111,7 +142,7 @@ public class MainActivity extends Activity {
                                     int position, long id) {
                 // Come back to Main Activity
                 Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
-                intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance().getserviceComponentActiveList().get(position).getSensorType());
+                intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getSensorType());
                 intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
                 startActivity(intent);
             }
@@ -126,7 +157,7 @@ public class MainActivity extends Activity {
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(MainActivity.this, R.layout.item_view, ServiceManager.getInstance().getserviceComponentActiveList());
+            super(MainActivity.this, R.layout.item_view, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList());
         }
 
         @Override
@@ -136,7 +167,7 @@ public class MainActivity extends Activity {
                 itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance().getserviceComponentActiveList().get(position);
+            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position);
 
             ImageView imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
             imageView.setImageResource(currentServiceComponent.getComponentImageID());

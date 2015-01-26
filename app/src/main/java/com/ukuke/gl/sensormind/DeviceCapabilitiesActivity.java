@@ -57,7 +57,7 @@ public class DeviceCapabilitiesActivity extends Activity {
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(DeviceCapabilitiesActivity.this, R.layout.item_view_2img, ServiceManager.getInstance().getServiceComponentList());
+            super(DeviceCapabilitiesActivity.this, R.layout.item_view_2img, ServiceManager.getInstance(DeviceCapabilitiesActivity.this).getServiceComponentList());
         }
 
         @Override
@@ -67,7 +67,7 @@ public class DeviceCapabilitiesActivity extends Activity {
                 itemView = getLayoutInflater().inflate(R.layout.item_view_2img, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance().getServiceComponentList().get(position);
+            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getServiceComponentList().get(position);
 
             ImageView  imageView_1 = (ImageView) itemView.findViewById(R.id.item_imageView_1);
             imageView_1.setImageResource(currentServiceComponent.getComponentImageID());

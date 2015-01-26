@@ -59,12 +59,12 @@ public class AddDeviceActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
-                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
+                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position);
                 // Add service component to active services component
-                ServiceManager.getInstance().addServiceComponentActive(clickedServiceComponent);
+                ServiceManager.getInstance(AddDeviceActivity.this).addServiceComponentActive(clickedServiceComponent);
                 // Come back to Main Activity
                 Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
-                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance().getAvailableServiceComponentList().get(position).getSensorType());
+                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position).getSensorType());
                 startActivity(intent);
             }
         });
@@ -78,7 +78,7 @@ public class AddDeviceActivity extends Activity {
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance().getAvailableServiceComponentList());
+            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList());
         }
 
         @Override
@@ -88,7 +88,7 @@ public class AddDeviceActivity extends Activity {
                 itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance().getAvailableServiceComponentList().get(position);
+            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getAvailableServiceComponentList().get(position);
 
             ImageView imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
             imageView.setImageResource(currentServiceComponent.getComponentImageID());

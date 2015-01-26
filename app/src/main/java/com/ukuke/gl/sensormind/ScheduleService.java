@@ -36,8 +36,8 @@ public class ScheduleService extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule_service);
 
-        editInterval = (EditText)findViewById(R.id.editInterval);
-        chkLogging = (CheckBox)findViewById(R.id.chkLogging);
+        editInterval = (EditText) findViewById(R.id.editInterval);
+        chkLogging = (CheckBox) findViewById(R.id.chkLogging);
 
         intentAddDevice = getIntent();
         typeSensor = intentAddDevice.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
@@ -57,58 +57,28 @@ public class ScheduleService extends Activity {
         int id = item.getItemId();
 
         if (id == R.id.action_test) {
-            Intent intent = new Intent(this,MainActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
 
     public void onButtonStartClicked(View view) {
-        AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, SensorBackgroundService.class);
-
-        Bundle args = new Bundle();
-
-        try {
-            args.putBoolean(SensorBackgroundService.KEY_LOGGING, chkLogging.isChecked());
-        } catch (Exception e) {}
-        try {
-            args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
-        } catch (Exception e) {}
-
-        intent.putExtras(args);
-
-        // try getting interval option
         long interval;
         try {
             interval = Long.parseLong(editInterval.getText().toString());
         } catch (Exception e) {
             interval = 1000L;
         }
-
-        // Start the service
-
-        PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
-
-        // Go back to main activity
-        Toast.makeText(ScheduleService.this, "Service added", Toast.LENGTH_LONG).show();
+        ServiceManager.getInstance(ScheduleService.this).startScheduleService(typeSensor, chkLogging.isChecked(), interval, 1);
         Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);
     }
 
     public void onButtonDeleteClicked(View view) {
-        AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, SensorBackgroundService.class);
-        PendingIntent scheduledIntent = PendingIntent.getService(this, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        scheduler.cancel(scheduledIntent);
-
-        ServiceManager.getInstance().removeServiceComponentActive(typeSensor);
-        // Go back to main activity
-        Toast.makeText(ScheduleService.this, "Service deleted", Toast.LENGTH_LONG).show();        Intent intentMain = new Intent(this, MainActivity.class);
+        ServiceManager.getInstance(ScheduleService.this).stopScheduleService(typeSensor);
+        ServiceManager.getInstance(ScheduleService.this).removeServiceComponentActive(typeSensor);
+        Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);
     }
-
-
-
 }
