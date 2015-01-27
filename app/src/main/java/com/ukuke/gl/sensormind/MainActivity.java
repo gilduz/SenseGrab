@@ -39,8 +39,11 @@ public class MainActivity extends Activity {
         // Check shared preferences
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
-        // Search for services
-        int numAvailableServices = ServiceManager.getInstance(MainActivity.this).populateServiceComponentList();
+
+        //ServiceManager.getInstance(MainActivity.this).initializeFromDB();
+
+        // Search  services
+        //int numAvailableServices = ServiceManager.getInstance(MainActivity.this).populateServiceComponentList();
         //Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
 
         View v = new View(this);

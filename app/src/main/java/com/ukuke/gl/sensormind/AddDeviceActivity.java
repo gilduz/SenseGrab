@@ -53,6 +53,13 @@ public class AddDeviceActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed(){
+        //Your code here
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+    }
+
     private void registerClickCallback() {
         ListView list = (ListView) findViewById(R.id.listViewAddDevice);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {

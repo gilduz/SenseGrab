@@ -5,11 +5,13 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -34,6 +36,10 @@ public class ServiceManager {
     private boolean scanDone = false;
     Context cn;
 
+    private boolean USE_DB = false;
+
+    DbHelper dbHelper;
+
 
     public static ServiceManager getInstance(Context cn){
         if(mInstance == null)
@@ -47,6 +53,7 @@ public class ServiceManager {
     ServiceManager (Context cn) {
         this.cn = cn;
         prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
+        populateServiceComponentList();
     }
 
     public List<ServiceComponent> getServiceComponentList() {
@@ -57,9 +64,39 @@ public class ServiceManager {
         serviceComponentActiveList.add(serviceComponent);
     }
 
+    public int initializeFromDB(){
+        // TODO: Da implementare
+        USE_DB = true;
+        dbHelper = new DbHelper(cn);
+        Log.d("Service Manager", "Found in DB " + dbHelper.numberOfConfigurations() + " configurations");
+        if (dbHelper.numberOfConfigurations()>0) {
+            Cursor cursor;
+            ArrayList<String> array_list = null;
+            Log.d("Service Manager", "Sono arrivato a prima del DBHELPER");
+            array_list = dbHelper.getAllConfigurationsWithoutOrder();
+
+            Log.d("Service Manager", "Sono arrivato a prima del FOR");
+
+            for (int i = 0; i < array_list.size(); i++) {
+                cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
+                int sensorType = cursor.getInt(cursor.getColumnIndex("type"));
+                int interval = cursor.getInt(cursor.getColumnIndex("time"));
+                int window = cursor.getInt(cursor.getColumnIndex("window"));
+
+                startScheduleService(sensorType, true, (long) interval, window);
+            }
+        }
+
+
+        return 0;
+    }
+
     public void removeServiceComponentActive(int sensorType) {
         for (int i = 0; i < serviceComponentActiveList.size(); i++) {
             if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
+                if (USE_DB) {
+                    dbHelper.deleteConfigurationById(serviceComponentActiveList.get(i).getSensorType());
+                }
                 serviceComponentActiveList.remove(i);
             }
         }
@@ -92,6 +129,17 @@ public class ServiceManager {
             }
         }
         return mList;
+    }
+
+    public ServiceComponent getServiceComponentActiveBySensorType(String name) {
+        ServiceComponent service = new ServiceComponent("NULL",true);
+
+        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
+            if (serviceComponentActiveList.get(i).getDysplayName() == name) {
+                service = serviceComponentActiveList.get(i);
+            }
+        }
+        return service;
     }
 
     public int populateServiceComponentList() {
@@ -315,6 +363,13 @@ public class ServiceManager {
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.cancel(scheduledIntent);
+    }
+
+    public void addScheduleServiceToDB(int typeSensor, boolean logging, long interval, int window) {
+        if (USE_DB) {
+            dbHelper.newConfiguration(getServiceComponentActiveBySensorType(typeSensor).getDysplayName(), typeSensor, (int) interval/1000, "sec", window/1000, false);
+            Log.d("Service Manager", "Found in DB " + dbHelper.numberOfConfigurations() + " configurations");
+        }
     }
 
 }

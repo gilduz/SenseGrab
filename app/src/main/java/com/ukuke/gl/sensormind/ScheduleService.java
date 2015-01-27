@@ -70,7 +70,9 @@ public class ScheduleService extends Activity {
         } catch (Exception e) {
             interval = 1000L;
         }
+        // TODO: Bisogna passare il window reale da immissione in testo
         ServiceManager.getInstance(ScheduleService.this).startScheduleService(typeSensor, chkLogging.isChecked(), interval, 1);
+        ServiceManager.getInstance(ScheduleService.this).addScheduleServiceToDB(typeSensor, chkLogging.isChecked(), interval, 1);
         Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);

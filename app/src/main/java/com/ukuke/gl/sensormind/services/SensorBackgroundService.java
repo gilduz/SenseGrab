@@ -33,6 +33,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     private int lastStartId;
 
+    private int window = 1;
+
+    int count=0;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -53,6 +56,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             // set sensortype from bundle
             if (args.containsKey(KEY_SENSOR_TYPE)) {
                 sensorType = args.getInt(KEY_SENSOR_TYPE);
+            }
+            if (args.containsKey(KEY_WINDOW)) {
+                window = args.getInt(KEY_WINDOW);
             }
             // optional logging
             logging = args.getBoolean(KEY_LOGGING);
@@ -85,7 +91,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onSensorChanged(SensorEvent event) {
         addFeedToList(event);
-        mSensorManager.unregisterListener(this,event.sensor);
+        count++;
+
+        // TODO: Bisogna fare counter differenziati per i vari sensori
+        if (count >= window) {
+            mSensorManager.unregisterListener(this, event.sensor);
+            count = 0;
+        }
         //stopSelfResult(lastStartId);
     }
 

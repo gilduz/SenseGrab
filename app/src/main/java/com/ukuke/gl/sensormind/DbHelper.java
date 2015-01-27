@@ -74,6 +74,7 @@ public class DbHelper extends SQLiteOpenHelper {
     // Adapter methods
 
     //NEW CONFIGURATION
+    //TODO: type deve essere un int per come è strutturato ora... poi si vedrà. ma per far le prove è meglio passarlo a int
     public boolean newConfiguration (String name, String type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
@@ -200,6 +201,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsWithoutOrder(){
+        // TODO: Non funziona... e se non ci sono configurazioni? controllare anche altri getallconf...
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();

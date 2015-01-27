@@ -1,6 +1,7 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -53,6 +54,13 @@ public class DeviceCapabilitiesActivity extends Activity {
         ArrayAdapter<ServiceManager.ServiceComponent> adapter = new MyListAdapter();
         ListView list = (ListView) findViewById(R.id.listViewDeviceCapabilities);
         list.setAdapter(adapter);
+    }
+
+    @Override
+    public void onBackPressed(){
+        //Your code here
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
     }
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
