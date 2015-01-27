@@ -114,7 +114,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public Cursor getConfCursorByName(String name){
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where "+Samp_conf_name+" = "+name, null );
+        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where "+Samp_conf_name+" = '"+name+"'", null );
         return res;
     }
 
@@ -204,11 +204,11 @@ public class DbHelper extends SQLiteOpenHelper {
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Log.d("DBHelper", "Sono arrivato a prima del Cursor");
+        //Log.d("DBHelper", "Sono arrivato a prima del Cursor");
 
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table, null);
 
-        Log.d("DBHelper", "Scorro il Cursor");
+        //Log.d("DBHelper", "Scorro il Cursor");
 
         res.moveToFirst();
         while(!res.isAfterLast()){
@@ -216,11 +216,11 @@ public class DbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
 
-        Log.d("DBHelper", "Chiudo il cursor");
+        //Log.d("DBHelper", "Chiudo il cursor");
 
         res.close();
 
-        Log.d("DBHelper", "Chiudo il db");
+        //Log.d("DBHelper", "Chiudo il db");
 
         db.close();
 
