@@ -85,8 +85,8 @@ public class ServiceManager {
 
             for (int i = 0; i < array_list.size(); i++) {
                 int k=i+1;
-                Log.d("Service Manager", "Cerco nel db l'id: "+ i);
-                cursor = dbHelper.getConfCursorById(k);
+                Log.d("Service Manager", "Cerco nel db: "+ array_list.get(i).toString());
+                cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
                 cursor.moveToFirst();
                 Log.d("Service Manager", "Ho aperto il cursor "+ cursor.getString(cursor.getColumnIndex(dbHelper.Samp_conf_name)));
                 int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
