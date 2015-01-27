@@ -54,6 +54,7 @@ public class ServiceManager {
         this.cn = cn;
         prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
         populateServiceComponentList();
+        initializeFromDB();
     }
 
     public List<ServiceComponent> getServiceComponentList() {
@@ -68,8 +69,9 @@ public class ServiceManager {
         // TODO: Da implementare
         USE_DB = true;
         dbHelper = new DbHelper(cn);
-        Log.d("Service Manager", "Found in DB " + dbHelper.numberOfConfigurations() + " configurations");
-        if (dbHelper.numberOfConfigurations()>0) {
+        int numConf = dbHelper.numberOfConfigurations();
+        Log.d("Service Manager", "Found in DB " + numConf + " configurations");
+        if (numConf > 0) {
             Cursor cursor;
             ArrayList<String> array_list = null;
             Log.d("Service Manager", "Sono arrivato a prima del DBHELPER");
@@ -78,10 +80,18 @@ public class ServiceManager {
             Log.d("Service Manager", "Sono arrivato a prima del FOR");
 
             for (int i = 0; i < array_list.size(); i++) {
-                cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
-                int sensorType = cursor.getInt(cursor.getColumnIndex("type"));
-                int interval = cursor.getInt(cursor.getColumnIndex("time"));
-                int window = cursor.getInt(cursor.getColumnIndex("window"));
+                int k=i+1;
+                Log.d("Service Manager", "Cerco nel db l'id: "+ i);
+                cursor = dbHelper.getConfCursorById(k);
+                cursor.moveToFirst();
+                Log.d("Service Manager", "Ho aperto il cursor "+ cursor.getString(cursor.getColumnIndex(dbHelper.Samp_conf_name)));
+                int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
+                int interval = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_time));
+                int window = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_window));
+
+                if (!cursor.isClosed()) {
+                    cursor.close();
+                }
 
                 startScheduleService(sensorType, true, (long) interval, window);
             }
@@ -367,8 +377,9 @@ public class ServiceManager {
 
     public void addScheduleServiceToDB(int typeSensor, boolean logging, long interval, int window) {
         if (USE_DB) {
-            dbHelper.newConfiguration(getServiceComponentActiveBySensorType(typeSensor).getDysplayName(), typeSensor, (int) interval/1000, "sec", window/1000, false);
-            Log.d("Service Manager", "Found in DB " + dbHelper.numberOfConfigurations() + " configurations");
+            String name= getServiceComponentActiveBySensorType(typeSensor).getDysplayName();
+            dbHelper.newConfiguration(name, typeSensor, (int) interval/1000, "sec", window/1000, false);
+            Log.d("Service Manager", "Added " + name);
         }
     }
 

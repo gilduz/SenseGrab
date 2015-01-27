@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.DatabaseUtils;
 import android.database.Cursor;
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -31,7 +33,7 @@ public class DbHelper extends SQLiteOpenHelper {
     // Sampling configurations columns
     public static final String Samp_conf_id = "id"; //int
     public static final String Samp_conf_name ="name"; //string
-    public static final String Samp_conf_type ="type"; //string
+    public static final String Samp_conf_type ="type"; //int
     public static final String Samp_conf_time ="time"; //int, sampling time
     public static final String Samp_conf_time_unit ="unit"; //int, 0 for sec, 1 for min
     public static final String Samp_conf_window ="window"; //int window for streaming sensors, must be less than sampling time
@@ -45,7 +47,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     private static final String Create_Conf_Table =
             "create table "+Samp_conf_table+"("+Samp_conf_id+" integer primary key autoincrement,"+
-                    Samp_conf_name+" text not null,"+Samp_conf_type+" text not null,"+
+                    Samp_conf_name+" text not null,"+Samp_conf_type+" integer not null,"+
                     Samp_conf_time+" integer not null,"+Samp_conf_time_unit+" integer not null,"+
                     Samp_conf_window+" integer,"+Samp_conf_gps+" integer not null,"+
                     Samp_conf_date+" datetime"+")";
@@ -75,7 +77,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     //NEW CONFIGURATION
     //TODO: type deve essere un int per come è strutturato ora... poi si vedrà. ma per far le prove è meglio passarlo a int
-    public boolean newConfiguration (String name, String type, int time, String unit, int window, boolean gps) {
+    public boolean newConfiguration (String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
@@ -105,17 +107,14 @@ public class DbHelper extends SQLiteOpenHelper {
     public Cursor getConfCursorById(int id){
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where id= "+id+"", null );
-        db.close();
+        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where id = "+id, null );
         return res;
     }
 
     public Cursor getConfCursorByName(String name){
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+
-                " where "+Samp_conf_name+" = "+name+"", null );
-        db.close();
+        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where "+Samp_conf_name+" = "+name, null );
         return res;
     }
 
@@ -123,12 +122,11 @@ public class DbHelper extends SQLiteOpenHelper {
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery( "select * from "+Samp_conf_table, null );
-        db.close();
         return res;
     }
 
     // UPDATE BY ID
-    public boolean updateConfigurationById(int id, String name, String type, int time, String unit, int window, boolean gps) {
+    public boolean updateConfigurationById(int id, String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
@@ -156,7 +154,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     // UPDATE BY NAME
-    public boolean updateConfigurationByName(String name, String type, int time, String unit, int window, boolean gps) {
+    public boolean updateConfigurationByName(String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
@@ -205,14 +203,29 @@ public class DbHelper extends SQLiteOpenHelper {
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
+
+        Log.d("DBHelper", "Sono arrivato a prima del Cursor");
+
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table, null);
-        db.close();
+
+        Log.d("DBHelper", "Scorro il Cursor");
+
         res.moveToFirst();
         while(!res.isAfterLast()){
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
+
+        Log.d("DBHelper", "Chiudo il cursor");
+
         res.close();
+
+        Log.d("DBHelper", "Chiudo il db");
+
+        db.close();
+
+        Log.d("DBHelper", "Ritorno");
+
         return array_list;
     }
 
@@ -238,13 +251,13 @@ public class DbHelper extends SQLiteOpenHelper {
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+Samp_conf_type+" asc", null);
-        db.close();
         res.moveToFirst();
         while(!res.isAfterLast()){
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
         res.close();
+        db.close();
         return array_list;
     }
 
@@ -255,13 +268,13 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+
                 Samp_conf_type+" asc, "+Samp_conf_name+" asc", null);
-        db.close();
         res.moveToFirst();
         while(!res.isAfterLast()){
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
         res.close();
+        db.close();
         return array_list;
     }
 
@@ -271,13 +284,13 @@ public class DbHelper extends SQLiteOpenHelper {
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table, null);
-        db.close();
         res.moveToFirst();
         while(!res.isAfterLast()){
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_type)));
             res.moveToNext();
         }
         res.close();
+        db.close();
         return array_list;
     }
 
@@ -288,13 +301,13 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+
                 Samp_conf_type+" asc", null);
-        db.close();
         res.moveToFirst();
         while(!res.isAfterLast()){
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_type)));
             res.moveToNext();
         }
         res.close();
+        db.close();
         return array_list;
     }
 
