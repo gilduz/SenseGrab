@@ -91,13 +91,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onSensorChanged(SensorEvent event) {
         addFeedToList(event);
-        count++;
+        //count++;
 
         // TODO: Bisogna fare counter differenziati per i vari sensori
-        if (count >= window) {
+       // if (count >= window) {
             mSensorManager.unregisterListener(this, event.sensor);
-            count = 0;
-        }
+      //      count = 0;
+      //  }
         //stopSelfResult(lastStartId);
     }
 

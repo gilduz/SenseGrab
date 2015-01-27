@@ -68,7 +68,7 @@ public class AddDeviceActivity extends Activity {
                                     int position, long id) {
                 ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position);
                 // Add service component to active services component
-                ServiceManager.getInstance(AddDeviceActivity.this).addServiceComponentActive(clickedServiceComponent);
+                //ServiceManager.getInstance(AddDeviceActivity.this).addServiceComponentActive(clickedServiceComponent);
                 // Come back to Main Activity
                 Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
                 intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position).getSensorType());

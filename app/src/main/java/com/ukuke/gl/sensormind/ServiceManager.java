@@ -62,7 +62,11 @@ public class ServiceManager {
     }
 
     public void addServiceComponentActive(ServiceComponent serviceComponent) {
-        serviceComponentActiveList.add(serviceComponent);
+        boolean alreadyExists;
+        Log.d("ADDSERVICE","SONO IN ADD");
+        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL" ) {
+            serviceComponentActiveList.add(serviceComponent);
+        }
     }
 
     public int initializeFromDB(){
@@ -93,6 +97,10 @@ public class ServiceManager {
                     cursor.close();
                 }
 
+                ServiceComponent service = getAvailableServiceComponentBySensorType( sensorType);
+
+                addServiceComponentActive(service);
+
                 startScheduleService(sensorType, true, (long) interval, window);
             }
         }
@@ -102,14 +110,15 @@ public class ServiceManager {
     }
 
     public void removeServiceComponentActive(int sensorType) {
+        if (USE_DB) {
+            dbHelper.deleteConfigurationByName(getServiceComponentActiveBySensorType(sensorType).getDysplayName());
+        }
         for (int i = 0; i < serviceComponentActiveList.size(); i++) {
             if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
-                if (USE_DB) {
-                    dbHelper.deleteConfigurationById(serviceComponentActiveList.get(i).getSensorType());
-                }
                 serviceComponentActiveList.remove(i);
             }
         }
+
     }
 
     public List<ServiceComponent> getServiceComponentActiveList() {
@@ -120,6 +129,18 @@ public class ServiceManager {
         ServiceComponent service = new ServiceComponent("NULL",false);
         for (int i = 0; i < serviceComponentActiveList.size(); i++) {
             service = serviceComponentActiveList.get(i);
+            if (service.getSensorType() == serviceType) {
+                return service;
+            }
+        }
+        ServiceComponent service_NULL = new ServiceComponent("NULL",false);
+        return service_NULL;
+    }
+
+    public ServiceComponent getAvailableServiceComponentBySensorType(int serviceType) {
+        ServiceComponent service = new ServiceComponent("NULL",false);
+        for (int i = 0; i < getAvailableServiceComponentList().size(); i++) {
+            service = getAvailableServiceComponentList().get(i);
             if (service.getSensorType() == serviceType) {
                 return service;
             }
@@ -378,7 +399,7 @@ public class ServiceManager {
     public void addScheduleServiceToDB(int typeSensor, boolean logging, long interval, int window) {
         if (USE_DB) {
             String name= getServiceComponentActiveBySensorType(typeSensor).getDysplayName();
-            dbHelper.newConfiguration(name, typeSensor, (int) interval/1000, "sec", window/1000, false);
+            dbHelper.newConfiguration(name, typeSensor, (int) interval, "sec", window, false);
             Log.d("Service Manager", "Added " + name);
         }
     }

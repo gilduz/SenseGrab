@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
 
-        //ServiceManager.getInstance(MainActivity.this).initializeFromDB();
+        ServiceManager.getInstance(MainActivity.this).initializeFromDB();
 
         // Search  services
         //int numAvailableServices = ServiceManager.getInstance(MainActivity.this).populateServiceComponentList();
