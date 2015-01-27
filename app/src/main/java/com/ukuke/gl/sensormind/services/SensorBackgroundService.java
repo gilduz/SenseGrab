@@ -109,7 +109,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         try {
             for (int i = 0; i < listFeed.size(); i++) {
                 currentFeed = listFeed.remove(i);
-                // TODO: Leo, qui devi salvare il currentfeed su DB
+                // TODO: Leo, qui devi salvare il currentfeed su DB. Anzi prima bisogna cambiare struttura... x caricare non è FeedJSON
                 feedsSaved++;
             }
         }catch (Exception e) {
