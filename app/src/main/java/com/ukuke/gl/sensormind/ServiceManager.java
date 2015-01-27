@@ -40,6 +40,12 @@ public class ServiceManager {
 
     DbHelper dbHelper;
 
+    ServiceManager (Context cn) {
+        this.cn = cn;
+        prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
+        populateServiceComponentList();
+        initializeFromDB();
+    }
 
     public static ServiceManager getInstance(Context cn){
         if(mInstance == null)
@@ -48,13 +54,6 @@ public class ServiceManager {
         }
 
         return mInstance;
-    }
-
-    ServiceManager (Context cn) {
-        this.cn = cn;
-        prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
-        populateServiceComponentList();
-        initializeFromDB();
     }
 
     public List<ServiceComponent> getServiceComponentList() {

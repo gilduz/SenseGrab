@@ -87,11 +87,6 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onDestroy() {
-
-    }
-
     public void onClickedToggle(View view) {
         ToggleButton toggleButton;
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
