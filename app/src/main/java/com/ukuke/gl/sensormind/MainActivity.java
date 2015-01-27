@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.hardware.SensorEvent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -108,6 +109,7 @@ public class MainActivity extends Activity {
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service.getSensorType());
             }
+            stopService(new Intent(this, SensorBackgroundService.class));
         }
 
 

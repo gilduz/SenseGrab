@@ -9,6 +9,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.support.FeedJSON;
 
@@ -154,6 +155,12 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     Log.d(TAG, listFeed.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 break;
         }
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        Toast.makeText(this, "SensorBackgroundService Stopped", Toast.LENGTH_LONG).show();
     }
 
 }
