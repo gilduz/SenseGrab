@@ -62,7 +62,6 @@ public class ServiceManager {
 
     public void addServiceComponentActive(ServiceComponent serviceComponent) {
         boolean alreadyExists;
-        Log.d("ADDSERVICE","SONO IN ADD");
         if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL" ) {
             serviceComponentActiveList.add(serviceComponent);
         }
@@ -77,17 +76,11 @@ public class ServiceManager {
         if (numConf > 0) {
             Cursor cursor;
             ArrayList<String> array_list = null;
-            Log.d("Service Manager", "Sono arrivato a prima del DBHELPER");
             array_list = dbHelper.getAllConfigurationsWithoutOrder();
-
-            Log.d("Service Manager", "Sono arrivato a prima del FOR");
-
             for (int i = 0; i < array_list.size(); i++) {
                 int k=i+1;
-                Log.d("Service Manager", "Cerco nel db: "+ array_list.get(i).toString());
                 cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
                 cursor.moveToFirst();
-                Log.d("Service Manager", "Ho aperto il cursor "+ cursor.getString(cursor.getColumnIndex(dbHelper.Samp_conf_name)));
                 int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
                 int interval = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_time));
                 int window = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_window));
@@ -97,9 +90,7 @@ public class ServiceManager {
                 }
 
                 ServiceComponent service = getAvailableServiceComponentBySensorType( sensorType);
-
                 addServiceComponentActive(service);
-
                 startScheduleService(sensorType, true, (long) interval, window);
             }
         }
@@ -399,7 +390,6 @@ public class ServiceManager {
         if (USE_DB) {
             String name= getServiceComponentActiveBySensorType(typeSensor).getDysplayName();
             dbHelper.newConfiguration(name, typeSensor, (int) interval, "sec", window, false);
-            Log.d("Service Manager", "Added " + name);
         }
     }
 
