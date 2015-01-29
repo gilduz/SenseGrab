@@ -9,8 +9,21 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Collect data"
+        android:id="@+id/toggleButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/listViewMain"
+        android:layout_alignEnd="@+id/listViewMain"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:onClick="onClickedToggle" />
+
     <ListView
         android:layout_width="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_height="wrap_content"
         android:id="@+id/listViewMain"
         android:layout_alignParentRight="true"
@@ -29,16 +42,6 @@
         android:onClick="onPlusCircleClicked"
         android:clickable="false" />
 
-    <ToggleButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Collect data"
-        android:id="@+id/toggleButton"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/listViewMain"
-        android:layout_alignEnd="@+id/listViewMain"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:onClick="onClickedToggle" />
+
 
 </RelativeLayout>
