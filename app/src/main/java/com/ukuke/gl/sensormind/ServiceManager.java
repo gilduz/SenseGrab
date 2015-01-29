@@ -37,7 +37,6 @@ public class ServiceManager {
     Context cn;
 
     private boolean USE_DB = false;
-
     DbHelper dbHelper;
 
     ServiceManager (Context cn) {
