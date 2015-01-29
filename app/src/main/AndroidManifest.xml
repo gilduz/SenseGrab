@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ukuke.gl.sensormind" >
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_group_work_white_48dp"
@@ -14,16 +17,16 @@
             android:name=".MainActivity"
             android:label="@string/app_name" >
             <intent-filter>
+
                 <!-- This is the launcher activity! -->
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="com.ukuke.gl.sensormind.ScheduleService"
+            android:name=".ScheduleService"
             android:label="@string/title_activity_schedule_service" >
-
         </activity>
         <activity
             android:name=".DeviceCapabilitiesActivity"
@@ -41,9 +44,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
         </activity>
+
         <service
-            android:name="com.ukuke.gl.sensormind.services.SensorBackgroundService"
-            android:label="@string/title_sensor_background_service">
+            android:name=".services.SensorBackgroundService"
+            android:label="@string/title_sensor_background_service" >
         </service>
 
         <activity
@@ -52,10 +56,25 @@
             android:parentActivityName=".AddDeviceActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.ukuke.gl.sensormind.AddDeviceActivity" />
+                android:value="com.ukuke.gl.sensormind.MainActivity" />
+        </activity>
+        <activity
+            android:name=".LogInActivity"
+            android:label="@string/title_activity_log_in"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ukuke.gl.sensormind.MainActivity" />
+
+        </activity>
+        <activity
+            android:name=".RegisterActivity"
+            android:label="@string/title_activity_register"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.ukuke.gl.sensormind.RegisterActivity" />
         </activity>
     </application>
-
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 </manifest>

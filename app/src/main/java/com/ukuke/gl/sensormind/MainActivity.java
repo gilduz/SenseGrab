@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.hardware.SensorEvent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
+import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,9 @@ public class MainActivity extends Activity {
 
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
+    SensormindAPI API = new SensormindAPI("test_2", "test_2");
+    private static final String TAG = SensorBackgroundService.class.getSimpleName();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,13 +81,13 @@ public class MainActivity extends Activity {
             startActivity(intent);
         }
         else if (id == R.id.action_test) {
-
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, SensorBackgroundService.class);
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.cancel(scheduledIntent);
+        }
 
+        else if (id == R.id.action_log_in) {
+            Intent intent = new Intent(this, LogInActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -179,6 +184,30 @@ public class MainActivity extends Activity {
 
             return itemView;
         }
+    }
+
+
+    private class register extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            boolean result;
+            result = API.registerNewAccount("Test_2_Name", "Test_2_Surname", "55", "test_2@test.com");
+            Log.d(TAG,"Result: " + result);
+            //API.createFeed("Test",false,null,"Test",1);
+            return "Executed";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
     }
 
 }

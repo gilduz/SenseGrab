@@ -33,7 +33,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     List<FeedJSON> listFeed = new ArrayList<FeedJSON>();
 
     private int lastStartId;
-
     private int window = 1;
 
     int count=0;
