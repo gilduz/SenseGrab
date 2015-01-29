@@ -40,23 +40,17 @@ public class SensormindAPI {
     public boolean registerNewAccount(String firstname, String lastname, String timezone, String email)
     {
         boolean ret = false;
-
         String content = "request={username:" + user + ",password:" + password + ",firstname:" + firstname + ",lastname:" + lastname + ",email:" + email + ",timezone:" + timezone + "}";
-
-        Log.d ("RISPOSTA SERVER: ", "Sto per richiedere msg");
-
         HTMLResponse res = null;
         try
         {
             res = makeHTTPRequest("GET", REGISTER_NEW_ACCOUNT, content);
-
             JsonObject jsonObject = null;
             jsonObject = new Gson().fromJson(res.getContent(),JsonObject.class);
             String s = jsonObject.get("success").getAsString();
             if (s.equals("true"))
                 ret = true;
         } catch (Exception e) { Log.d("API Sensormind: ", "ERR: " + e); }
-
 
         return ret;
     }
@@ -79,7 +73,6 @@ public class SensormindAPI {
                     ret = true;
 
                 }
-                Log.d("CREATE FEED","Creato?: " + ret);
             } catch (Exception e) {}
         }
         return ret;

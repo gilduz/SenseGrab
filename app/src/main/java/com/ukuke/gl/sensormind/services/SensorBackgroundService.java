@@ -35,7 +35,14 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private int lastStartId;
     private int window = 1;
 
-    int count=0;
+    int counterAccelerometer = 0;
+    int counterGyroscope = 0;
+    int counterMagnetometer = 0;
+
+    int windowAccelerometer = 1;
+    int windowGyroscope = 1;
+    int windowMagnetometer = 1;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -64,6 +71,19 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             logging = args.getBoolean(KEY_LOGGING);
         }
 
+
+        switch (sensorType) {
+            case Sensor.TYPE_ACCELEROMETER:
+                windowAccelerometer = window;
+                break;
+            case Sensor.TYPE_GYROSCOPE:
+                windowGyroscope = window;
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                windowMagnetometer = window;
+                break;
+        }
+
         //count++;
         Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
 
@@ -90,14 +110,42 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+
         addFeedToList(event);
         //count++;
 
-        // TODO: Bisogna fare counter differenziati per i vari sensori
-       // if (count >= window) {
-            mSensorManager.unregisterListener(this, event.sensor);
-      //      count = 0;
-      //  }
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
+                counterAccelerometer++;
+                if (counterAccelerometer >= windowAccelerometer) {
+                    mSensorManager.unregisterListener(this, event.sensor);
+                    counterAccelerometer = 0;
+                }
+                    break;
+            case Sensor.TYPE_GYROSCOPE:
+                counterGyroscope++;
+                if (counterGyroscope >= windowGyroscope) {
+                    mSensorManager.unregisterListener(this, event.sensor);
+                    counterGyroscope = 0;
+                }
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                counterMagnetometer++;
+                if (counterMagnetometer >= windowMagnetometer) {
+                    mSensorManager.unregisterListener(this, event.sensor);
+                    counterMagnetometer = 0;
+                }
+                break;
+            default:
+                mSensorManager.unregisterListener(this, event.sensor);
+        }
+
+
+
+        // if (count >= window) {
+
+        //      count = 0;
+        //  }
         //stopSelfResult(lastStartId);
     }
 

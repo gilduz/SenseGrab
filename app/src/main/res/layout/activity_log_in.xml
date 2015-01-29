@@ -71,6 +71,6 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp"
         android:onClick="onClickedRegisterButton"
-        android:textColor="#FF7A23" />
+        android:textColor="#1ABC9C" />
 
 </RelativeLayout>

@@ -38,7 +38,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_add_white_48dp"
-        app:cb_color="#FF7A23"
+        app:cb_color="#F6223F"
         android:onClick="onPlusCircleClicked"
         android:clickable="false" />
 
