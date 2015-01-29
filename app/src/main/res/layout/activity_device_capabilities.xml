@@ -9,6 +9,7 @@
 
     <TextView
         android:layout_width="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Your device is able to log these services. Go to the main screen to add a new log!"
@@ -18,6 +19,7 @@
 
     <ListView
         android:layout_width="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_height="wrap_content"
         android:id="@+id/listViewDeviceCapabilities"
         android:layout_alignParentLeft="true"
