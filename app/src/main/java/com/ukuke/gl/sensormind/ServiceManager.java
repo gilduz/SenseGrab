@@ -242,6 +242,7 @@ public class ServiceManager {
         boolean logging = false;
         long interval = 1000;
         int window = 1;
+        public List<Configuration> configurationList = new ArrayList<>();
 
         public void setLogging(boolean value) {
             this.logging = value;
@@ -265,6 +266,48 @@ public class ServiceManager {
 
         public int getWindow() {
             return window;
+        }
+
+        public int addConfiguration(String configurationName, long interval, int window) {
+            // Se egiste già con lo stesso nome ritorna -1
+            for (int i = 0; i < configurationList.size(); i++) {
+                if (configurationList.get(i).getConfigurationName() == configurationName) {
+                    return -1;
+                }
+            }
+            // Altrimenti aggiungi
+            configurationList.add(new Configuration(configurationName, interval, window));
+            return configurationList.size();
+        }
+
+        public Configuration getConfiguration(String configurationName) {
+            for (int i = 0; i < configurationList.size(); i++) {
+                if (configurationList.get(i).getConfigurationName() == configurationName) {
+                    return configurationList.get(i);
+                }
+            }
+            return null;
+        }
+
+        public Configuration getConfiguration(int id) {
+            if (configurationList.size()>id) {
+                return configurationList.get(id);
+            }
+            return null;
+        }
+
+        public int getConfigurationSize() {
+            return configurationList.size();
+        }
+
+        public int removeConfiguration(String configurationName) {
+            for (int i = 0; i < configurationList.size(); i++) {
+                if (configurationList.get(i).getConfigurationName() == configurationName) {
+                    configurationList.remove(i);
+                    return i;
+                }
+            }
+            return -1;
         }
 
         ServiceComponent(String dysplayName, boolean exists) {
@@ -311,6 +354,7 @@ public class ServiceManager {
             }
 
 
+
         }
 
         public int getSensorType() {
@@ -335,6 +379,25 @@ public class ServiceManager {
 
         public boolean getExists() {
             return  exists;
+        }
+
+        public class Configuration {
+
+            Configuration(String configurationName, long interval, int window) {
+                this.configurationName = configurationName;
+                this.interval = interval;
+                this.window = window;
+            }
+            private long interval = 1000;
+            private int window = 1;
+            private String configurationName;
+
+            public long getInterval() { return interval; }
+            public int getWindow() { return  window; }
+            public String getConfigurationName() { return configurationName; }
+            public void setInterval(long interval) { this.interval = interval; }
+            public void setWindow(int window) { this.window = window; }
+            public void setConfigurationName(String configurationName) { this.configurationName = configurationName; }
         }
     }
 
