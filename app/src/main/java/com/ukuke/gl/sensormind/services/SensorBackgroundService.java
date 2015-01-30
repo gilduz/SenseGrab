@@ -155,12 +155,12 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     }
 
     // Call saveListFeedOnDB somethimes to transfer data on database
-    public int saveListSampleOnDb() {
+    public synchronized int saveListSampleOnDb() {
         // TODO: Leo qui è dove richiamo il tuo metodo passandogli listDataSample
         return -1;
     }
 
-    private void addDataSampleToList(SensorEvent event) {
+    public synchronized void addDataSampleToList(SensorEvent event) {
 
         DataSample dataSample;
         dataSample = new DataSample(event.sensor.getName(), event.values[1], event.timestamp*1000, lastLongitude, lastLongitude);
