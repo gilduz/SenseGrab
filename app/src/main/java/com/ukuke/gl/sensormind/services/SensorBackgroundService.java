@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.ServiceManager;
+import com.ukuke.gl.sensormind.support.DataSample;
 import com.ukuke.gl.sensormind.support.FeedJSON;
 
 import java.util.ArrayList;
@@ -31,12 +32,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_LOGGING = "logging";
     public static final String KEY_WINDOW = "num_samples";
 
-    private List<ServiceManager.DataSample> listDataSample = new ArrayList<>();
-
-    List<FeedJSON> listFeed = new ArrayList<FeedJSON>();
+    private List<DataSample> listDataSample = new ArrayList<>();
 
     private int lastStartId;
     private int window = 1;
+
+    private float lastLatitude;
+    private float lastLongitude;
 
     int counterAccelerometer = 0;
     int counterGyroscope = 0;
@@ -114,7 +116,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onSensorChanged(SensorEvent event) {
 
-        addFeedToList(event);
+        addDataSampleToList(event);
         //count++;
 
         switch (event.sensor.getType()) {
@@ -153,56 +155,46 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     }
 
     // Call saveListFeedOnDB somethimes to transfer data on database
-    public int saveListFeedOnDB() {
-        int feedsSaved = 0;
-        FeedJSON currentFeed;
-
-        try {
-            for (int i = 0; i < listFeed.size(); i++) {
-                currentFeed = listFeed.remove(i);
-                // TODO: Leo, qui devi salvare il currentfeed su DB. Anzi prima bisogna cambiare struttura... x caricare non è FeedJSON
-                feedsSaved++;
-            }
-        }catch (Exception e) {
-            Log.e(TAG, "Error saving on DB: " + e);
-        }
-
-        return feedsSaved;
+    public int saveListSampleOnDb() {
+        // TODO: Leo qui è dove richiamo il tuo metodo passandogli listDataSample
+        return -1;
     }
 
-    private void addFeedToList(SensorEvent event) {
-        // TODO: Creare un feed ed aggiungerlo alla feedList prima di ogni if(logging)
+    private void addDataSampleToList(SensorEvent event) {
 
-        listFeed.add(new FeedJSON("Ciao", false, "Stringa", "Stringa", 1));
+        DataSample dataSample;
+        dataSample = new DataSample(event.sensor.getName(), event.values[1], event.timestamp*1000, lastLongitude, lastLongitude);
+
+        listDataSample.add(dataSample);
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
                 if (logging)
-                    Log.d(TAG, listFeed.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
+                    Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
-                    Log.d(TAG, listFeed.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
+                    Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
-                    Log.d(TAG, listFeed.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
+                    Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
-                    Log.d(TAG, listFeed.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
+                    Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
-                    Log.d(TAG, listFeed.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
-                    Log.d(TAG, listFeed.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
-                    Log.d(TAG, listFeed.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 break;
         }
     }
