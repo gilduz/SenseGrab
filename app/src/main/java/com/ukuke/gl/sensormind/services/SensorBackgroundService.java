@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.ukuke.gl.sensormind.ServiceManager;
 import com.ukuke.gl.sensormind.support.FeedJSON;
 
 import java.util.ArrayList;
@@ -29,6 +30,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_SENSOR_TYPE = "sensor_type";
     public static final String KEY_LOGGING = "logging";
     public static final String KEY_WINDOW = "num_samples";
+
+    private List<ServiceManager.DataSample> listDataSample = new ArrayList<>();
 
     List<FeedJSON> listFeed = new ArrayList<FeedJSON>();
 
@@ -170,7 +173,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private void addFeedToList(SensorEvent event) {
         // TODO: Creare un feed ed aggiungerlo alla feedList prima di ogni if(logging)
 
-        listFeed.add(new FeedJSON("Ciao",false,"Stringa","Stringa",1));
+        listFeed.add(new FeedJSON("Ciao", false, "Stringa", "Stringa", 1));
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
