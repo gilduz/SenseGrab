@@ -16,7 +16,7 @@ import java.util.Locale;
 import static java.lang.System.*;
 
 /**
- *   Created by Leonardo on 21/01/2015.
+ *   Created by Leonardo on 30/01/2015.
  */
 public class DataDbHelper extends SQLiteOpenHelper {
 
@@ -66,7 +66,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
         // create new tables
         onCreate(db);
     }
-
 
     // Adapter methods
 

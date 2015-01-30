@@ -242,6 +242,7 @@ public class ServiceManager {
         boolean logging = false;
         long interval = 1000;
         int window = 1;
+
         public List<Configuration> configurationList = new ArrayList<>();
 
         public void setLogging(boolean value) {
@@ -268,7 +269,7 @@ public class ServiceManager {
             return window;
         }
 
-        public int addConfiguration(String configurationName, long interval, int window) {
+        public int addConfiguration(String configurationName, long interval, int window, boolean attachGPS) {
             // Se egiste già con lo stesso nome ritorna -1
             for (int i = 0; i < configurationList.size(); i++) {
                 if (configurationList.get(i).getConfigurationName() == configurationName) {
@@ -276,7 +277,7 @@ public class ServiceManager {
                 }
             }
             // Altrimenti aggiungi
-            configurationList.add(new Configuration(configurationName, interval, window));
+            configurationList.add(new Configuration(configurationName, interval, window, attachGPS));
             return configurationList.size();
         }
 
@@ -383,14 +384,16 @@ public class ServiceManager {
 
         public class Configuration {
 
-            Configuration(String configurationName, long interval, int window) {
+            Configuration(String configurationName, long interval, int window, boolean attachGPS) {
                 this.configurationName = configurationName;
                 this.interval = interval;
                 this.window = window;
+                this.attachGPS = attachGPS;
             }
             private long interval = 1000;
             private int window = 1;
             private String configurationName;
+            private boolean attachGPS;
 
             public long getInterval() { return interval; }
             public int getWindow() { return  window; }
@@ -398,6 +401,10 @@ public class ServiceManager {
             public void setInterval(long interval) { this.interval = interval; }
             public void setWindow(int window) { this.window = window; }
             public void setConfigurationName(String configurationName) { this.configurationName = configurationName; }
+        }
+
+        public class DataSample {
+            // TODO: LEO Questo è il dato
         }
     }
 
