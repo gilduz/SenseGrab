@@ -241,6 +241,8 @@ public class ServiceManager {
         long interval = 1000;
         int window = 1;
 
+        Configuration activeConfiguration = null;
+
         public List<Configuration> configurationList = new ArrayList<>();
 
         public void setLogging(boolean value) {

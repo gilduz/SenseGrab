@@ -177,18 +177,20 @@
         android:layout_alignRight="@+id/scrollView"
         android:maxWidth="150sp"
         android:minWidth="100sp"
-        android:text="@string/conf_saveButton" />
+        android:text="@string/conf_saveButton"
+        style="?android:buttonBarButtonStyle"/>
 
     <Button
         android:id="@+id/Conf_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:maxWidth="150sp"
         android:minWidth="100sp"
-        android:text="@string/conf_deleteButton" />
+        android:text="@string/conf_deleteButton"
+        style="?android:buttonBarButtonStyle"
+        android:layout_alignParentBottom="true" />
 
 
 </RelativeLayout>

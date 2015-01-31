@@ -99,7 +99,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             }
         }
 
-
         //TODO: Bisognerebbe aggiornare la posizione in background con asynktask
         // Se voglio aggiungere la posizione ed è passato l'intervallo minimo per l'aggiornamento
         if ((attachGPS) && (System.currentTimeMillis() > (timeOfLastLocationUpdateMs + INTERVAL_UPDATE_LOCATION_MS))) {
@@ -189,43 +188,43 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             case Sensor.TYPE_LIGHT:
                 if (logging)
                     Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], event.values[3], event.values[3], event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], event.values[1], event.values[2], event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], event.values[3], event.values[3], event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], event.values[1], event.values[2], event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[1], event.values[3], event.values[3], event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(event.sensor.getName(), event.values[0], event.values[1], event.values[2], event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
         }

@@ -41,7 +41,7 @@
         android:layout_below="@+id/editText_username"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="0dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:gravity="center"
@@ -57,7 +57,7 @@
         android:layout_below="@+id/editText_password"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="0dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:gravity="center"
@@ -73,7 +73,7 @@
         android:layout_below="@+id/editText_firstName"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="0dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:gravity="center"
@@ -89,7 +89,7 @@
         android:layout_below="@+id/editText_lastName"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="0dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:gravity="center"
@@ -104,10 +104,11 @@
         android:layout_below="@+id/editText_email"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="24dp"
         android:layout_alignRight="@+id/editText_email"
         android:layout_alignEnd="@+id/editText_email"
-        android:onClick="onClickedRegisterButton" />
+        android:onClick="onClickedRegisterButton"
+        android:background="@drawable/color_green_dark"/>
 
 
 </RelativeLayout>

@@ -41,7 +41,7 @@
         android:layout_below="@+id/editText_username"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="0dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:textAlignment="center" />
@@ -57,9 +57,8 @@
         android:layout_marginTop="24dp"
         android:layout_alignRight="@+id/editText_password"
         android:layout_alignEnd="@+id/editText_password"
-        android:onClick="onClickedLogInButton" />
-
-
+        android:onClick="onClickedLogInButton"
+        android:background="@drawable/color_green_dark" />
 
     <TextView
         android:layout_width="wrap_content"
