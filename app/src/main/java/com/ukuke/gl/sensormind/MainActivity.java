@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
-                ServiceManager.getInstance(MainActivity.this).startScheduleService(service.getSensorType());
+                ServiceManager.getInstance(MainActivity.this).startScheduleService(service);
             }
 
         }
@@ -112,7 +112,7 @@ public class MainActivity extends Activity {
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
-                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service.getSensorType());
+                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
             }
             stopService(new Intent(this, SensorBackgroundService.class));
         }
@@ -148,7 +148,7 @@ public class MainActivity extends Activity {
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
                 // Come back to Main Activity
-                Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
+                Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
                 intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getSensorType());
                 intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
                 startActivity(intent);

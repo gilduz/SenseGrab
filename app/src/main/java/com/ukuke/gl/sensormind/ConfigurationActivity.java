@@ -1,14 +1,18 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.hardware.Sensor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ConfigurationActivity extends Activity {
 
@@ -28,12 +32,22 @@ public class ConfigurationActivity extends Activity {
     int progressSamp = 5;
     int progressWin = 5;
 
+    // Gildo
+    private Intent intentAddDevice;
+    private int typeSensor;
+    private boolean logging = true;
+    private ServiceManager.ServiceComponent serviceComponent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
 
 
+        intentAddDevice = getIntent();
+        typeSensor = intentAddDevice.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
+
+        serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getAvailableServiceComponentBySensorType(typeSensor);
 
         // seek bars and relative value views
         seekSamp = (SeekBar) findViewById(R.id.Conf_Sam_seekBar);
@@ -109,6 +123,48 @@ public class ConfigurationActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onButtonSaveClicked(View view) {
+        long interval;
+        int window = 1;
+        try {
+            interval = seekSamp.getProgress();
+            window = seekSamp.getProgress();
+        } catch (Exception e) {
+            interval = 1000L;
+        }
+        // TODO: Non è stato fatto sec/min
+        ServiceManager.ServiceComponent.Configuration configuration = new ServiceManager.ServiceComponent.Configuration();
+        configuration.setInterval(interval);
+        configuration.setWindow(window);
+        configuration.setConfigurationName(confName.getText().toString());
+        configuration.setPath("/Path/1");
+        configuration.setAttachGPS(gpsSwitch.isActivated());
+
+        ServiceManager.ServiceComponent component;
+        component = ServiceManager.getInstance(ConfigurationActivity.this).getAvailableServiceComponentBySensorType(typeSensor);
+
+        component.removeConfiguration(confName.getText().toString());
+        component.addConfiguration(configuration);
+        component.setActiveConfiguration(configuration);
+
+        ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
+        ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
+        ServiceManager.getInstance(ConfigurationActivity.this).addConfigurationServiceToDB(serviceComponent, configuration);
+
+        Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();
+        Intent intentMain = new Intent(this, MainActivity.class);
+        startActivity(intentMain);
+    }
+
+    public void onButtonDeleteClicked(View view) {
+        ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
+        ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+        Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
+        Intent intentMain = new Intent(this, MainActivity.class);
+        startActivity(intentMain);
+
     }
 
     //TODO aggiungere metodo saveOrUpdate() che differenzia a seconda di getextras (persare se settare una variabile invece che usare 2 volte getextras

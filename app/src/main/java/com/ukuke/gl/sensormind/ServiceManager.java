@@ -65,6 +65,8 @@ public class ServiceManager {
         }
     }
 
+
+
     public int initializeFromDB(){
         // TODO: Da implementare
         // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
@@ -80,6 +82,7 @@ public class ServiceManager {
                 int k=i+1;
                 cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
                 cursor.moveToFirst();
+
                 int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
                 int interval = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_time));
                 int window = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_window));
@@ -88,9 +91,21 @@ public class ServiceManager {
                     cursor.close();
                 }
 
-                ServiceComponent service = getAvailableServiceComponentBySensorType( sensorType);
-                addServiceComponentActive(service);
-                startScheduleService(sensorType, true, (long) interval, window);
+                ServiceComponent service = getAvailableServiceComponentBySensorType(sensorType);
+                ServiceComponent.Configuration configuration;
+                configuration = new ServiceComponent.Configuration();
+
+                configuration.setInterval(interval);
+                configuration.setConfigurationName("DAMMI UN NOME");
+                configuration.setPath("/Path/1");
+                configuration.setAttachGPS(true);
+                configuration.setWindow(window);
+
+                service.addConfiguration(configuration); //TODO: Prendere il gps da database
+                service.setActiveConfiguration(configuration);
+                addServiceComponentActive(service); // TODO: Gestire + configurazioni in un servizio
+
+                startScheduleService(service);
             }
         }
 
@@ -230,7 +245,7 @@ public class ServiceManager {
         return numAvailableServices;
     }
 
-    public class ServiceComponent {
+    public static class ServiceComponent {
         // Object to describe a component
         private String dysplayName;
         private boolean exists;
@@ -238,38 +253,16 @@ public class ServiceManager {
         private int componentImageID;
         private int sensorType;
         boolean logging = false;
-        long interval = 1000;
-        int window = 1;
 
         Configuration activeConfiguration = null;
 
         public List<Configuration> configurationList = new ArrayList<>();
 
-        public void setLogging(boolean value) {
-            this.logging = value;
+        public void setActiveConfiguration(Configuration activeConfiguration) {
+            this.activeConfiguration = activeConfiguration;
         }
 
-        public void setInterval(long interval) {
-            this.interval = interval;
-        }
-
-        public void setWindow(int window) {
-            this.window = window;
-        }
-
-        public boolean getLogging() {
-            return logging;
-        }
-
-        public long getInterval() {
-            return interval;
-        }
-
-        public int getWindow() {
-            return window;
-        }
-
-        public int addConfiguration(String configurationName, long interval, int window, boolean attachGPS) {
+        public int addConfiguration(String configurationName, String path, long interval, int window, boolean attachGPS) {
             // Se egiste già con lo stesso nome ritorna -1
             for (int i = 0; i < configurationList.size(); i++) {
                 if (configurationList.get(i).getConfigurationName() == configurationName) {
@@ -277,9 +270,11 @@ public class ServiceManager {
                 }
             }
             // Altrimenti aggiungi
-            configurationList.add(new Configuration(configurationName, interval, window, attachGPS));
+            configurationList.add(new Configuration(configurationName, path, interval, window, attachGPS));
             return configurationList.size();
         }
+
+        public void addConfiguration(Configuration configuration) {configurationList.add(configuration);}
 
         public Configuration getConfiguration(String configurationName) {
             for (int i = 0; i < configurationList.size(); i++) {
@@ -366,10 +361,6 @@ public class ServiceManager {
             return availableImageID;
         }
 
-        public boolean isScanDone() {
-            return scanDone;
-        }
-
         public int getComponentImageID() {
             return componentImageID;
         }
@@ -382,39 +373,50 @@ public class ServiceManager {
             return  exists;
         }
 
-        public class Configuration {
+        public Configuration getActiveConfiguration() {
+            return activeConfiguration;
+        }
 
-            Configuration(String configurationName, long interval, int window, boolean attachGPS) {
+        public static class Configuration {
+
+            Configuration(){}
+            Configuration(String configurationName, String path, long interval, int window, boolean attachGPS) {
                 this.configurationName = configurationName;
                 this.interval = interval;
                 this.window = window;
                 this.attachGPS = attachGPS;
+                this.path = path;
             }
             private long interval = 1000;
             private int window = 1;
             private String configurationName;
+            private String path;
             private boolean attachGPS;
 
+            public String getPath() { return path;}
+            public void setPath(String path) { this.path = path;}
             public long getInterval() { return interval; }
             public int getWindow() { return  window; }
             public String getConfigurationName() { return configurationName; }
             public void setInterval(long interval) { this.interval = interval; }
             public void setWindow(int window) { this.window = window; }
             public void setConfigurationName(String configurationName) { this.configurationName = configurationName; }
+
+            public void setAttachGPS(boolean attachGPS) {
+                this.attachGPS = attachGPS;
+            }
         }
     }
 
     // Service related methods
 
-    public void startScheduleService(int typeSensor) {
-        startScheduleService(typeSensor, getServiceComponentActiveBySensorType(typeSensor).getLogging(), getServiceComponentActiveBySensorType(typeSensor).getInterval(), getServiceComponentActiveBySensorType(typeSensor).getWindow());
-    }
+//    public void startScheduleService(int typeSensor) {
+//        startScheduleService(typeSensor, true, getServiceComponentActiveBySensorType(typeSensor).activeConfiguration.getInterval(), getServiceComponentActiveBySensorType(typeSensor).activeConfiguration.getWindow());
+//    }
 
-    public void startScheduleService(int typeSensor, boolean logging, long interval, int window) {
-
-        getServiceComponentActiveBySensorType(typeSensor).setInterval(interval);
-        getServiceComponentActiveBySensorType(typeSensor).setLogging(logging);
-        getServiceComponentActiveBySensorType(typeSensor).setWindow(window);
+    public void startScheduleService(ServiceComponent component) {
+        ServiceComponent.Configuration configuration;
+        configuration = component.getActiveConfiguration();
 
         if (prefs.getBoolean("enableGrabbing",true)) {
 
@@ -424,15 +426,15 @@ public class ServiceManager {
             Bundle args = new Bundle();
 
             try {
-                args.putBoolean(SensorBackgroundService.KEY_LOGGING, logging);
+                args.putBoolean(SensorBackgroundService.KEY_LOGGING, true);
             } catch (Exception e) {
             }
             try {
-                args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, typeSensor);
+                args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, component.getSensorType());
             } catch (Exception e) {
             }
             try {
-                args.putInt(SensorBackgroundService.KEY_WINDOW, window);
+                args.putInt(SensorBackgroundService.KEY_WINDOW, configuration.getWindow());
             } catch (Exception e) {
             }
 
@@ -440,23 +442,39 @@ public class ServiceManager {
 
             // Start the service
 
-            PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+            PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), configuration.getInterval(), scheduledIntent);
         }
     }
 
-    public void stopScheduleService(int typeSensor) {
+//
+
+    public void stopScheduleService(ServiceComponent component) {
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.cancel(scheduledIntent);
     }
 
-    public void addScheduleServiceToDB(int typeSensor, boolean logging, long interval, int window) {
+//    public void stopScheduleService(int typeSensor) {
+//        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+//        Intent intent = new Intent(cn, SensorBackgroundService.class);
+//        PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        scheduler.cancel(scheduledIntent);
+//    }
+
+    public void addConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration) {
+        //TODO: Aggiungere conf a DB
         if (USE_DB) {
-            String name= getServiceComponentActiveBySensorType(typeSensor).getDysplayName();
-            dbHelper.newConfiguration(name, typeSensor, (int) interval, "sec", window, false);
+            dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
         }
     }
+
+//    public void addScheduleServiceToDB(int typeSensor, boolean logging, long interval, int window) {
+//        if (USE_DB) {
+//            String name= getServiceComponentActiveBySensorType(typeSensor).getDysplayName();
+//            dbHelper.newConfiguration(name, typeSensor, (int) interval, "sec", window, false);
+//        }
+//    }
 
 }

@@ -3,7 +3,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -178,7 +177,8 @@
         android:maxWidth="150sp"
         android:minWidth="100sp"
         android:text="@string/conf_saveButton"
-        style="?android:buttonBarButtonStyle"/>
+        style="?android:buttonBarButtonStyle"
+        android:onClick="onButtonSaveClicked" />
 
     <Button
         android:id="@+id/Conf_delete"
@@ -190,7 +190,8 @@
         android:minWidth="100sp"
         android:text="@string/conf_deleteButton"
         style="?android:buttonBarButtonStyle"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:onClick="onButtonDeleteClicked" />
 
 
 </RelativeLayout>

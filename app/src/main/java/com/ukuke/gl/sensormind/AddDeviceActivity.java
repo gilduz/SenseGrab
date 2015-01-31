@@ -70,8 +70,12 @@ public class AddDeviceActivity extends Activity {
                 // Add service component to active services component
                 //ServiceManager.getInstance(AddDeviceActivity.this).addServiceComponentActive(clickedServiceComponent);
                 // Come back to Main Activity
-                Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
+                //Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
+                //intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position).getSensorType());
+
+                Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
                 intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position).getSensorType());
+
                 startActivity(intent);
             }
         });
