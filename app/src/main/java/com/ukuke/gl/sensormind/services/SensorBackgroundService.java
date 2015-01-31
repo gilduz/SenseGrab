@@ -6,23 +6,26 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.ukuke.gl.sensormind.ServiceManager;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationServices;
 import com.ukuke.gl.sensormind.support.DataSample;
-import com.ukuke.gl.sensormind.support.FeedJSON;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
  * for a background service not linked to an activity it's important to use the command approach
  * instead of the Binder. For starting use the alarm manager
  */
-public class SensorBackgroundService extends Service implements SensorEventListener {
+public class SensorBackgroundService extends Service implements SensorEventListener, GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener {
 
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     private SensorManager mSensorManager = null;
@@ -31,14 +34,22 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_SENSOR_TYPE = "sensor_type";
     public static final String KEY_LOGGING = "logging";
     public static final String KEY_WINDOW = "num_samples";
+    public static final String KEY_ATTACH_GPS = "attach_gps";
+    public static final String KEY_PERFORM_DATABASE_TRANSFER = "attach_gps";
+
+    public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
+    private long timeOfLastLocationUpdateMs = 0;
 
     private List<DataSample> listDataSample = new ArrayList<>();
 
     private int lastStartId;
-    private int window = 1;
 
-    private float lastLatitude;
-    private float lastLongitude;
+    private Double lastLatitude;
+    private Double lastLongitude;
+    private boolean attachGPS;
+
+    GoogleApiClient mGoogleApiClient;
+    Location mLastLocation;
 
     int counterAccelerometer = 0;
     int counterGyroscope = 0;
@@ -62,41 +73,50 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         Bundle args = intent.getExtras();
 
+        boolean launchSensorAcquisition = false;
+        int window = 1;
+
+
         // get some properties from the intent
         if (args != null) {
-
-            // set sensortype from bundle
             if (args.containsKey(KEY_SENSOR_TYPE)) {
                 sensorType = args.getInt(KEY_SENSOR_TYPE);
+                launchSensorAcquisition = true;
             }
             if (args.containsKey(KEY_WINDOW)) {
                 window = args.getInt(KEY_WINDOW);
             }
-            // optional logging
-            logging = args.getBoolean(KEY_LOGGING);
+            if (args.containsKey(KEY_ATTACH_GPS)) {
+                attachGPS = args.getBoolean(KEY_ATTACH_GPS);
+            }
+            if (args.containsKey(KEY_LOGGING)) {
+                logging = args.getBoolean(KEY_LOGGING);
+            }
+            if (args.containsKey(KEY_PERFORM_DATABASE_TRANSFER)) {
+                if (args.getBoolean(KEY_PERFORM_DATABASE_TRANSFER)) {
+                    saveListSampleOnDb();
+                };
+            }
         }
 
 
-        switch (sensorType) {
-            case Sensor.TYPE_ACCELEROMETER:
-                windowAccelerometer = window;
-                break;
-            case Sensor.TYPE_GYROSCOPE:
-                windowGyroscope = window;
-                break;
-            case Sensor.TYPE_MAGNETIC_FIELD:
-                windowMagnetometer = window;
-                break;
+        //TODO: Bisognerebbe aggiornare la posizione in background con asynktask
+        // Se voglio aggiungere la posizione ed è passato l'intervallo minimo per l'aggiornamento
+        if ((attachGPS) && (System.currentTimeMillis() > (timeOfLastLocationUpdateMs + INTERVAL_UPDATE_LOCATION_MS))) {
+            updateLocation();
+            timeOfLastLocationUpdateMs = System.currentTimeMillis();
+        };
+
+        // Se negli extra c'è il tipo di sensore lancia acquisizione sensore
+        if (launchSensorAcquisition) {
+            switch (sensorType) {
+                case Sensor.TYPE_ACCELEROMETER: windowAccelerometer = window; break;
+                case Sensor.TYPE_GYROSCOPE: windowGyroscope = window; break;
+                case Sensor.TYPE_MAGNETIC_FIELD: windowMagnetometer = window; break;
+            }
+            Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
+            mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
-
-        //count++;
-        Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
-
-
-        mSensorManager.registerListener(this, sensor,  SensorManager.SENSOR_DELAY_NORMAL);
-
-        //Log.d(TAG,"Registrato sensore: " + sensor.getName());
-
         return START_STICKY;
     }
 
@@ -117,7 +137,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public void onSensorChanged(SensorEvent event) {
 
         addDataSampleToList(event);
-        //count++;
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
@@ -126,7 +145,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     mSensorManager.unregisterListener(this, event.sensor);
                     counterAccelerometer = 0;
                 }
-                    break;
+                break;
             case Sensor.TYPE_GYROSCOPE:
                 counterGyroscope++;
                 if (counterGyroscope >= windowGyroscope) {
@@ -145,58 +164,74 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 mSensorManager.unregisterListener(this, event.sensor);
         }
 
-
-
-        // if (count >= window) {
-
-        //      count = 0;
-        //  }
-        //stopSelfResult(lastStartId);
     }
 
     // Call saveListFeedOnDB somethimes to transfer data on database
     public synchronized int saveListSampleOnDb() {
-        // TODO: Leo qui è dove richiamo il tuo metodo passandogli listDataSample
+        // TODO: Leo qui è dove richiamo il tuo metodo del DB passandogli listDataSample
         return -1;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        timeOfLastLocationUpdateMs = System.currentTimeMillis();
+        buildGoogleApiClient();
     }
 
     public synchronized void addDataSampleToList(SensorEvent event) {
 
         DataSample dataSample;
-        dataSample = new DataSample(event.sensor.getName(), event.values[1], event.timestamp*1000, lastLongitude, lastLongitude);
-
+        dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
         listDataSample.add(dataSample);
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
                 if (logging)
                     Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], event.values[3], event.values[3], event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], event.values[3], event.values[3], event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                dataSample = new DataSample(event.sensor.getName(), event.values[1], event.values[3], event.values[3], event.timestamp*1000, lastLongitude, lastLongitude);
+                listDataSample.add(dataSample);
                 break;
         }
+
+        // Print to log the location
+        if (attachGPS) {Log.d(TAG, "Location: LAT " + lastLatitude + " LONG " + lastLongitude);};
     }
 
     @Override
@@ -205,4 +240,34 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         Toast.makeText(this, "SensorBackgroundService Stopped", Toast.LENGTH_LONG).show();
     }
 
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                //.addConnectionCallbacks(this)
+                //.addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        updateLocation();
+    }
+
+    public void updateLocation() {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (mLastLocation != null) {
+            lastLatitude = mLastLocation.getLatitude();
+            lastLatitude = mLastLocation.getLongitude();
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        //TODO: Se la connessione fallisce....che si fa?
+    }
+
+    @Override
+    public void onDisconnected() {
+        // Nothing to do...
+    }
 }
