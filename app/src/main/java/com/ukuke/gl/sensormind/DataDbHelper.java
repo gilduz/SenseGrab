@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.ukuke.gl.sensormind.support.DataSample;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,7 +37,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public static final String Data_long ="longitude"; //real //TODO: Gildo, il real è 8 bytes in SQLite, la stringa direi di più, confermi?
     public static final String Data_lat ="latitude"; //real
     public static final String Data_timestamp ="timestamp"; //int , SQLite has an integer format stored in 1, 2, 3, 4, 6, or 8 bytes
-    public static final String Data_idFeed ="idFeed"; //int for comparison with another table
+    public static final String Data_idFeed ="idFeed"; //String
     public static final String Data_sent ="sent"; //int, 1 for sent, 0 if it has to be sent
 
     // String to create table
@@ -44,7 +46,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
                     Data_value1+" real not null,"+Data_value2+" real,"+
                     Data_value3+" real,"+Data_arrayCount+" integer,"+
                     Data_long+" real,"+Data_lat+" real,"+
-                    Data_timestamp+" integer"+Data_idFeed+" integer not null"+
+                    Data_timestamp+" integer"+Data_idFeed+" text not null"+
                     Data_sent+" integer not null"+")";
 
     public DataDbHelper(Context context) {
@@ -62,7 +64,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // delete tables
         // db.execSQL("drop table if exists"+Samp_type_table);
-        db.execSQL("drop table if exists"+Data_table);
+        db.execSQL("drop table if exists "+Data_table);
         // create new tables
         onCreate(db);
     }
@@ -70,23 +72,26 @@ public class DataDbHelper extends SQLiteOpenHelper {
     // Adapter methods
 
     // Insert data
-    public boolean insertSingleData (Float value1, Float value2, Float value3, int arrayCount, Float GPSlong, Float GPSlat, Long timestamp, int idFeed) {
+    public boolean insertSingleData (DataSample data) {
         //Float is an object and can be set as null, float cannot be set as null; same for Long and long
         //arrayCount must be: -1 for non array values, index for arrays
         //there must be at least value1
-        if (value1 != null & idFeed >= 0){
+        Float value1 = data.getValue_1();
+        String feed = data.getFeedPath();
+
+        if (value1 != null & feed != null){
 
             SQLiteDatabase db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             values.put(Data_value1, value1);
-            values.put(Data_value2, value2);
-            values.put(Data_value3, value3);
-            values.put(Data_arrayCount, arrayCount);
-            values.put(Data_long, GPSlong);
-            values.put(Data_lat, GPSlat);
-            values.put(Data_timestamp, timestamp);
-            values.put(Data_idFeed, idFeed);
+            values.put(Data_value2, data.getValue_2());
+            values.put(Data_value3, data.getValue_3());
+            values.put(Data_arrayCount, data.getArrayCount());
+            values.put(Data_long, data.getLongitude());
+            values.put(Data_lat, data.getLatitude());
+            values.put(Data_timestamp, data.getTimestamp());
+            values.put(Data_idFeed, feed);
             values.put(Data_sent, 0);
 
             db.insert(Data_table, null, values);
@@ -95,6 +100,35 @@ public class DataDbHelper extends SQLiteOpenHelper {
         } else {
             return false;
         }
+    }
+
+    public boolean insertArrayOfData (ArrayList<DataSample> array){
+        SQLiteDatabase db = this.getWritableDatabase(); //open database
+        ContentValues values = new ContentValues();
+        int i = 0;
+        int wrongData = 0;
+        int size = array.size();
+
+        for (i=0; i<size; i+=1){
+            Float value1 = array.get(i).getValue_1();
+            if (value1 != null) {
+                values.put(Data_value1, value1);
+                values.put(Data_value2, array.get(i).getValue_2());
+                values.put(Data_value3, array.get(i).getValue_3());
+                values.put(Data_arrayCount, array.get(i).getArrayCount());
+                values.put(Data_long, array.get(i).getLongitude());
+                values.put(Data_lat, array.get(i).getLatitude());
+                values.put(Data_timestamp, array.get(i).getTimestamp());
+                values.put(Data_idFeed, array.get(i).getFeedPath());
+                values.put(Data_sent, 0);
+
+                db.insert(Data_table, null, values);
+            } else {
+                wrongData += 1;
+            }
+        }
+
+        return wrongData < size;
     }
 /*
     public Cursor getConfCursorById(int id){
@@ -192,7 +226,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsWithoutOrder(){
-        // TODO: Non funziona... e se non ci sono configurazioni? controllare anche altri getallconf...
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
         SQLiteDatabase db = this.getReadableDatabase();

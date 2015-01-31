@@ -9,10 +9,11 @@ public class DataSample {
     private Float value_1;
     private Float value_2;
     private Float value_3;
+    private int arrayCount;
     private Double longitude;
     private Double latitude;
 
-    public DataSample(String feedPath, Float value_1, Float value_2, Float value_3, Long timestamp, Double longitude, Double latitude) {
+    public DataSample(String feedPath, Float value_1, Float value_2, Float value_3,int arrayCount, Long timestamp, Double longitude, Double latitude) {
         this.feedPath = feedPath;
         this.value_1 = value_1;
         this.value_2 = value_2;
@@ -20,6 +21,7 @@ public class DataSample {
         this.timestamp = timestamp;
         this.longitude = longitude;
         this.latitude = latitude;
+        this.arrayCount = arrayCount;
     }
 
     public String getFeedPath() { return feedPath; }
@@ -29,4 +31,5 @@ public class DataSample {
     public float getValue_3() { return value_3; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
+    public int getArrayCount() { return arrayCount; }
 }
