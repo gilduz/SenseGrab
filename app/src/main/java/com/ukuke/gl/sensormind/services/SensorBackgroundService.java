@@ -46,7 +46,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     private Double lastLatitude;
     private Double lastLongitude;
-    private boolean attachGPS;
+    private boolean attachGPS = true;
 
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
@@ -176,6 +176,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         super.onCreate();
         timeOfLastLocationUpdateMs = System.currentTimeMillis();
         buildGoogleApiClient();
+        updateLocation();
     }
 
     public synchronized void addDataSampleToList(SensorEvent event) {
@@ -230,7 +231,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         }
 
         // Print to log the location
-        if (attachGPS) {Log.d(TAG, "Location: LAT " + lastLatitude + " LONG " + lastLongitude);};
+        if (attachGPS) {
+            updateLocation();
+            Log.d(TAG, "Location: LAT " + lastLatitude + " LONG " + lastLongitude);
+        };
     }
 
     @Override
@@ -256,7 +260,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             lastLatitude = mLastLocation.getLatitude();
-            lastLatitude = mLastLocation.getLongitude();
+            lastLongitude = mLastLocation.getLongitude();
         }
     }
 

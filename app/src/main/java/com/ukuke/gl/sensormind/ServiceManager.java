@@ -65,8 +65,6 @@ public class ServiceManager {
         }
     }
 
-
-
     public int initializeFromDB(){
         // TODO: Da implementare
         // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
