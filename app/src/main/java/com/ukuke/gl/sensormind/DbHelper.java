@@ -148,9 +148,7 @@ public class DbHelper extends SQLiteOpenHelper {
             db.update(Samp_conf_table, values,"id = ? ", new String[] { Integer.toString(id) } );
             db.close();
             return true;
-        } else {
-            return false;
-        }
+        } else return false;
     }
 
     // UPDATE BY NAME
