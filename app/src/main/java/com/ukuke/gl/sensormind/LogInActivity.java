@@ -68,8 +68,13 @@ public class LogInActivity extends Activity {
     public void onClickedLogInButton(View view) {
         editText_username = (EditText) findViewById(R.id.editText_username);
         editText_password = (EditText) findViewById(R.id.editText_password);
-
-        new logIn_asynk().execute();
+        prefs.edit().putString("username",editText_username.getText().toString()).apply();//editText_username.getText().toString());
+        prefs.edit().putString("password",editText_password.getText().toString()).apply();
+        prefs.edit().putBoolean("CICCIO",true).apply();
+        prefs.edit().commit();
+        Log.d(TAG,"VALORE: " + prefs.contains("username"));
+        Log.d(TAG,"VALORE: " + prefs.contains("password"));
+        //new logIn_asynk().execute();
     }
 
     private class logIn_asynk extends AsyncTask<String, Void, String> {
@@ -78,7 +83,7 @@ public class LogInActivity extends Activity {
         protected String doInBackground(String... params) {
             boolean result;
             // result = API.registerNewAccount("Test_2_Name", "Test_2_Surname", "55", "test_2@test.com");
-            Log.d(TAG, "Request login for: " + editText_username.toString());
+            Log.d(TAG, "Request login for: " + editText_username.getText().toString());
             //TODO: Per loggarsi come si fa? non serve... Serve un sistema per vedere se l'username esiste
             return "Executed";
         }

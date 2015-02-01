@@ -40,6 +40,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_WINDOW = "num_samples";
     public static final String KEY_ATTACH_GPS = "attach_gps";
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
+    public static final String KEY_PERFORM_UPLOAD = "perform_upload";
+
 
     public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
     private long timeOfLastLocationUpdateMs = 0;
@@ -97,6 +99,16 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     saveListSampleOnDb();
                 };
             }
+            if (args.containsKey(KEY_PERFORM_DATABASE_TRANSFER)) {
+                if (args.getBoolean(KEY_PERFORM_DATABASE_TRANSFER)) {
+                    saveListSampleOnDb();
+                };
+            }
+            if (args.containsKey(KEY_PERFORM_UPLOAD)) {
+                if (args.getBoolean(KEY_PERFORM_UPLOAD)) {
+                    uploadListSampleOnSensormind();
+                };
+            }
         }
 
         //TODO: Bisognerebbe aggiornare la posizione in background con asynktask
@@ -117,6 +129,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
         return START_STICKY;
+    }
+
+    private int uploadListSampleOnSensormind() {
+
+        return 1;
     }
 
     @Override

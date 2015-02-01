@@ -8,10 +8,13 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
+import com.ukuke.gl.sensormind.support.FeedJSON;
+import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +27,15 @@ public class ServiceManager {
     // Singleton Class
     SharedPreferences prefs = null;
 
+    private static final String TAG = SensormindAPI.class.getSimpleName();
+
     private static ServiceManager mInstance = null;
     private List<ServiceComponent> serviceComponentList = new ArrayList<>();
     private List<ServiceComponent> serviceComponentActiveList = new ArrayList<>();
+
+    List<FeedJSON> allFeedList = new ArrayList<>();
+
+    SensormindAPI API = null;
 
     SensorManager sensorManager;
     private boolean scanDone = false;
@@ -230,7 +239,7 @@ public class ServiceManager {
         if (numConf > 0) {
             setTransferToDbInterval(MainActivity.transferToDbInterval);
             Cursor cursor;
-            ArrayList<String> array_list = null;
+            ArrayList<String> array_list = new ArrayList<>();
             array_list = dbHelper.getAllConfigurationsWithoutOrder();
             for (int i = 0; i < array_list.size(); i++) {
                 int k=i+1;
@@ -472,5 +481,31 @@ public class ServiceManager {
             // TODO: Aggiungere anche il tipo di sensore!
             dbHelper.deleteConfigurationByName(configuration.getConfigurationName());
         }
+    }
+
+    public void syncAllFeedList() {
+        new getAllFeed_asynk().execute();
+    }
+
+    private class getAllFeed_asynk extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            boolean test;
+            API = new SensormindAPI(prefs.getString("username","test_3"), prefs.getString("password","test_3"));
+            allFeedList = API.getAllFeed();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d(TAG, allFeedList.size() + " feeds sync!");
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
     }
 }
