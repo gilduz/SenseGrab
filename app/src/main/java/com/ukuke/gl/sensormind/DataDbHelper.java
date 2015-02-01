@@ -113,38 +113,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-
-    public boolean insertListData (List<DataSample> listDataSample) {
-        //TODO: Da fare
-//        SQLiteDatabase db = this.getWritableDatabase(); //open database
-//
-//        for (int i = 0; i < listDataSample.size(); i++) {
-//            Float value1 = listDataSample.get(i).getValue_1();
-//            String feed = listDataSample.get(i).getFeedPath();
-//
-//            if (value1 != null & feed != null){
-//
-//                ContentValues values = new ContentValues();
-//
-//                values.put(Data_value1, value1);
-//                values.put(Data_value2, listDataSample.get(i).getValue_2());
-//                values.put(Data_value3, listDataSample.get(i).getValue_3());
-//                values.put(Data_arrayCount, listDataSample.get(i).getArrayCount());
-//                values.put(Data_long, listDataSample.get(i).getLongitude());
-//                values.put(Data_lat, listDataSample.get(i).getLatitude());
-//                values.put(Data_timestamp, listDataSample.get(i).getTimestamp());
-//                values.put(Data_idFeed, feed);
-//                values.put(Data_sent, 0);
-//
-//                db.insert(Data_table, null, values);
-//            } else {
-//                return false;
-//            }
-//        }
-//        db.close();
-        return true;
-    }
-
     public boolean insertListOfData (List<DataSample> array){
         SQLiteDatabase db = this.getWritableDatabase(); //open database
         ContentValues values = new ContentValues();

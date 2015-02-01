@@ -187,7 +187,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         int dataTransferred = 0;
         // TODO: Leo qui è dove richiamo il tuo metodo del DB passandogli listDataSample
         if (listDataSample.size()>0) {
-            dataDbHelper.insertListData(listDataSample);
+            dataDbHelper.insertListOfData(listDataSample);
+
             dataTransferred = listDataSample.size();
             listDataSample.clear();
             Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries");
