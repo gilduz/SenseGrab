@@ -209,8 +209,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public synchronized void addDataSampleToList(SensorEvent event) {
 
         DataSample dataSample;
-        dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
-        listDataSample.add(dataSample);
+        //dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
+        //listDataSample.add(dataSample);
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
