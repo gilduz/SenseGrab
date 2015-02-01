@@ -238,6 +238,36 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
             data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
             list.add(data);
+            res.moveToNext();
+        }
+        res.close();
+        return list;
+    }
+
+    public List<DataSample> getFirstNUnsentDataSamples (int N) {
+        Cursor res = this.getAllUnsentCursor();
+        List<DataSample> list = new ArrayList<>();
+        DataSample data;
+        String feed;
+        Float value1,value2,value3;
+        Double longitude,latitude;
+        Long timestamp;
+        int arrayCount;
+
+        res.moveToFirst();
+        for (int i=0; i<N; i+=1) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+
+            data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
+            list.add(data);
+            res.moveToNext();
         }
         res.close();
         return list;
