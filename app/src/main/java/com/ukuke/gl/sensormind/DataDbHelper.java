@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -13,8 +14,11 @@ import com.ukuke.gl.sensormind.support.DataSample;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 
 import static java.lang.System.*;
@@ -36,7 +40,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public static final String Data_value2 ="value2"; //real
     public static final String Data_value3 ="value3"; //real
     public static final String Data_arrayCount ="arrayCount"; //int
-    public static final String Data_long ="longitude"; //real //TODO: Gildo, il real è 8 bytes in SQLite, la stringa direi di più, confermi?
+    public static final String Data_long ="longitude"; //real
     public static final String Data_lat ="latitude"; //real
     public static final String Data_timestamp ="timestamp"; //int , SQLite has an integer format stored in 1, 2, 3, 4, 6, or 8 bytes
     public static final String Data_idFeed ="idFeed"; //String
@@ -141,7 +145,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insertArrayOfData (List<DataSample> array){
+    public boolean insertListOfData (List<DataSample> array){
         SQLiteDatabase db = this.getWritableDatabase(); //open database
         ContentValues values = new ContentValues();
         int i = 0;
@@ -162,6 +166,8 @@ public class DataDbHelper extends SQLiteOpenHelper {
                 values.put(Data_sent, 0);
 
                 db.insert(Data_table, null, values);
+
+                db.close();
             } else {
                 wrongData += 1;
             }
@@ -177,9 +183,69 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return num;
     }
 
+    public int numberOfUnsentEntries(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent+" = 0");
+        // se non va quello sopra usare questo:
+        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 0", null );
+        int num = res.getCount();*/
+        db.close();
+        return num;
+    }
+
+    public int numberOfSentEntries(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent+" = 1");
+        // se non va quello sopra usare questo:
+        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
+        int num = res.getCount();*/
+        db.close();
+        return num;
+    }
+
+    public Cursor getAllUnsentCursor (){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0", null );
+        return res;
+    }
+
+    public Cursor getAllSentCursor (){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 1", null );
+        return res;
+    }
+
+    public List<DataSample> getAllUnsentDataSamples () {
+        Cursor res = this.getAllUnsentCursor();
+        List<DataSample> list = new ArrayList<>();
+        DataSample data;
+        String feed;
+        Float value1,value2,value3;
+        Double longitude,latitude;
+        Long timestamp;
+        int arrayCount;
+
+        res.moveToFirst();
+        while(!res.isAfterLast()) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+
+            data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
+            list.add(data);
+        }
+        res.close();
+        return list;
+    }
+
 /*
     public Cursor getConfCursorById(int id){
-        // TODO Remember to close the cursor on upper level after use
+        // Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where id = "+id, null );
         return res;
