@@ -141,7 +141,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean insertArrayOfData (ArrayList<DataSample> array){
+    public boolean insertArrayOfData (List<DataSample> array){
         SQLiteDatabase db = this.getWritableDatabase(); //open database
         ContentValues values = new ContentValues();
         int i = 0;
