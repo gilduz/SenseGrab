@@ -7,6 +7,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -142,12 +143,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         return null;
     }
 
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // do nothing
     }
-
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -256,12 +255,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 listDataSample.add(dataSample);
                 break;
         }
-
-        // Print to log the location
-        if (attachGPS) {
-            //updateLocation();
-            //Log.d(TAG, "Location: LAT " + lastLatitude + " LONG " + lastLongitude);
-        };
     }
 
     @Override

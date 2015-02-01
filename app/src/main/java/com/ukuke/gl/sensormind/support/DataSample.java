@@ -12,6 +12,7 @@ public class DataSample {
     private int arrayCount;
     private Double longitude;
     private Double latitude;
+    private int dbId = -1;
 
     public DataSample(String feedPath, Float value_1, Float value_2, Float value_3,int arrayCount, Long timestamp, Double longitude, Double latitude) {
         this.feedPath = feedPath;
@@ -24,6 +25,12 @@ public class DataSample {
         this.arrayCount = arrayCount;
     }
 
+    public int getDbId() {
+        return dbId;
+    }
+    public void setDbId(int dbId) {
+        this.dbId = dbId;
+    }
     public String getFeedPath() { return feedPath; }
     public Long getTimestamp() { return timestamp; }
     public Float getValue_1() { return value_1; }

@@ -58,7 +58,8 @@
         android:layout_alignRight="@+id/editText_password"
         android:layout_alignEnd="@+id/editText_password"
         android:onClick="onClickedLogInButton"
-        android:background="@drawable/color_green_dark" />
+        android:background="@drawable/color_green_dark"
+        android:clickable="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -70,6 +71,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp"
         android:onClick="onClickedRegisterButton"
-        android:textColor="#1ABC9C" />
+        android:textColor="#1ABC9C"
+        android:clickable="true" />
 
 </RelativeLayout>
