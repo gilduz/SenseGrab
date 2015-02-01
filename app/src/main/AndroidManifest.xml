@@ -25,10 +25,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ScheduleService"
-            android:label="@string/title_activity_schedule_service" >
-        </activity>
-        <activity
             android:name=".DeviceCapabilitiesActivity"
             android:label="@string/title_activity_device_capabilities"
             android:parentActivityName=".MainActivity" >

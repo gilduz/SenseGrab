@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.DbHelper;
@@ -46,15 +47,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private List<DataSample> listDataSample = new ArrayList<>();
     private DataDbHelper dataDbHelper = null;
 
-    private int lastStartId;
-
     private Double lastLatitude;
     private Double lastLongitude;
     private boolean attachGPS = true;
 
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-
+    private LocationRequest mLocationRequest; // Se si vuole implementare....
     int counterAccelerometer = 0;
     int counterGyroscope = 0;
     int counterMagnetometer = 0;
@@ -65,9 +64,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-
-        lastStartId = startId;
 
         // get sensor manager on starting the service
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -189,6 +185,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         buildGoogleApiClient();
         updateLocation();
         dataDbHelper = new DataDbHelper(this);
+        mGoogleApiClient.connect();
     }
 
     public synchronized void addDataSampleToList(SensorEvent event) {
@@ -244,8 +241,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         // Print to log the location
         if (attachGPS) {
-            updateLocation();
-            Log.d(TAG, "Location: LAT " + lastLatitude + " LONG " + lastLongitude);
+            //updateLocation();
+            //Log.d(TAG, "Location: LAT " + lastLatitude + " LONG " + lastLongitude);
         };
     }
 
@@ -256,6 +253,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     }
 
     protected synchronized void buildGoogleApiClient() {
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -273,6 +271,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         if (mLastLocation != null) {
             lastLatitude = mLastLocation.getLatitude();
             lastLongitude = mLastLocation.getLongitude();
+            Log.d(TAG,"New location requested: LAT: " + lastLatitude + " LONG: " + lastLongitude);
         }
     }
 
