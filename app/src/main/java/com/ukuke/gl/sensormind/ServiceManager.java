@@ -7,13 +7,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 
@@ -52,195 +48,6 @@ public class ServiceManager {
             mInstance = new ServiceManager(cn);
         }
         return mInstance;
-    }
-
-    public List<ServiceComponent> getServiceComponentList() {
-        return serviceComponentList;
-    }
-
-    public void addServiceComponentActive(ServiceComponent serviceComponent) {
-        boolean alreadyExists;
-        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL" ) {
-            serviceComponentActiveList.add(serviceComponent);
-        }
-    }
-
-    public int initializeFromDB(){
-        // TODO: Da implementare
-        // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
-        USE_DB = true;
-        dbHelper = new DbHelper(cn);
-        int numConf = dbHelper.numberOfConfigurations();
-        Log.d("Service Manager", "Found in DB " + numConf + " configurations");
-        if (numConf > 0) {
-            Cursor cursor;
-            ArrayList<String> array_list = null;
-            array_list = dbHelper.getAllConfigurationsWithoutOrder();
-            for (int i = 0; i < array_list.size(); i++) {
-                int k=i+1;
-                cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
-                cursor.moveToFirst();
-
-                int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
-                int interval = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_time));
-                int window = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_window));
-
-                if (!cursor.isClosed()) {
-                    cursor.close();
-                }
-
-                ServiceComponent service = getAvailableServiceComponentBySensorType(sensorType);
-                ServiceComponent.Configuration configuration;
-                configuration = new ServiceComponent.Configuration();
-
-                configuration.setInterval(interval);
-                configuration.setConfigurationName("DAMMI UN NOME");
-                configuration.setPath("/Path/1");
-                configuration.setAttachGPS(true);
-                configuration.setWindow(window);
-
-                service.addConfiguration(configuration); //TODO: Prendere il gps da database
-                service.setActiveConfiguration(configuration);
-                addServiceComponentActive(service); // TODO: Gestire + configurazioni in un servizio
-
-                startScheduleService(service);
-            }
-        }
-
-
-        return 0;
-    }
-
-    public void removeServiceComponentActive(int sensorType) {
-        if (USE_DB) {
-            dbHelper.deleteConfigurationByName(getServiceComponentActiveBySensorType(sensorType).getDysplayName());
-        }
-        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
-            if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
-                serviceComponentActiveList.remove(i);
-            }
-        }
-    }
-
-    public List<ServiceComponent> getServiceComponentActiveList() {
-        return serviceComponentActiveList;
-    }
-
-    public ServiceComponent getServiceComponentActiveBySensorType(int serviceType) {
-        ServiceComponent service = new ServiceComponent("NULL",false);
-        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
-            service = serviceComponentActiveList.get(i);
-            if (service.getSensorType() == serviceType) {
-                return service;
-            }
-        }
-        ServiceComponent service_NULL = new ServiceComponent("NULL",false);
-        return service_NULL;
-    }
-
-    public ServiceComponent getAvailableServiceComponentBySensorType(int serviceType) {
-        ServiceComponent service = new ServiceComponent("NULL",false);
-        for (int i = 0; i < getAvailableServiceComponentList().size(); i++) {
-            service = getAvailableServiceComponentList().get(i);
-            if (service.getSensorType() == serviceType) {
-                return service;
-            }
-        }
-        return service;
-    }
-
-    public List<ServiceComponent> getAvailableServiceComponentList() {
-        //if (!scanDone) {
-        //    populateServiceComponentList(cn);
-        //}
-        List<ServiceComponent> mList = new ArrayList<>();
-
-        for (int i = 0; i < serviceComponentList.size(); i++) {
-            if (serviceComponentList.get(i).exists) {
-                mList.add(serviceComponentList.get(i));
-            }
-        }
-        return mList;
-    }
-
-    public ServiceComponent getServiceComponentActiveBySensorType(String name) {
-        ServiceComponent service = new ServiceComponent("NULL",true);
-
-        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
-            if (serviceComponentActiveList.get(i).getDysplayName() == name) {
-                service = serviceComponentActiveList.get(i);
-            }
-        }
-        return service;
-    }
-
-    public int populateServiceComponentList() {
-        // Discovery Components
-        int numAvailableServices = 0;
-
-        sensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
-
-        serviceComponentList.clear();
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
-            serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Magnetic Field", false));
-        }
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
-            serviceComponentList.add(new ServiceComponent("Accelerometer", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Accelerometer", false));
-        }
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null){
-            serviceComponentList.add(new ServiceComponent("Temperature", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Temperature", false));
-        }
-
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
-            serviceComponentList.add(new ServiceComponent("Gyroscope", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Gyroscope", false));
-        }
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null){
-            serviceComponentList.add(new ServiceComponent("Light Sensor", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Light Sensor", true));
-        }
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null){
-            serviceComponentList.add(new ServiceComponent("Proximity Sensor", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Proximity Sensor", false));
-        }
-
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
-            serviceComponentList.add(new ServiceComponent("Pressure Sensor", true));
-            numAvailableServices++;
-        }
-        else {
-            serviceComponentList.add(new ServiceComponent("Pressure Sensor", false));
-        }
-
-        scanDone = true;
-        return numAvailableServices;
     }
 
     public static class ServiceComponent {
@@ -400,17 +207,219 @@ public class ServiceManager {
             public void setWindow(int window) { this.window = window; }
             public void setConfigurationName(String configurationName) { this.configurationName = configurationName; }
 
+            public boolean isAttachGPS() {
+                return attachGPS;
+            }
             public void setAttachGPS(boolean attachGPS) {
-                this.attachGPS = attachGPS;
+                    this.attachGPS = attachGPS;
+                }
+        }
+    }
+
+    public List<ServiceComponent> getServiceComponentList() {
+        return serviceComponentList;
+    }
+
+    public int initializeFromDB(){
+        // TODO: Da implementare
+        // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
+        USE_DB = true;
+        dbHelper = new DbHelper(cn);
+        int numConf = dbHelper.numberOfConfigurations();
+        Log.d("Service Manager", "Found in DB " + numConf + " configurations");
+        if (numConf > 0) {
+            setTransferToDbInterval(MainActivity.transferToDbInterval);
+            Cursor cursor;
+            ArrayList<String> array_list = null;
+            array_list = dbHelper.getAllConfigurationsWithoutOrder();
+            for (int i = 0; i < array_list.size(); i++) {
+                int k=i+1;
+                cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
+                cursor.moveToFirst();
+
+                int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
+                int interval = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_time));
+                int window = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_window));
+
+                if (!cursor.isClosed()) {
+                    cursor.close();
+                }
+
+                ServiceComponent service = getServiceComponentAvailableBySensorType(sensorType);
+                ServiceComponent.Configuration configuration;
+                configuration = new ServiceComponent.Configuration();
+
+                configuration.setInterval(interval);
+                configuration.setConfigurationName("DAMMI UN NOME");
+                configuration.setPath("/Path/1");
+                configuration.setAttachGPS(true);
+                configuration.setWindow(window);
+
+                service.addConfiguration(configuration); //TODO: Prendere il gps da database
+                service.setActiveConfiguration(configuration);
+                addServiceComponentActive(service); // TODO: Gestire + configurazioni in un servizio
+
+                startScheduleService(service);
+            }
+        }
+
+
+        return 0;
+    }
+
+    public void addServiceComponentActive(ServiceComponent serviceComponent) {
+        boolean alreadyExists;
+        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL" ) {
+            serviceComponentActiveList.add(serviceComponent);
+        }
+    }
+
+    public void removeServiceComponentActive(int sensorType) {
+
+        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
+            if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
+                serviceComponentActiveList.remove(i);
             }
         }
     }
 
-    // Service related methods
+    public List<ServiceComponent> getServiceComponentActiveList() {
+        return serviceComponentActiveList;
+    }
 
-//    public void startScheduleService(int typeSensor) {
-//        startScheduleService(typeSensor, true, getServiceComponentActiveBySensorType(typeSensor).activeConfiguration.getInterval(), getServiceComponentActiveBySensorType(typeSensor).activeConfiguration.getWindow());
-//    }
+    public ServiceComponent getServiceComponentActiveBySensorType(int serviceType) {
+        ServiceComponent service = new ServiceComponent("NULL",false);
+        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
+            service = serviceComponentActiveList.get(i);
+            if (service.getSensorType() == serviceType) {
+                return service;
+            }
+        }
+        ServiceComponent service_NULL = new ServiceComponent("NULL",false);
+        return service_NULL;
+    }
+
+    public ServiceComponent getServiceComponentAvailableBySensorType(int serviceType) {
+        ServiceComponent service = new ServiceComponent("NULL",false);
+        for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
+            service = getServiceComponentAvailableList().get(i);
+            if (service.getSensorType() == serviceType) {
+                return service;
+            }
+        }
+        return service;
+    }
+
+    public List<ServiceComponent> getServiceComponentAvailableList() {
+        //if (!scanDone) {
+        //    populateServiceComponentList(cn);
+        //}
+        List<ServiceComponent> mList = new ArrayList<>();
+
+        for (int i = 0; i < serviceComponentList.size(); i++) {
+            if (serviceComponentList.get(i).exists) {
+                mList.add(serviceComponentList.get(i));
+            }
+        }
+        return mList;
+    }
+
+    public ServiceComponent getServiceComponentActiveBySensorName(String name) {
+        ServiceComponent service = new ServiceComponent("NULL",true);
+
+        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
+            if (serviceComponentActiveList.get(i).getDysplayName() == name) {
+                service = serviceComponentActiveList.get(i);
+            }
+        }
+        return service;
+    }
+
+    public int populateServiceComponentList() {
+        // Discovery Components
+        int numAvailableServices = 0;
+
+        sensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
+
+        serviceComponentList.clear();
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
+            serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Magnetic Field", false));
+        }
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
+            serviceComponentList.add(new ServiceComponent("Accelerometer", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Accelerometer", false));
+        }
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null){
+            serviceComponentList.add(new ServiceComponent("Temperature", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Temperature", false));
+        }
+
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
+            serviceComponentList.add(new ServiceComponent("Gyroscope", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Gyroscope", false));
+        }
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null){
+            serviceComponentList.add(new ServiceComponent("Light Sensor", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Light Sensor", true));
+        }
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null){
+            serviceComponentList.add(new ServiceComponent("Proximity Sensor", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Proximity Sensor", false));
+        }
+
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
+            serviceComponentList.add(new ServiceComponent("Pressure Sensor", true));
+            numAvailableServices++;
+        }
+        else {
+            serviceComponentList.add(new ServiceComponent("Pressure Sensor", false));
+        }
+
+        scanDone = true;
+        return numAvailableServices;
+    }
+
+    public void setTransferToDbInterval(int sec) {
+        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+        Bundle args = new Bundle();
+        args.putBoolean(SensorBackgroundService.KEY_PERFORM_DATABASE_TRANSFER, true);
+        intent.putExtras(args);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
+    }
+
+    public void stopTransferToDb() {
+        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.cancel(scheduledIntent);
+    }
 
     public void startScheduleService(ServiceComponent component) {
         ServiceComponent.Configuration configuration;
@@ -425,16 +434,16 @@ public class ServiceManager {
 
             try {
                 args.putBoolean(SensorBackgroundService.KEY_LOGGING, true);
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
             try {
                 args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, component.getSensorType());
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
             try {
                 args.putInt(SensorBackgroundService.KEY_WINDOW, configuration.getWindow());
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
+            try {
+                args.putBoolean(SensorBackgroundService.KEY_ATTACH_GPS, configuration.attachGPS);
+            } catch (Exception e) {}
 
             intent.putExtras(args);
 
@@ -445,8 +454,6 @@ public class ServiceManager {
         }
     }
 
-//
-
     public void stopScheduleService(ServiceComponent component) {
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
@@ -454,25 +461,16 @@ public class ServiceManager {
         scheduler.cancel(scheduledIntent);
     }
 
-//    public void stopScheduleService(int typeSensor) {
-//        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
-//        Intent intent = new Intent(cn, SensorBackgroundService.class);
-//        PendingIntent scheduledIntent = PendingIntent.getService(cn, typeSensor, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        scheduler.cancel(scheduledIntent);
-//    }
-
     public void addConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration) {
-        //TODO: Aggiungere conf a DB
         if (USE_DB) {
             dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
         }
     }
 
-//    public void addScheduleServiceToDB(int typeSensor, boolean logging, long interval, int window) {
-//        if (USE_DB) {
-//            String name= getServiceComponentActiveBySensorType(typeSensor).getDysplayName();
-//            dbHelper.newConfiguration(name, typeSensor, (int) interval, "sec", window, false);
-//        }
-//    }
-
+    public void removeConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration) {
+        if (USE_DB) {
+            // TODO: Aggiungere anche il tipo di sensore!
+            dbHelper.deleteConfigurationByName(configuration.getConfigurationName());
+        }
+    }
 }

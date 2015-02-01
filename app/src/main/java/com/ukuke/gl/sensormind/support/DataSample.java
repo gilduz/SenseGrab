@@ -32,4 +32,5 @@ public class DataSample {
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
     public int getArrayCount() { return arrayCount; }
+
 }

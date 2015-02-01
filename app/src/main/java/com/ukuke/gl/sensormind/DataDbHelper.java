@@ -7,12 +7,14 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
 import com.ukuke.gl.sensormind.support.DataSample;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import static java.lang.System.*;
@@ -102,6 +104,43 @@ public class DataDbHelper extends SQLiteOpenHelper {
         }
     }
 
+    public boolean getListData (List<DataSample> listDataSample) {
+        //TODO: Da fare
+        return true;
+    }
+
+
+    public boolean insertListData (List<DataSample> listDataSample) {
+        //TODO: Da fare
+//        SQLiteDatabase db = this.getWritableDatabase(); //open database
+//
+//        for (int i = 0; i < listDataSample.size(); i++) {
+//            Float value1 = listDataSample.get(i).getValue_1();
+//            String feed = listDataSample.get(i).getFeedPath();
+//
+//            if (value1 != null & feed != null){
+//
+//                ContentValues values = new ContentValues();
+//
+//                values.put(Data_value1, value1);
+//                values.put(Data_value2, listDataSample.get(i).getValue_2());
+//                values.put(Data_value3, listDataSample.get(i).getValue_3());
+//                values.put(Data_arrayCount, listDataSample.get(i).getArrayCount());
+//                values.put(Data_long, listDataSample.get(i).getLongitude());
+//                values.put(Data_lat, listDataSample.get(i).getLatitude());
+//                values.put(Data_timestamp, listDataSample.get(i).getTimestamp());
+//                values.put(Data_idFeed, feed);
+//                values.put(Data_sent, 0);
+//
+//                db.insert(Data_table, null, values);
+//            } else {
+//                return false;
+//            }
+//        }
+//        db.close();
+        return true;
+    }
+
     public boolean insertArrayOfData (ArrayList<DataSample> array){
         SQLiteDatabase db = this.getWritableDatabase(); //open database
         ContentValues values = new ContentValues();
@@ -130,6 +169,14 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
         return wrongData < size;
     }
+
+    public int numberOfEntries(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table);
+        db.close();
+        return num;
+    }
+
 /*
     public Cursor getConfCursorById(int id){
         // TODO Remember to close the cursor on upper level after use
@@ -337,12 +384,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
-    public int numberOfConfigurations(){
-        SQLiteDatabase db = this.getReadableDatabase();
-        int num = (int) DatabaseUtils.queryNumEntries(db, Samp_conf_table);
-        db.close();
-        return num;
-    }
+
 
     private String getDateTime() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(

@@ -37,6 +37,7 @@ public class ConfigurationActivity extends Activity {
     private int typeSensor;
     private boolean logging = true;
     private ServiceManager.ServiceComponent serviceComponent;
+    private ServiceManager.ServiceComponent.Configuration configuration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +48,7 @@ public class ConfigurationActivity extends Activity {
         intentAddDevice = getIntent();
         typeSensor = intentAddDevice.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
 
-        serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getAvailableServiceComponentBySensorType(typeSensor);
+        serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
 
         // seek bars and relative value views
         seekSamp = (SeekBar) findViewById(R.id.Conf_Sam_seekBar);
@@ -135,7 +136,7 @@ public class ConfigurationActivity extends Activity {
             interval = 1000L;
         }
         // TODO: Non è stato fatto sec/min
-        ServiceManager.ServiceComponent.Configuration configuration = new ServiceManager.ServiceComponent.Configuration();
+        configuration = new ServiceManager.ServiceComponent.Configuration();
         configuration.setInterval(interval);
         configuration.setWindow(window);
         configuration.setConfigurationName(confName.getText().toString());
@@ -143,7 +144,7 @@ public class ConfigurationActivity extends Activity {
         configuration.setAttachGPS(gpsSwitch.isActivated());
 
         ServiceManager.ServiceComponent component;
-        component = ServiceManager.getInstance(ConfigurationActivity.this).getAvailableServiceComponentBySensorType(typeSensor);
+        component = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
 
         component.removeConfiguration(confName.getText().toString());
         component.addConfiguration(configuration);
@@ -161,6 +162,7 @@ public class ConfigurationActivity extends Activity {
     public void onButtonDeleteClicked(View view) {
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+        ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(serviceComponent, configuration);
         Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);

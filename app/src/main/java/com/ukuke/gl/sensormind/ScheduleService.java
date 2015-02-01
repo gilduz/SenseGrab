@@ -74,7 +74,7 @@
 //            interval = 1000L;
 //        }
 //        // TODO: Bisogna passare il window reale da immissione in testo
-//        ServiceManager.getInstance(ScheduleService.this).addServiceComponentActive(ServiceManager.getInstance(ScheduleService.this).getAvailableServiceComponentBySensorType(typeSensor));
+//        ServiceManager.getInstance(ScheduleService.this).addServiceComponentActive(ServiceManager.getInstance(ScheduleService.this).getServiceComponentAvailableBySensorType(typeSensor));
 //        ServiceManager.getInstance(ScheduleService.this).startScheduleService(typeSensor, chkLogging.isChecked(), interval, 1);
 //        ServiceManager.getInstance(ScheduleService.this).addScheduleServiceToDB(typeSensor, chkLogging.isChecked(), interval, 1);
 //        Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();

@@ -11,7 +11,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.AdapterView;
 
 //public class AddDeviceActivity extends ActionBarActivity {
@@ -66,15 +65,15 @@ public class AddDeviceActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
-                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position);
+                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position);
                 // Add service component to active services component
                 //ServiceManager.getInstance(AddDeviceActivity.this).addServiceComponentActive(clickedServiceComponent);
                 // Come back to Main Activity
                 //Intent intent = new Intent(getApplicationContext(), ScheduleService.class);
-                //intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position).getSensorType());
+                //intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position).getSensorType());
 
                 Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
-                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList().get(position).getSensorType());
+                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position).getSensorType());
 
                 startActivity(intent);
             }
@@ -89,7 +88,7 @@ public class AddDeviceActivity extends Activity {
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance(AddDeviceActivity.this).getAvailableServiceComponentList());
+            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList());
         }
 
         @Override
@@ -99,7 +98,7 @@ public class AddDeviceActivity extends Activity {
                 itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getAvailableServiceComponentList().get(position);
+            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getServiceComponentAvailableList().get(position);
 
             ImageView imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
             imageView.setImageResource(currentServiceComponent.getComponentImageID());

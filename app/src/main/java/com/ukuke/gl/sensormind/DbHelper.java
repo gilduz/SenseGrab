@@ -191,6 +191,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     // DELETE BY NAME
     public int deleteConfigurationByName(String Name){
+        // TODO: Bisogna aggiungere anche il tipo di sensore, altrimenti due sensori diversi non possono avere una configurazione con lo stesso nome. In generale sarebbe meglio se tutti i metodi prendessero come input direttamente l'oggetto ServiceComponent e l'oggetto Configuration
         SQLiteDatabase db = this.getWritableDatabase();
         int del = db.delete(Samp_conf_table,Samp_conf_name+" = ?",new String[] {Name});
         db.close();

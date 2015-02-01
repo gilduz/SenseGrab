@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
     boolean toggleGrabbingEnabled = true;
     SensormindAPI API = new SensormindAPI("test_2", "test_2");
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
+    public static final int transferToDbInterval = 30; //[sec]
 
 
     @Override
@@ -57,6 +58,7 @@ public class MainActivity extends Activity {
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
         toggle.setChecked(prefs.getBoolean("enableGrabbing",true));
+
     }
 
 
@@ -100,6 +102,7 @@ public class MainActivity extends Activity {
         prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
 
         if (toggleButton.isChecked()) {
+            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(transferToDbInterval);
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
@@ -109,6 +112,7 @@ public class MainActivity extends Activity {
         }
         else {
             // STOP all schedules
+            ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
