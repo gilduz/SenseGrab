@@ -55,6 +55,8 @@ public class DataDbHelper extends SQLiteOpenHelper {
                     Data_timestamp+" integer, "+Data_idFeed+" text not null, "+
                     Data_sent+" integer not null"+")";
 
+    private SQLiteDatabase db;
+
     public DataDbHelper(Context context) {
         super(context, DB_name, null, 1);
     }
@@ -87,7 +89,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
         if (value1 != null & feed != null){
 
-            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             values.put(Data_value1, value1);
@@ -101,7 +103,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
             values.put(Data_sent, 0);
 
             db.insert(Data_table, null, values);
-            db.close();
+            closeDb();
             return true;
         } else {
             return false;
@@ -114,7 +116,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     public boolean insertListOfData (List<DataSample> array){
-        SQLiteDatabase db = this.getWritableDatabase(); //open database
+        db = this.getWritableDatabase(); //open database
         ContentValues values = new ContentValues();
         int i = 0;
         int wrongData = 0;
@@ -139,45 +141,45 @@ public class DataDbHelper extends SQLiteOpenHelper {
             }
         }
 
-        db.close();
+        closeDb();
         return wrongData < size;
     }
 
     public int numberOfEntries(){
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table);
-        db.close();
+        closeDb();
         return num;
     }
 
     public int numberOfUnsentEntries(){
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent+" = 0");
         // se non va quello sopra usare questo:
         /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 0", null );
         int num = res.getCount();*/
-        db.close();
+        closeDb();
         return num;
     }
 
     public int numberOfSentEntries(){
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent+" = 1");
         // se non va quello sopra usare questo:
         /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
         int num = res.getCount();*/
-        db.close();
+        closeDb();
         return num;
     }
 
     public Cursor getAllUnsentCursor (){
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0", null );
         return res;
     }
 
     public Cursor getAllSentCursor (){
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 1", null );
         return res;
     }
@@ -208,6 +210,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         res.close();
+        closeDb();
         return list;
     }
 
@@ -237,7 +240,33 @@ public class DataDbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         res.close();
+        closeDb();
         return list;
+    }
+
+    public int deleteAllDataSamples (){
+        db = this.getWritableDatabase();
+        int del = db.delete(Data_table,null,null);
+        closeDb();
+        return del;
+    }
+
+    public int deleteAllUnsentDataSamples (){
+        db = this.getWritableDatabase();
+        int del = db.delete(Data_table,"sent = 0",null);
+        closeDb();
+        return del;
+    }
+
+    public int deleteAllSentDataSamples (){
+        db = this.getWritableDatabase();
+        int del = db.delete(Data_table,"sent = 1",null);
+        closeDb();
+        return del;
+    }
+
+    public void closeDb(){
+        if (db.isOpen()){db.close();}
     }
 
 /*
