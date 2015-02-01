@@ -26,9 +26,9 @@ public class DataSample {
 
     public String getFeedPath() { return feedPath; }
     public Long getTimestamp() { return timestamp; }
-    public float getValue_1() { return value_1; }
-    public float getValue_2() { return value_2; }
-    public float getValue_3() { return value_3; }
+    public Float getValue_1() { return value_1; }
+    public Float getValue_2() { return value_2; }
+    public Float getValue_3() { return value_3; }
     public Double getLatitude() { return latitude; }
     public Double getLongitude() { return longitude; }
     public int getArrayCount() { return arrayCount; }

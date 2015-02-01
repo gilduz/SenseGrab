@@ -29,7 +29,7 @@ import static java.lang.System.*;
 public class DataDbHelper extends SQLiteOpenHelper {
 
     // DB name
-    public static final String DB_name = "DB_Sensormind"; //TODO salvare i dati su un Db diverso o sullo stesso? nel caso cambiare questo nome
+    public static final String DB_name = "DB_Sensormind_Data"; //TODO salvare i dati su un Db diverso o sullo stesso? nel caso cambiare questo nome
 
     // Tables
     public static final String Data_table = "Data";
@@ -48,11 +48,11 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     // String to create table
     private static final String Create_Data_Table =
-            "create table "+Data_table+"("+Data_id+" integer primary key autoincrement,"+
-                    Data_value1+" real not null,"+Data_value2+" real,"+
-                    Data_value3+" real,"+Data_arrayCount+" integer,"+
-                    Data_long+" real,"+Data_lat+" real,"+
-                    Data_timestamp+" integer"+Data_idFeed+" text not null"+
+            "create table "+Data_table+"("+Data_id+" integer primary key autoincrement, "+
+                    Data_value1+" real not null, "+Data_value2+" real, "+
+                    Data_value3+" real, "+Data_arrayCount+" integer, "+
+                    Data_long+" real, "+Data_lat+" real, "+
+                    Data_timestamp+" integer, "+Data_idFeed+" text not null, "+
                     Data_sent+" integer not null"+")";
 
     public DataDbHelper(Context context) {
@@ -134,13 +134,12 @@ public class DataDbHelper extends SQLiteOpenHelper {
                 values.put(Data_sent, 0);
 
                 db.insert(Data_table, null, values);
-
-                db.close();
             } else {
                 wrongData += 1;
             }
         }
 
+        db.close();
         return wrongData < size;
     }
 
