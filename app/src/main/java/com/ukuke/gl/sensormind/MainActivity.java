@@ -34,10 +34,9 @@ public class MainActivity extends Activity {
 
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
-    SensormindAPI API = new SensormindAPI("test_2", "test_2");
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     public static final int transferToDbInterval = 30; //[sec]
-
+    SensormindAPI API = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +84,8 @@ public class MainActivity extends Activity {
             startActivity(intent);
         }
         else if (id == R.id.action_test) {
+            //API = new SensormindAPI(prefs.getString("username","test_3"), prefs.getString("password","test_3"));
+            ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         }
@@ -193,27 +194,6 @@ public class MainActivity extends Activity {
     }
 
 
-    private class register extends AsyncTask<String, Void, String> {
 
-        @Override
-        protected String doInBackground(String... params) {
-            boolean result;
-            result = API.registerNewAccount("Test_2_Name", "Test_2_Surname", "55", "test_2@test.com");
-            Log.d(TAG,"Result: " + result);
-            //API.createFeed("Test",false,null,"Test",1);
-            return "Executed";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-
-        }
-
-        @Override
-        protected void onPreExecute() {}
-
-        @Override
-        protected void onProgressUpdate(Void... values) {}
-    }
 
 }

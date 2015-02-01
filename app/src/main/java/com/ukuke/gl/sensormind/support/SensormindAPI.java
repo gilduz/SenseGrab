@@ -8,10 +8,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class SensormindAPI {
 
@@ -19,6 +24,8 @@ public class SensormindAPI {
     private static final String CREATE_FEED_SERVICE = "/service/v1/createfeed";
     //aggiungere la registrazione
     private static final String REGISTER_NEW_ACCOUNT = "/service/v1/register";
+    private static final String LIST_FEED = "/service/v1/listfeed";
+
     private static final String url = "http://137.204.213.190";
     private static final int port = 8888;
     private String user;
@@ -35,6 +42,67 @@ public class SensormindAPI {
 
     // esempio:
     // createFeed("sensore-temperature",true,"C","telefono42/sensori/temperatura",1);
+
+    //http://137.204.213.190:8888/service/v1/listfeed?username=<USERNAME>&password=<PASSWORD>
+
+    public List<FeedJSON> getAllFeed()
+    {
+        List<FeedJSON> list = new ArrayList<>();
+        boolean ret = false;
+        String content = "username="+user+"&password="+password;
+        HTMLResponse res = null;
+        try
+        {
+            res = makeHTTPRequest("GET", LIST_FEED, content);
+            JsonObject jsonObject = null;
+            JSONArray array = null;
+
+            JSONArray jsonMainArr = new JSONArray(res.getContent());
+
+            int arrayLenght = jsonMainArr.length();
+
+            for (int i = 0; i < jsonMainArr.length(); i++) {  // **line 2**
+                FeedJSON feed = new FeedJSON();
+                JSONObject childJSONObject = jsonMainArr.getJSONObject(i);
+
+                if (childJSONObject.has("s_uid")) {
+                    String s_uid = childJSONObject.getString("s_uid");
+                    feed.setS_uid(s_uid); }
+                if (childJSONObject.has("label")) {
+                    String label = childJSONObject.getString("label");
+                    feed.setLabel(label); }
+                if (childJSONObject.has("description")) {
+                    String description = childJSONObject.getString("description");
+                    feed.setDescription(description); }
+                if (childJSONObject.has("is_static_located")) {
+                    boolean is_static_located = childJSONObject.getBoolean("is_static_located");
+                    feed.setIs_static_located(is_static_located); }
+                if (childJSONObject.has("measure_unit")) {
+                    String measure_unit = childJSONObject.getString("measure_unit");
+                    feed.setMeasure_unit(measure_unit); }
+                if (childJSONObject.has("type_id")) {
+                    int type_id = childJSONObject.getInt("type_id");
+                    feed.setType_id(type_id); }
+                if (childJSONObject.has("static_altitude")) {
+                    Double static_altitude = childJSONObject.getDouble("static_altitude");
+                    feed.setStatic_altitude(static_altitude); }
+                if (childJSONObject.has("static_latitude")) {
+                    Double static_latitude = childJSONObject.getDouble("static_latitude");
+                    feed.setStatic_latitude(static_latitude); }
+                if (childJSONObject.has("static_longitude")) {
+                    Double static_longitude = childJSONObject.getDouble("static_longitude");
+                    feed.setStatic_longitude(static_longitude); }
+
+                list.add(feed);
+
+            }
+
+        } catch (Exception e) {
+                Log.d(TAG,"ERR!: " + e);
+             }
+        //TODO: Aggiungere errore quando ritorna success false
+        return list;
+    }
 
 
     public boolean registerNewAccount(String firstname, String lastname, String timezone, String email)
@@ -90,6 +158,9 @@ public class SensormindAPI {
             }
             else
                 urlRequest = new URL(url + ":"+port+ service + "?" + content);
+
+
+            Log.d(TAG, urlRequest.toString());
 
             HttpURLConnection urlConnection = (HttpURLConnection) urlRequest.openConnection();
 

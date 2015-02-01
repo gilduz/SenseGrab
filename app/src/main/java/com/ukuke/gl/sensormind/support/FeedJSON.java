@@ -15,6 +15,10 @@ public class FeedJSON {
 	private Double static_altitude; 
 	private Double static_latitude; 
 	private Double static_longitude;
+
+    FeedJSON (){
+
+    }
 	
 	public String getLabel() {
 		return label;
@@ -99,7 +103,7 @@ public class FeedJSON {
 	}
 
 
-	public void setStatic_Longitude(Double static_longitude) {
+	public void setStatic_longitude(Double static_longitude) {
 		this.static_longitude = static_longitude;
 	}
 
