@@ -274,6 +274,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             lastLatitude = mLastLocation.getLatitude();
             lastLongitude = mLastLocation.getLongitude();
         }
+        else {
+            Log.d(TAG, "Location NULL");
+        }
     }
 
     @Override

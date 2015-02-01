@@ -37,7 +37,7 @@
     <string name="conf_deleteButton">Delete</string>
     <string name="conf_sec">sec</string>
     <string name="conf_min">min</string>
-    <string name="title_activity_log_in">LogInActivity</string>
-    <string name="title_activity_register">RegisterActivity</string>
+    <string name="title_activity_log_in">Login</string>
+    <string name="title_activity_register">Registration</string>
 
 </resources>
