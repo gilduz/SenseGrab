@@ -33,7 +33,7 @@ public class ServiceManager {
     private List<ServiceComponent> serviceComponentList = new ArrayList<>();
     private List<ServiceComponent> serviceComponentActiveList = new ArrayList<>();
 
-    List<FeedJSON> allFeedList = new ArrayList<>();
+    public List<FeedJSON> allFeedList = new ArrayList<>();
 
     SensormindAPI API = null;
 
@@ -486,6 +486,29 @@ public class ServiceManager {
     public void syncAllFeedList() {
         new getAllFeed_asynk().execute();
     }
+
+
+//    private class createFeed_asynk extends AsyncTask<String, Void, String> {
+//
+//        @Override
+//        protected String doInBackground(String... params) {
+//            boolean test;
+//            API = new SensormindAPI(prefs.getString("username","test_3"), prefs.getString("password","test_3"));
+//            allFeedList = API.createFeed(String label, boolean is_static_located, String measure_unit, String s_uid, int type_id)
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            Log.d(TAG, allFeedList.size() + " feeds sync!");
+//        }
+//
+//        @Override
+//        protected void onPreExecute() {}
+//
+//        @Override
+//        protected void onProgressUpdate(Void... values) {}
+//    }
 
     private class getAllFeed_asynk extends AsyncTask<String, Void, String> {
 
