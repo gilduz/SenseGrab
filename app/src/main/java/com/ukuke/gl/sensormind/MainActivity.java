@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.hardware.SensorEvent;
+import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,7 +47,6 @@ public class MainActivity extends Activity {
         // Check shared preferences
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
-
         ServiceManager.getInstance(MainActivity.this).initializeFromDB();
 
         // Search  services
@@ -57,7 +57,9 @@ public class MainActivity extends Activity {
 
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
-        toggle.setChecked(prefs.getBoolean("enableGrabbing",true));
+        toggle.setChecked(prefs.getBoolean("enableGrabbing", true));
+
+
 
     }
 
