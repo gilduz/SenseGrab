@@ -18,7 +18,6 @@ import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.paho.client.mqttv3.*;
 
 /**
  * Created by gildoandreoni on 20/01/15.
@@ -238,7 +237,7 @@ public class ServiceManager {
         int numConf = dbHelper.numberOfConfigurations();
         Log.d("Service Manager", "Found in DB " + numConf + " configurations");
         if (numConf > 0) {
-            setTransferToDbInterval(MainActivity.transferToDbInterval);
+            setTransferToDbInterval(MainActivity.INTERVAL_TRANSFER_TO_DB);
             Cursor cursor;
             ArrayList<String> array_list = new ArrayList<>();
             array_list = dbHelper.getAllConfigurationsWithoutOrder();

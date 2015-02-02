@@ -34,7 +34,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int transferToDbInterval = 30; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 5; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 12; //[sec]
 
 
     // MQTT
@@ -89,91 +90,6 @@ public class MainActivity extends Activity {
         else if (id == R.id.action_test) {
             //API = new SensormindAPI(prefs.getString("username","test_3"),
 
-
-
-
-
-
-
-
-
-
-
-// TEST MQTT
-
-
-            String topic = "topicName";
-            String message = "myMessage";
-            String result;
-
-            //Intent intent = new Intent(getApplicationContext(), MQTTService.class);
-
-            //startService(intent);
-
-            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, MQTTService.class);
-
-//            Bundle args = new Bundle();
-//
-//            try {
-//                args.putBoolean(SensorBackgroundService.KEY_LOGGING, true);
-//            } catch (Exception e) {}
-//            try {
-//                args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, component.getSensorType());
-//            } catch (Exception e) {}
-//            try {
-//                args.putInt(SensorBackgroundService.KEY_WINDOW, configuration.getWindow());
-//            } catch (Exception e) {}
-//            try {
-//                args.putBoolean(SensorBackgroundService.KEY_ATTACH_GPS, configuration.attachGPS);
-//            } catch (Exception e) {}
-//
-//            intent.putExtras(args);
-
-            // Start the service
-
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1 * 1000, scheduledIntent);
-
-
-
-//            if (topic != null && topic.isEmpty() == false && message != null && message.isEmpty() == false)
-//            {
-//                result = "";
-//                Bundle data = new Bundle();
-//                data.putCharSequence(MQTTService.TOPIC, topic);
-//                data.putCharSequence(MQTTService.MESSAGE, message);
-//                Message msg = Message.obtain(null, MQTTService.PUBLISH);
-//                msg.setData(data);
-//                msg.replyTo = serviceHandler;
-//                try
-//                {
-//                    service.send(msg);
-//                }
-//                catch (RemoteException e)
-//                {
-//                    e.printStackTrace();
-//                    result = ("Publish failed with exception:" + e.getMessage());
-//                }
-//            }
-//            else
-//            {
-//                result = ("Topic and message required.");
-//            }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             // prefs.getString("password","test_3"));
            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
@@ -195,7 +111,14 @@ public class MainActivity extends Activity {
         prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
 
         if (toggleButton.isChecked()) {
-            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(transferToDbInterval);
+
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, MQTTService.class);
+
+            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND, scheduledIntent);
+
+            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
@@ -205,6 +128,12 @@ public class MainActivity extends Activity {
         }
         else {
             // STOP all schedules
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, MQTTService.class);
+            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.cancel(scheduledIntent);
+           // stopService(new Intent(this, MQTTService.class));
+
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;

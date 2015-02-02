@@ -74,7 +74,8 @@
                     android:layout_below="@+id/Conf_samp"
                     android:layout_marginTop="10sp"
                     android:layout_toLeftOf="@+id/Conf_viewSeekbarValue"
-                    android:layout_toStartOf="@+id/Conf_viewSeekbarValue" />
+                    android:layout_toStartOf="@+id/Conf_viewSeekbarValue"
+                    android:progress="1" />
 
                 <TextView
                     android:id="@+id/Conf_viewSeekbarValue"
@@ -136,7 +137,8 @@
                     android:layout_below="@+id/Conf_Win"
                     android:layout_marginTop="10sp"
                     android:layout_toLeftOf="@+id/Conf_viewWinSeekbarValue"
-                    android:layout_toStartOf="@+id/Conf_viewWinSeekbarValue" />
+                    android:layout_toStartOf="@+id/Conf_viewWinSeekbarValue"
+                    android:progress="1" />
 
                 <TextView
                     android:id="@+id/Conf_viewWinSeekbarValue"

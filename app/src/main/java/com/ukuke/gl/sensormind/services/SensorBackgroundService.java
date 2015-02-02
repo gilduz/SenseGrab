@@ -191,6 +191,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             listDataSample.clear();
             Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries");
         }
+
+
         return dataTransferred;
     }
 

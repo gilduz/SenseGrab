@@ -1,9 +1,9 @@
 package com.ukuke.gl.sensormind.services;
 
 
-import java.util.Enumeration;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Properties;
+import java.util.List;
 import java.util.Vector;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -21,18 +21,17 @@ import android.app.Service;
 import android.app.Notification.Builder;
 import android.content.Context;
 import android.content.Intent;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.provider.Settings;
-import android.text.LoginFilter;
 import android.util.Log;
 
+import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.R;
+import com.ukuke.gl.sensormind.support.DataSample;
 
 
 public class MQTTService extends Service
@@ -43,6 +42,9 @@ public class MQTTService extends Service
     private static int mid = 0;
     private static MQTTConnection connection = null;
     private final Messenger clientMessenger = new Messenger(new ClientHandler());
+    private DataDbHelper dataDbHelper = null;
+
+
 
     @Override
     public void onCreate()
@@ -51,40 +53,78 @@ public class MQTTService extends Service
         connection = new MQTTConnection();
 
         connection.start(); // Spostato da onstartcommand
+        dataDbHelper = new DataDbHelper(this);
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        if (isRunning())
-        {
-            return START_STICKY;
-        }
 
-        super.onStartCommand(intent, flags, startId);
+     //   super.onStartCommand(intent, flags, startId);
 		/*
 		 * Start the MQTT Thread.
 		 */
-        JSONObject obj = new JSONObject();
+//        JSONObject obj = new JSONObject();
+//
+//        try {
+//            String str = "Ciao";
+//            obj.put("d", 6.12);
+//        } catch (Exception e) {}
+//
+//        Bundle data = new Bundle();
+//
+//        String message = obj.toString();
+//        Log.d(TAG,"onStartCommand: " + message);
+//
+//        data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
+//        data.putCharSequence(MESSAGE, message);
+//        Message msg = Message.obtain(null, PUBLISH);
+//        msg.setData(data);
+//
+//        connection.makeRequest(msg);
 
-        try {
-            String str = "Ciao";
-            obj.put("d", 6.12);
-        } catch (Exception e) {}
-
-        Bundle data = new Bundle();
-
-        String message = obj.toString();
-        Log.d(TAG,"onStartCommand: " + message);
-
-        data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
-        data.putCharSequence(MESSAGE, message);
-        Message msg = Message.obtain(null, PUBLISH);
-        msg.setData(data);
-
-        connection.makeRequest(msg);
+        syncWithSensorming();
 
         return START_STICKY;
+    }
+
+    private void syncWithSensorming() {
+        List<DataSample> listData = new ArrayList<>();
+
+        if (dataDbHelper.numberOfUnsentEntries() > 0) {
+            listData = dataDbHelper.getAllUnsentDataSamples();
+        }
+
+
+
+        for (int i = 0; i < listData.size(); i++) {
+            JSONObject obj = new JSONObject();
+            DataSample sample = listData.get(i);
+
+            try {
+                obj.put("d", sample.getValue_1());
+
+            } catch (Exception e) {}
+
+            Bundle data = new Bundle();
+
+            String message = obj.toString();
+            //Log.d(TAG,"onStartCommand: " + message);
+
+            data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
+            data.putCharSequence(MESSAGE, message);
+            Message msg = Message.obtain(null, PUBLISH);
+            msg.setData(data);
+
+            connection.makeRequest(msg);
+        }
+
+
+        if (listData.size()>0) {
+            Log.d(TAG, "Sent to sensormind " + listData.size() + " samples");
+            dataDbHelper.deleteAllDataSamples();
+        }
     }
 
     @Override
@@ -325,13 +365,11 @@ public class MQTTService extends Service
                             {
                                 ;
 
-                                testInvalidPassword();
+                                logInWithCredentials();
                                 //client.connect(options);
 
-                                Log.d(TAG,"Connesso?: " + client.isConnected());
-
                                 connState = CONNECT_STATE.CONNECTED;
-                                Log.d(getClass().getCanonicalName(), "MQTT Connected");
+                                Log.d(TAG, "MQTT Connected");
                                 timeout = MINTIMEOUT;
                             }
                             catch (MqttException e)
@@ -441,7 +479,7 @@ public class MQTTService extends Service
 
                     message.setPayload(msg.getBytes());
                     client.publish(topic, message);
-                    Log.d(TAG,"PUBBLICATO");
+                    //Log.d(TAG,"PUBBLICATO");
                 }
                 catch (MqttException e)
                 {
@@ -462,7 +500,7 @@ public class MQTTService extends Service
             @Override
             public void deliveryComplete(IMqttDeliveryToken arg0)
             {
-                Log.d(TAG,"Delivery complete");
+                //Log.d(TAG,"Delivery complete");
             }
 
             @Override
@@ -506,14 +544,13 @@ public class MQTTService extends Service
 
             }
 
-            public void testInvalidPassword() throws MqttException {
+            public void logInWithCredentials() throws MqttException {
 
                 options.setUserName("test_1");
                 options.setPassword("test_1".toCharArray());
 
                 try {
                     client.connect(options);
-                    Log.d(TAG,"Authentication failure expected");
                 } catch (MqttException ex) {
                     Log.d(TAG,"FAILURE: " + ex);
 

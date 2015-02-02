@@ -69,6 +69,8 @@ public class ConfigurationActivity extends Activity {
         seekSamp.setMax(60);
         seekWin.setMax(60);
 
+        configuration = new ServiceManager.ServiceComponent.Configuration();
+
         // Set values from seekBars
         seekSamp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -130,17 +132,17 @@ public class ConfigurationActivity extends Activity {
         long interval;
         int window = 1;
         try {
-            interval = seekSamp.getProgress()*1000;
+            interval = seekSamp.getProgress() * 1000;
             window = 1;//seekSamp.getProgress();
         } catch (Exception e) {
             interval = 1000L;
         }
         // TODO: Non è stato fatto sec/min
-        configuration = new ServiceManager.ServiceComponent.Configuration();
+
         configuration.setInterval(interval);
         configuration.setWindow(window);
-        configuration.setConfigurationName(confName.getText().toString());
-        configuration.setPath("/Path/1");
+        configuration.setConfigurationName(serviceComponent.getDysplayName());
+        configuration.setPath("Test");
         configuration.setAttachGPS(gpsSwitch.isActivated());
 
         ServiceManager.ServiceComponent component;
@@ -162,6 +164,8 @@ public class ConfigurationActivity extends Activity {
     public void onButtonDeleteClicked(View view) {
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+        //TODO: Sistema qui sotto!
+        configuration.setConfigurationName(serviceComponent.getDysplayName());
         ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(serviceComponent, configuration);
         Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
