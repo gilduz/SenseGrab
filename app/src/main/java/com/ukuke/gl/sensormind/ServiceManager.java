@@ -78,7 +78,7 @@ public class ServiceManager {
         public int addConfiguration(String configurationName, String path, long interval, int window, boolean attachGPS) {
             // Se egiste già con lo stesso nome ritorna -1
             for (int i = 0; i < configurationList.size(); i++) {
-                if (configurationList.get(i).getConfigurationName() == configurationName) {
+                if (configurationList.get(i).getConfigurationName().equals(configurationName)) {
                     return -1;
                 }
             }
@@ -93,7 +93,7 @@ public class ServiceManager {
 
         public Configuration getConfiguration(String configurationName) {
             for (int i = 0; i < configurationList.size(); i++) {
-                if (configurationList.get(i).getConfigurationName() == configurationName) {
+                if (configurationList.get(i).getConfigurationName().equals(configurationName)) {
                     return configurationList.get(i);
                 }
             }
@@ -192,6 +192,15 @@ public class ServiceManager {
         }
 
         public static class Configuration {
+            //TODO inserito dbID, gestirlo in dbHelper
+
+            private long interval = 1000;
+            private int window = 2;
+            private String configurationName;
+            private String path;
+            private boolean attachGPS;
+            private int dbId;
+
 
             Configuration() {
             }
@@ -204,11 +213,7 @@ public class ServiceManager {
                 this.path = path;
             }
 
-            private long interval = 1000;
-            private int window = 1;
-            private String configurationName;
-            private String path;
-            private boolean attachGPS;
+
 
             public String getPath() {
                 return path;
@@ -224,6 +229,14 @@ public class ServiceManager {
 
             public int getWindow() {
                 return window;
+            }
+
+            public int getDbId() {
+                return dbId;
+            }
+
+            public void setDbId(int dbId) {
+                this.dbId = dbId;
             }
 
             public String getConfigurationName() {

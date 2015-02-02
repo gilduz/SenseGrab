@@ -22,13 +22,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String DB_name = "DB_Sensormind";
 
     // Tables
-    //public static final String Samp_type_table = "Samp_type";
     public static final String Samp_conf_table = "Samp_conf";
-
-    // Sampling types columns
-    //public static final String Samp_type_id = "id"; //int
-    //public static final String Samp_type_name = "type"; //string
-    //public static final String Samp_type_date = "created"; //datetime
 
     // Sampling configurations columns
     public static final String Samp_conf_id = "id"; //int
@@ -40,10 +34,6 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String Samp_conf_gps ="gps"; //int, not boolean in SQLite, 0 is false, 1 is true
     public static final String Samp_conf_date = "created";
 
-    // String for creating tables
-    //private static final String Create_Type_Table =
-    //        "create table "+Samp_type_table+"("+Samp_type_id+" integer primary key autoincrement,"+
-    //                Samp_type_name+" text,"+Samp_type_date+" datetime"+")";
 
     private static final String Create_Conf_Table =
             "create table "+Samp_conf_table+"("+Samp_conf_id+" integer primary key autoincrement,"+
@@ -76,7 +66,6 @@ public class DbHelper extends SQLiteOpenHelper {
     // Adapter methods
 
     //NEW CONFIGURATION
-    //TODO: type deve essere un int per come è strutturato ora... poi si vedrà. ma per far le prove è meglio passarlo a int
     public boolean newConfiguration (String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
