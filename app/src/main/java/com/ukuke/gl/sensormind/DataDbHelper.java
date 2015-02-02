@@ -227,7 +227,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         int arrayCount,id;
 
         res.moveToFirst();
-        for (int i=0; i<N; i+=1) {
+        for (int i=0; i<N; i++) {
             feed = res.getString(res.getColumnIndex(Data_idFeed));
             value1 = res.getFloat(res.getColumnIndex(Data_value1));
             value2 = res.getFloat(res.getColumnIndex(Data_value2));
@@ -257,27 +257,48 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     public int deleteAllUnsentDataSamples (){
         db = this.getWritableDatabase();
-        int del = db.delete(Data_table,"sent = 0",null);
+        int del = db.delete(Data_table,Data_sent+" = 0",null);
         closeDb();
         return del;
     }
 
     public int deleteAllSentDataSamples (){
         db = this.getWritableDatabase();
-        int del = db.delete(Data_table,"sent = 1",null);
+        int del = db.delete(Data_table,Data_sent+" = 1",null);
+        closeDb();
+        return del;
+    }
+
+    public int deleteSentDataSamplesBeforeTimestamp (Long timestamp){
+        db = this.getWritableDatabase();
+        int del = db.delete(Data_table,Data_sent+" = ? and "+Data_timestamp+" < ?",new String[] {"1",Long.toString(timestamp)});
         closeDb();
         return del;
     }
 
     public boolean setSentListOfDataSamples (List<DataSample> array){
-        //TODO utilizzare un altro metodo per fare set singolo da id
-        return true;
+        int size = array.size(),rightSet=0;
+        db = this.getWritableDatabase();
+        for (int i = 0; i <size; i++) {
+            rightSet+=internalSetSentDataSampleById(array.get(i).getDbId(),db);
+        }
+        closeDb();
+        return rightSet==size; //return true if all samples are set as sent
     }
 
-    private int setSentDataSampleById(int id, SQLiteDatabase DataBase){
+    private int internalSetSentDataSampleById(int id, SQLiteDatabase DataBase){
         ContentValues value = new ContentValues();
         value.put(Data_sent, 1);
         return DataBase.update(Data_table,value,"id = "+id,null);
+    }
+
+    public int setSentDataSampleById(int id){
+        db = this.getWritableDatabase();
+        ContentValues value = new ContentValues();
+        value.put(Data_sent, 1);
+        int res = db.update(Data_table,value,"id = "+id,null);
+        closeDb();
+        return res;
     }
 
     public void closeDb(){
