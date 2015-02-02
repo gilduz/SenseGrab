@@ -43,7 +43,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
     public static final String KEY_PERFORM_UPLOAD = "perform_upload";
 
-
     public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
     private long timeOfLastLocationUpdateMs = 0;
 

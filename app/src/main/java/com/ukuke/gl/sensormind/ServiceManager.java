@@ -18,6 +18,7 @@ import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.eclipse.paho.client.mqttv3.*;
 
 /**
  * Created by gildoandreoni on 20/01/15.
@@ -488,6 +489,7 @@ public class ServiceManager {
     }
 
 
+
 //    private class createFeed_asynk extends AsyncTask<String, Void, String> {
 //
 //        @Override
@@ -531,4 +533,6 @@ public class ServiceManager {
         @Override
         protected void onProgressUpdate(Void... values) {}
     }
+
+
 }
