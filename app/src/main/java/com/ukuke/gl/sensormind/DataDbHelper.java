@@ -192,7 +192,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         Float value1,value2,value3;
         Double longitude,latitude;
         Long timestamp;
-        int arrayCount;
+        int arrayCount,id;
 
         res.moveToFirst();
         while(!res.isAfterLast()) {
@@ -204,8 +204,10 @@ public class DataDbHelper extends SQLiteOpenHelper {
             timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
             longitude = res.getDouble(res.getColumnIndex(Data_long));
             latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
 
             data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
+            data.setDbId(id);
             list.add(data);
             res.moveToNext();
         }
@@ -222,7 +224,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         Float value1,value2,value3;
         Double longitude,latitude;
         Long timestamp;
-        int arrayCount;
+        int arrayCount,id;
 
         res.moveToFirst();
         for (int i=0; i<N; i+=1) {
@@ -234,8 +236,10 @@ public class DataDbHelper extends SQLiteOpenHelper {
             timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
             longitude = res.getDouble(res.getColumnIndex(Data_long));
             latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
 
             data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
+            data.setDbId(id);
             list.add(data);
             res.moveToNext();
         }
@@ -263,6 +267,17 @@ public class DataDbHelper extends SQLiteOpenHelper {
         int del = db.delete(Data_table,"sent = 1",null);
         closeDb();
         return del;
+    }
+
+    public boolean setSentListOfDataSamples (List<DataSample> array){
+        //TODO utilizzare un altro metodo per fare set singolo da id
+        return true;
+    }
+
+    private int setSentDataSampleById(int id, SQLiteDatabase DataBase){
+        ContentValues value = new ContentValues();
+        value.put(Data_sent, 1);
+        return DataBase.update(Data_table,value,"id = "+id,null);
     }
 
     public void closeDb(){
