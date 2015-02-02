@@ -130,10 +130,12 @@ public class ConfigurationActivity extends Activity {
 
     public void onButtonSaveClicked(View view) {
         long interval;
-        int window = 1;
+
+        int window = 1;// = 1;
+
         try {
             interval = seekSamp.getProgress() * 1000;
-            window = 1;//seekSamp.getProgress();
+            window = seekSamp.getProgress();
         } catch (Exception e) {
             interval = 1000L;
         }
@@ -142,7 +144,7 @@ public class ConfigurationActivity extends Activity {
         configuration.setInterval(interval);
         configuration.setWindow(window);
         configuration.setConfigurationName(serviceComponent.getDysplayName());
-        configuration.setPath("Test");
+        configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path
         configuration.setAttachGPS(gpsSwitch.isActivated());
 
         ServiceManager.ServiceComponent component;

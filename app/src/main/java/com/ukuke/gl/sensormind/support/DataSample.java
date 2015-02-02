@@ -14,7 +14,7 @@ public class DataSample {
     private Double latitude;
     private int dbId = -1; // This variable is set when stored on dataDB
 
-    public DataSample(String feedPath, Float value_1, Float value_2, Float value_3,int arrayCount, Long timestamp, Double longitude, Double latitude) {
+    public DataSample(String feedPath, Float value_1, Float value_2, Float value_3, int arrayCount, Long timestamp, Double longitude, Double latitude) {
         this.feedPath = feedPath;
         this.value_1 = value_1;
         this.value_2 = value_2;
