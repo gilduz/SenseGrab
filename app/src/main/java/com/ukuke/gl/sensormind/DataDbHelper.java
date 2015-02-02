@@ -6,22 +6,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.support.annotation.NonNull;
-import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import com.ukuke.gl.sensormind.support.DataSample;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-
-import static java.lang.System.*;
 
 /**
  *   Created by Leonardo on 30/01/2015.
@@ -79,7 +68,9 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     // Adapter methods
 
-    // Insert data
+
+    //---------------INSERT METHODS----------------------
+
     public boolean insertSingleData (DataSample data) {
         //Float is an object and can be set as null, float cannot be set as null; same for Long and long
         //arrayCount must be: -1 for non array values, index for arrays
@@ -108,11 +99,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
         } else {
             return false;
         }
-    }
-
-    public boolean getListData (List<DataSample> listDataSample) {
-        //TODO: Da fare
-        return true;
     }
 
     public boolean insertListOfData (List<DataSample> array){
@@ -145,6 +131,9 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return wrongData < size;
     }
 
+
+    //---------------NUMERIC METHODS----------------------
+
     public int numberOfEntries(){
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table);
@@ -172,6 +161,28 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return num;
     }
 
+    public int numberOfUnsentArrays(){
+        db = this.getReadableDatabase();
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_arrayCount+" = 0");
+        // se non va quello sopra usare questo:
+        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_arrayCount+" = 0", null );
+        int num = res.getCount();*/
+        closeDb();
+        return num;
+    }
+
+    public int numberOfCompleteArraysOnFeed(String feed){
+        db = this.getReadableDatabase();
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_idFeed+" = '"+feed+"' and "+Data_arrayCount+" = 0");
+        // se non va quello sopra usare questo:
+        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_idFeed+" = '"+feed+"' and "+Data_arrayCount+" = 0", null );
+        int num = res.getCount();*/
+        closeDb();
+        return num-1;
+    }
+
+    //---------------CURSOR METHODS----------------------
+
     public Cursor getAllUnsentCursor (){
         db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0", null );
@@ -195,6 +206,23 @@ public class DataDbHelper extends SQLiteOpenHelper {
         Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0 and "+Data_arrayCount+" > -1", null );
         return res;
     }
+
+    public Cursor getAllUnsentArrayFirstElementCursor (){
+        db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0 and "+Data_arrayCount+" = 0", null );
+        return res;
+    }
+
+    private Cursor getAllPotentialElementOfAnArray(Cursor currentRow){//TODO verificare il funzionamento
+        db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_idFeed+
+                " = '"+currentRow.getString(currentRow.getColumnIndex(Data_idFeed))+
+                "' and "+Data_id+" >= '"+currentRow.getString(currentRow.getColumnIndex(Data_id))+
+                "' and "+Data_arrayCount+" -1", null );
+        return res;
+    }
+
+    //---------------LIST OF DATASAMPLES METHODS----------------------
 
     public List<DataSample> getAllUnsentDataSamples () {
         Cursor res = this.getAllUnsentCursor();
@@ -293,46 +321,59 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     public List<DataSample> getFirstUnsentArrayDataSamples() {
-        Cursor res = this.getAllUnsentArrayDataCursor();//TODO da completare
+        Cursor unsentArrayFirstElDb = this.getAllUnsentArrayFirstElementCursor();
         List<DataSample> list = new ArrayList<>();
         DataSample data;
         String feed;
         Float value1,value2,value3;
         Double longitude,latitude;
         Long timestamp;
-        int arrayCount,id;
+        int arrayCount,id,numArrays= numberOfUnsentArrays();
 
-        res.moveToFirst();
-        while(!res.isAfterLast()) {
-            feed = res.getString(res.getColumnIndex(Data_idFeed));
-            value1 = res.getFloat(res.getColumnIndex(Data_value1));
-            value2 = res.getFloat(res.getColumnIndex(Data_value2));
-            value3 = res.getFloat(res.getColumnIndex(Data_value3));
-            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
-            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
-            longitude = res.getDouble(res.getColumnIndex(Data_long));
-            latitude = res.getDouble(res.getColumnIndex(Data_lat));
-            id = res.getInt(res.getColumnIndex(Data_id));
+        unsentArrayFirstElDb.moveToFirst();
+        //eseguo il ciclo for alla ricerca del primo array completo
+        for (int i = 0; i < (numArrays-1); i++) {
+            //Imposto il feed per il quale cerco un array completo
+            feed = unsentArrayFirstElDb.getString(unsentArrayFirstElDb.getColumnIndex(Data_idFeed));
+            //Controllo se esiste un array completo
+            if (numberOfCompleteArraysOnFeed(feed)>0) {
+                //esiste un array completo, ciclo fino a che non arrivo alla fine (NON devo avere diverse robe nello stesso feed)
+                Cursor currentArrayCursor = getAllPotentialElementOfAnArray(unsentArrayFirstElDb);
+                //eseguo il ciclo almeno la prima volta, e dopo faccio il check dell'arrayCount
+                //alla fine del primo ciclo nella condizione mi ritrovo 1>0
+                //il ciclo finisce quando arrivo al primo elemento dell'array successivo
+                do {
+                    value1 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value1));
+                    value2 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value2));
+                    value3 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value3));
+                    arrayCount = currentArrayCursor.getInt(currentArrayCursor.getColumnIndex(Data_arrayCount));
+                    timestamp = currentArrayCursor.getLong(currentArrayCursor.getColumnIndex(Data_timestamp));
+                    longitude = currentArrayCursor.getDouble(currentArrayCursor.getColumnIndex(Data_long));
+                    latitude = currentArrayCursor.getDouble(currentArrayCursor.getColumnIndex(Data_lat));
+                    id = currentArrayCursor.getInt(currentArrayCursor.getColumnIndex(Data_id));
 
-            data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
-            data.setDbId(id);
-            list.add(data);
-            res.moveToNext();
+                    data = new DataSample(feed, value1, value2, value3, arrayCount, timestamp, longitude, latitude);
+                    data.setDbId(id);
+                    list.add(data);
+                    currentArrayCursor.moveToNext();
+                } while (currentArrayCursor.getInt(currentArrayCursor.getColumnIndex(Data_arrayCount))>0);
+                //Ho finito di completare la lista e la restituisco
+                currentArrayCursor.close();
+                unsentArrayFirstElDb.close();
+                closeDb();
+                return list;
+            }
+            else {//Non esiste un array completo per questo feed, guardo il successivo
+                unsentArrayFirstElDb.moveToNext();
+            }
         }
-        res.close();
+
+        unsentArrayFirstElDb.close();
         closeDb();
         return list;
     }
 
-    public int getNumUnsentArrays(){
-        db = this.getReadableDatabase();
-        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_arrayCount+" = 0");
-        // se non va quello sopra usare questo:
-        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
-        int num = res.getCount();*/
-        closeDb();
-        return num;
-    }
+    //---------------DELETE METHODS----------------------
 
     public int deleteAllDataSamples (){
         db = this.getWritableDatabase();
@@ -362,6 +403,8 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return del;
     }
 
+    //---------------SET SENT METHODS----------------------
+
     public boolean setSentListOfDataSamples (List<DataSample> array){
         int size = array.size(),rightSet=0;
         db = this.getWritableDatabase();
@@ -386,6 +429,8 @@ public class DataDbHelper extends SQLiteOpenHelper {
         closeDb();
         return res;
     }
+
+    //---------------CLOSE METHOD----------------------
 
     public void closeDb(){
         if (db.isOpen()){db.close();}
