@@ -71,6 +71,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.RegisterActivity" />
         </activity>
+        <service android:name=".services.MQTTService" >
+        </service>
     </application>
 
 </manifest>

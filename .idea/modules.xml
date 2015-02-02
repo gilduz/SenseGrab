@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/SenseGrab.iml" filepath="$PROJECT_DIR$/SenseGrab.iml" />
       <module fileurl="file://$PROJECT_DIR$/Sensormind.iml" filepath="$PROJECT_DIR$/Sensormind.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libs/org.eclipse.paho.mqtt.java-1.0.0/org.eclipse.paho.mqtt.java-1.0.0.iml" filepath="$PROJECT_DIR$/libs/org.eclipse.paho.mqtt.java-1.0.0/org.eclipse.paho.mqtt.java-1.0.0.iml" />
     </modules>
   </component>
 </project>

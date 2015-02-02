@@ -29,7 +29,5 @@ dependencies {
     compile 'com.github.markushi:circlebutton:1.1'
     compile files('libs/gson-2.2.4.jar')
     compile 'com.google.android.gms:play-services:6.5.87'
-    compile files('libs/paho-mqtt-client-1.0.1')
-    compile files('libs/paho-mqtt-client-1.0.1-sources')
-
+    compile files('libs/org.eclipse.paho.client.mqttv3.jar')
 }

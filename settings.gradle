@@ -1,1 +1,2 @@
 include ':app'
+include ':libs:org.eclipse.paho.mqtt.java-1.0.0'
