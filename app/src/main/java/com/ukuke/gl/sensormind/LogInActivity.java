@@ -68,9 +68,10 @@ public class LogInActivity extends Activity {
     public void onClickedLogInButton(View view) {
         editText_username = (EditText) findViewById(R.id.editText_username);
         editText_password = (EditText) findViewById(R.id.editText_password);
+        prefs.edit().putBoolean("loggedIn",validLogIn).apply();
         prefs.edit().putString("username",editText_username.getText().toString()).apply();//editText_username.getText().toString());
         prefs.edit().putString("password",editText_password.getText().toString()).apply();
-        prefs.edit().putBoolean("CICCIO",true).apply();
+        //prefs.edit().putBoolean("CICCIO",true).apply();
         prefs.edit().commit();
         Log.d(TAG,"VALORE: " + prefs.contains("username"));
         Log.d(TAG,"VALORE: " + prefs.contains("password"));
@@ -92,18 +93,21 @@ public class LogInActivity extends Activity {
         protected void onPostExecute(String result) {
             //TODO: Controllare il result della connessione e impostare logged o no
 
-            prefs.edit().putBoolean("loggedIn", validLogIn);
+            prefs.edit().putBoolean("loggedIn", validLogIn).apply();
 
             if (validLogIn) {
                 Log.d(TAG,"Registration succeed!");
                 Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
-                prefs.edit().putString("username",editText_username.toString());
-                prefs.edit().putString("password",editText_password.toString());
+                prefs.edit().putString("username",editText_username.toString()).apply();
+                prefs.edit().putString("password",editText_password.toString()).apply();
+
+
             }
             else {
                 Log.d(TAG,"Registration failed!");
                 Toast.makeText(getApplicationContext(), "Registration failed!", Toast.LENGTH_LONG).show();
             }
+            prefs.edit().commit();
         }
 
         @Override

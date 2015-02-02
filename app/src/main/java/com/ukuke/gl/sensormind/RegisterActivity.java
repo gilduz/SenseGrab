@@ -85,19 +85,20 @@ public class RegisterActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            prefs.edit().putBoolean("loggedIn", validRegistration);
+            prefs.edit().putBoolean("loggedIn", validRegistration).commit();
 
             if (validRegistration) {
                 Log.d(TAG,"Registration succeed!");
                 Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
-                prefs.edit().commit();
+
             }
             else {
                 Log.d(TAG,"Registration failed!");
                 Toast.makeText(getApplicationContext(), "Registration failed!", Toast.LENGTH_LONG).show();
             }
+            prefs.edit().commit();
         }
 
         @Override

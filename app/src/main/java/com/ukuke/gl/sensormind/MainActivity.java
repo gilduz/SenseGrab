@@ -34,9 +34,10 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 5; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 12; //[sec]
-
+    public static final int INTERVAL_TRANSFER_TO_DB = 30; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 100; //[sec]
+    public static final String IP_MQTT = "137.204.213.190";
+    public static final int PORT_MQTT = 1884;
 
     // MQTT
     private Messenger service = null;
@@ -51,6 +52,7 @@ public class MainActivity extends Activity {
         // Check shared preferences
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
+
         ServiceManager.getInstance(MainActivity.this).initializeFromDB();
 
         // Search  services
@@ -62,7 +64,10 @@ public class MainActivity extends Activity {
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
         toggle.setChecked(prefs.getBoolean("enableGrabbing", true));
+        prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
+        prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
 
+        prefs.edit().commit();
 
 
     }
@@ -108,14 +113,17 @@ public class MainActivity extends Activity {
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
 
         prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
+        prefs.edit().commit();
 
         if (toggleButton.isChecked()) {
 
-            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, MQTTService.class);
+            if (prefs.getBoolean("loggedIn",false)) {
+                AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(this, MQTTService.class);
 
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND, scheduledIntent);
+                PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND, scheduledIntent);
+            }
 
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {

@@ -22,6 +22,7 @@ import android.app.Service;
 import android.app.Notification.Builder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -31,6 +32,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.ukuke.gl.sensormind.DataDbHelper;
+import com.ukuke.gl.sensormind.MainActivity;
 import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.support.DataSample;
 
@@ -44,8 +46,13 @@ public class MQTTService extends Service
     private static MQTTConnection connection = null;
     private final Messenger clientMessenger = new Messenger(new ClientHandler());
     private DataDbHelper dataDbHelper = null;
+    SharedPreferences prefs = null;
 
-
+    private boolean isLoggedIn;
+    private String username = "NULL";
+    private String password = "NULL";
+    private String ipMqtt;
+    private int portMqtt;
 
     @Override
     public void onCreate()
@@ -56,13 +63,32 @@ public class MQTTService extends Service
         connection.start(); // Spostato da onstartcommand
         dataDbHelper = new DataDbHelper(this);
 
+        // Get shared preferences
+        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+
+
+        ipMqtt = prefs.getString("ip_MQTT","123456");
+        portMqtt = prefs.getInt("port_MQTT",123456);
+
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        syncWithSensormind();
+        boolean isLoggedIn;
 
+        //Log.d(TAG, "USERNAME" + prefs.getString("username", "NULL"));
+
+        isLoggedIn = prefs.getBoolean("loggedIn", false);
+
+        if (isLoggedIn) {
+            username = prefs.getString("username", "NULL");
+            password = prefs.getString("password", "NULL");
+            syncWithSensormind();
+        }
+        else {
+            Log.d(TAG, "No credentials stored in sharedpreferences");
+        }
         return START_STICKY;
     }
 
@@ -71,7 +97,7 @@ public class MQTTService extends Service
 
         // Multi sample send
         try {
-            while (dataDbHelper.getNumUnsentArrays() > 1) {
+            while (dataDbHelper.numberOfUnsentArrays() > 1) {
                 DataSample sample;
 
                 listData = dataDbHelper.getFirstUnsentArrayDataSamples();
@@ -142,7 +168,8 @@ public class MQTTService extends Service
                 msg_3.setData(data_3);
                 connection.makeRequest(msg_3);
 
-                // Invio qui
+                // Scrivo su DB che i dati sono stati inviati
+
                 dataDbHelper.setSentListOfDataSamples(listData);
             }
         } catch (Exception e) {}
@@ -262,7 +289,7 @@ public class MQTTService extends Service
 
             switch (msg.what)
             {
-                case SUBSCRIBE:
+                //case SUBSCRIBE: // Not used now
                 case PUBLISH:
            		 	/*
            		 	 * These two requests should be handled by
@@ -270,39 +297,39 @@ public class MQTTService extends Service
            		 	 */
                     connection.makeRequest(msg);
                     break;
-                case REGISTER:
-                {
-                    Bundle b = msg.getData();
-                    if (b != null)
-                    {
-                        Object target = b.getSerializable(CLASSNAME);
-                        if (target != null)
-                        {
-        				 /*
-        				  * This request can be handled in-line
-        				  * call the API
-        				  */
-                            connection.setPushCallback((Class<?>) target);
-                            status = true;
-                        }
-                        CharSequence cs = b.getCharSequence(INTENTNAME);
-                        if (cs != null)
-                        {
-                            String name = cs.toString().trim();
-                            if (name.isEmpty() == false)
-                            {
-            				 /*
-            				  * This request can be handled in-line
-            				  * call the API
-            				  */
-                                connection.setIntentName(name);
-                                status = true;
-                            }
-                        }
-                    }
-                    ReplytoClient(msg.replyTo, msg.what, status);
-                    break;
-                }
+//                case REGISTER: // Not used now
+//                {
+//                    Bundle b = msg.getData();
+//                    if (b != null)
+//                    {
+//                        Object target = b.getSerializable(CLASSNAME);
+//                        if (target != null)
+//                        {
+//        				 /*
+//        				  * This request can be handled in-line
+//        				  * call the API
+//        				  */
+//                            connection.setPushCallback((Class<?>) target);
+//                            status = true;
+//                        }
+//                        CharSequence cs = b.getCharSequence(INTENTNAME);
+//                        if (cs != null)
+//                        {
+//                            String name = cs.toString().trim();
+//                            if (name.isEmpty() == false)
+//                            {
+//            				 /*
+//            				  * This request can be handled in-line
+//            				  * call the API
+//            				  */
+//                                connection.setIntentName(name);
+//                                status = true;
+//                            }
+//                        }
+//                    }
+//                    ReplytoClient(msg.replyTo, msg.what, status);
+//                    break;
+//                }
             }
         }
     }
@@ -379,8 +406,8 @@ public class MQTTService extends Service
 
         private class MsgHandler extends Handler implements MqttCallback
         {
-            private final String HOST = "137.204.213.190";
-            private final int PORT = 1884;
+            private final String HOST = "137.204.213.190";//ipMqtt;
+            private final int PORT = 1884;//portMqtt;
             private final String uri = "tcp://" + HOST + ":" + PORT;
             private final int MINTIMEOUT = 2000;
             private final int MAXTIMEOUT = 32000;
@@ -438,11 +465,9 @@ public class MQTTService extends Service
                         {
                             try
                             {
-                                ;
-
-                                logInWithCredentials();
-                                //client.connect(options);
-
+                                options.setUserName(username);
+                                options.setPassword(password.toCharArray());
+                                client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
                                 Log.d(TAG, "MQTT Connected");
                                 timeout = MINTIMEOUT;
@@ -619,18 +644,6 @@ public class MQTTService extends Service
 
             }
 
-            public void logInWithCredentials() throws MqttException {
-
-                options.setUserName("test_1");
-                options.setPassword("test_1".toCharArray());
-
-                try {
-                    client.connect(options);
-                } catch (MqttException ex) {
-                    Log.d(TAG,"FAILURE: " + ex);
-
-                }
-            }
         }
 
     }

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.ukuke.gl.sensormind.support.DataSample;
 
@@ -16,6 +17,8 @@ import java.util.List;
  *   Created by Leonardo on 30/01/2015.
  */
 public class DataDbHelper extends SQLiteOpenHelper {
+
+    private static final String TAG = RegisterActivity.class.getSimpleName();
 
     // DB name
     public static final String DB_name = "DB_Sensormind_Data"; //TODO salvare i dati su un Db diverso o sullo stesso? nel caso cambiare questo nome
@@ -215,10 +218,10 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     private Cursor getAllPotentialElementOfAnArray(Cursor currentRow){//TODO verificare il funzionamento
         db = this.getReadableDatabase();
-        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_idFeed+
-                " = '"+currentRow.getString(currentRow.getColumnIndex(Data_idFeed))+
-                "' and "+Data_id+" >= '"+currentRow.getString(currentRow.getColumnIndex(Data_id))+
-                "' and "+Data_arrayCount+" -1", null );
+        Cursor res = db.rawQuery("select * from " + Data_table + " where " + Data_idFeed +
+                " = '" + currentRow.getString(currentRow.getColumnIndex(Data_idFeed)) +
+                "' and " + Data_id + " >= '" + currentRow.getString(currentRow.getColumnIndex(Data_id)) +
+                "' and " + Data_arrayCount + " > -1", null);
         return res;
     }
 
@@ -328,21 +331,27 @@ public class DataDbHelper extends SQLiteOpenHelper {
         Float value1,value2,value3;
         Double longitude,latitude;
         Long timestamp;
-        int arrayCount,id,numArrays= numberOfUnsentArrays();
+        int arrayCount,id;
+        int numArrays = unsentArrayFirstElDb.getCount();
+
+        //Log.d(TAG,"unsentArrayFirstElDb ha " + unsentArrayFirstElDb.getCount()+ " elementi");
 
         unsentArrayFirstElDb.moveToFirst();
         //eseguo il ciclo for alla ricerca del primo array completo
         for (int i = 0; i < (numArrays-1); i++) {
             //Imposto il feed per il quale cerco un array completo
+            //Log.d("DataDbHelper","Sono dentro al primo for");
             feed = unsentArrayFirstElDb.getString(unsentArrayFirstElDb.getColumnIndex(Data_idFeed));
             //Controllo se esiste un array completo
             if (numberOfCompleteArraysOnFeed(feed)>0) {
+                //Log.d("DataDbHelper","Per il feed corrente c'è almeno un array completo");
                 //esiste un array completo, ciclo fino a che non arrivo alla fine (NON devo avere diverse robe nello stesso feed)
                 Cursor currentArrayCursor = getAllPotentialElementOfAnArray(unsentArrayFirstElDb);
                 //eseguo il ciclo almeno la prima volta, e dopo faccio il check dell'arrayCount
                 //alla fine del primo ciclo nella condizione mi ritrovo 1>0
                 //il ciclo finisce quando arrivo al primo elemento dell'array successivo
                 do {
+                    //Log.d("DataDbHelper","Sono dentro al ciclo do while");
                     value1 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value1));
                     value2 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value2));
                     value3 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value3));

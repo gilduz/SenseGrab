@@ -277,7 +277,7 @@ public class ServiceManager {
         int numConf = dbHelper.numberOfConfigurations();
         Log.d("Service Manager", "Found in DB " + numConf + " configurations");
         if (numConf > 0) {
-            setTransferToDbInterval(MainActivity.INTERVAL_TRANSFER_TO_DB);
+            //setTransferToDbInterval(MainActivity.INTERVAL_TRANSFER_TO_DB);
             Cursor cursor;
             ArrayList<String> array_list = new ArrayList<>();
             array_list = dbHelper.getAllConfigurationsWithoutOrder();
