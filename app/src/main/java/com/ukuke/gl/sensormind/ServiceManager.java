@@ -44,16 +44,15 @@ public class ServiceManager {
     private boolean USE_DB = false;
     DbHelper dbHelper;
 
-    ServiceManager (Context cn) {
+    ServiceManager(Context cn) {
         this.cn = cn;
         prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
         populateServiceComponentList();
         initializeFromDB();
     }
 
-    public static ServiceManager getInstance(Context cn){
-        if(mInstance == null)
-        {
+    public static ServiceManager getInstance(Context cn) {
+        if (mInstance == null) {
             mInstance = new ServiceManager(cn);
         }
         return mInstance;
@@ -88,7 +87,9 @@ public class ServiceManager {
             return configurationList.size();
         }
 
-        public void addConfiguration(Configuration configuration) {configurationList.add(configuration);}
+        public void addConfiguration(Configuration configuration) {
+            configurationList.add(configuration);
+        }
 
         public Configuration getConfiguration(String configurationName) {
             for (int i = 0; i < configurationList.size(); i++) {
@@ -100,7 +101,7 @@ public class ServiceManager {
         }
 
         public Configuration getConfiguration(int id) {
-            if (configurationList.size()>id) {
+            if (configurationList.size() > id) {
                 return configurationList.get(id);
             }
             return null;
@@ -125,8 +126,7 @@ public class ServiceManager {
             this.exists = exists;
             if (this.exists) {
                 availableImageID = R.drawable.ic_check_grey600_36dp;
-            }
-            else {
+            } else {
                 availableImageID = R.drawable.ic_close_grey600_36dp;
             }
 
@@ -159,10 +159,10 @@ public class ServiceManager {
                     componentImageID = R.drawable.ic_filter_hdr_grey600_48dp;
                     sensorType = Sensor.TYPE_PRESSURE;
                     break;
-                default: componentImageID = R.drawable.ic_close_grey600_48dp;
+                default:
+                    componentImageID = R.drawable.ic_close_grey600_48dp;
                     break;
             }
-
 
 
         }
@@ -184,7 +184,7 @@ public class ServiceManager {
         }
 
         public boolean getExists() {
-            return  exists;
+            return exists;
         }
 
         public Configuration getActiveConfiguration() {
@@ -193,7 +193,9 @@ public class ServiceManager {
 
         public static class Configuration {
 
-            Configuration(){}
+            Configuration() {
+            }
+
             Configuration(String configurationName, String path, long interval, int window, boolean attachGPS) {
                 this.configurationName = configurationName;
                 this.interval = interval;
@@ -201,27 +203,52 @@ public class ServiceManager {
                 this.attachGPS = attachGPS;
                 this.path = path;
             }
+
             private long interval = 1000;
             private int window = 1;
             private String configurationName;
             private String path;
             private boolean attachGPS;
 
-            public String getPath() { return path;}
-            public void setPath(String path) { this.path = path;}
-            public long getInterval() { return interval; }
-            public int getWindow() { return  window; }
-            public String getConfigurationName() { return configurationName; }
-            public void setInterval(long interval) { this.interval = interval; }
-            public void setWindow(int window) { this.window = window; }
-            public void setConfigurationName(String configurationName) { this.configurationName = configurationName; }
+            public String getPath() {
+                return path;
+            }
+
+            public void setPath(String path) {
+                this.path = path;
+            }
+
+            public long getInterval() {
+                return interval;
+            }
+
+            public int getWindow() {
+                return window;
+            }
+
+            public String getConfigurationName() {
+                return configurationName;
+            }
+
+            public void setInterval(long interval) {
+                this.interval = interval;
+            }
+
+            public void setWindow(int window) {
+                this.window = window;
+            }
+
+            public void setConfigurationName(String configurationName) {
+                this.configurationName = configurationName;
+            }
 
             public boolean isAttachGPS() {
                 return attachGPS;
             }
+
             public void setAttachGPS(boolean attachGPS) {
-                    this.attachGPS = attachGPS;
-                }
+                this.attachGPS = attachGPS;
+            }
         }
     }
 
@@ -229,7 +256,7 @@ public class ServiceManager {
         return serviceComponentList;
     }
 
-    public int initializeFromDB(){
+    public int initializeFromDB() {
         // TODO: Da implementare
         // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
         USE_DB = true;
@@ -242,7 +269,7 @@ public class ServiceManager {
             ArrayList<String> array_list = new ArrayList<>();
             array_list = dbHelper.getAllConfigurationsWithoutOrder();
             for (int i = 0; i < array_list.size(); i++) {
-                int k=i+1;
+                int k = i + 1;
                 cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
                 cursor.moveToFirst();
 
@@ -278,7 +305,7 @@ public class ServiceManager {
 
     public void addServiceComponentActive(ServiceComponent serviceComponent) {
         boolean alreadyExists;
-        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL" ) {
+        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL") {
             serviceComponentActiveList.add(serviceComponent);
         }
     }
@@ -297,19 +324,19 @@ public class ServiceManager {
     }
 
     public ServiceComponent getServiceComponentActiveBySensorType(int serviceType) {
-        ServiceComponent service = new ServiceComponent("NULL",false);
+        ServiceComponent service = new ServiceComponent("NULL", false);
         for (int i = 0; i < serviceComponentActiveList.size(); i++) {
             service = serviceComponentActiveList.get(i);
             if (service.getSensorType() == serviceType) {
                 return service;
             }
         }
-        ServiceComponent service_NULL = new ServiceComponent("NULL",false);
+        ServiceComponent service_NULL = new ServiceComponent("NULL", false);
         return service_NULL;
     }
 
     public ServiceComponent getServiceComponentAvailableBySensorType(int serviceType) {
-        ServiceComponent service = new ServiceComponent("NULL",false);
+        ServiceComponent service = new ServiceComponent("NULL", false);
         for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
             service = getServiceComponentAvailableList().get(i);
             if (service.getSensorType() == serviceType) {
@@ -334,7 +361,7 @@ public class ServiceManager {
     }
 
     public ServiceComponent getServiceComponentActiveBySensorName(String name) {
-        ServiceComponent service = new ServiceComponent("NULL",true);
+        ServiceComponent service = new ServiceComponent("NULL", true);
 
         for (int i = 0; i < serviceComponentActiveList.size(); i++) {
             if (serviceComponentActiveList.get(i).getDysplayName() == name) {
@@ -352,60 +379,53 @@ public class ServiceManager {
 
         serviceComponentList.clear();
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", false));
         }
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
             serviceComponentList.add(new ServiceComponent("Accelerometer", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Accelerometer", false));
         }
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null) {
             serviceComponentList.add(new ServiceComponent("Temperature", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Temperature", false));
         }
 
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             serviceComponentList.add(new ServiceComponent("Gyroscope", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Gyroscope", false));
         }
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
             serviceComponentList.add(new ServiceComponent("Light Sensor", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Light Sensor", true));
         }
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null) {
             serviceComponentList.add(new ServiceComponent("Proximity Sensor", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Proximity Sensor", false));
         }
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null) {
             serviceComponentList.add(new ServiceComponent("Pressure Sensor", true));
             numAvailableServices++;
-        }
-        else {
+        } else {
             serviceComponentList.add(new ServiceComponent("Pressure Sensor", false));
         }
 
@@ -434,7 +454,7 @@ public class ServiceManager {
         ServiceComponent.Configuration configuration;
         configuration = component.getActiveConfiguration();
 
-        if (prefs.getBoolean("enableGrabbing",true)) {
+        if (prefs.getBoolean("enableGrabbing", true)) {
 
             AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(cn, SensorBackgroundService.class);
@@ -443,16 +463,20 @@ public class ServiceManager {
 
             try {
                 args.putBoolean(SensorBackgroundService.KEY_LOGGING, true);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             try {
                 args.putInt(SensorBackgroundService.KEY_SENSOR_TYPE, component.getSensorType());
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             try {
                 args.putInt(SensorBackgroundService.KEY_WINDOW, configuration.getWindow());
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             try {
                 args.putBoolean(SensorBackgroundService.KEY_ATTACH_GPS, configuration.attachGPS);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
             intent.putExtras(args);
 
@@ -488,7 +512,6 @@ public class ServiceManager {
     }
 
 
-
 //    private class createFeed_asynk extends AsyncTask<String, Void, String> {
 //
 //        @Override
@@ -516,7 +539,7 @@ public class ServiceManager {
         @Override
         protected String doInBackground(String... params) {
             boolean test;
-            API = new SensormindAPI(prefs.getString("username","test_3"), prefs.getString("password","test_3"));
+            API = new SensormindAPI(prefs.getString("username", "test_3"), prefs.getString("password", "test_3"));
             allFeedList = API.getAllFeed();
             return null;
         }
@@ -527,10 +550,12 @@ public class ServiceManager {
         }
 
         @Override
-        protected void onPreExecute() {}
+        protected void onPreExecute() {
+        }
 
         @Override
-        protected void onProgressUpdate(Void... values) {}
+        protected void onProgressUpdate(Void... values) {
+        }
     }
 
 

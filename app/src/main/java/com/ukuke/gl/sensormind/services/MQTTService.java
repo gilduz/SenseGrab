@@ -103,7 +103,26 @@ public class MQTTService extends Service
             DataSample sample = listData.get(i);
 
             try {
-                obj.put("d", sample.getValue_1());
+                if (sample.getArrayCount() < 0) {
+                    if ((sample.getValue_1() != null) && (sample.getValue_2() != null) && (sample.getValue_3() != null)) {
+                        obj.put("d", sample.getValue_1()); //TODO Mettere vettoriale
+                    } else if (sample.getValue_1() != null) {
+                        obj.put("d", sample.getValue_1());
+                    }
+                    if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
+                        obj.put("l", 1); //TODO Aggiungere vettore coordinate [longitude, latitude, altitude]
+                    }
+                    if (sample.getTimestamp() != null) {
+                        obj.put("t", sample.getTimestamp()); //TODO Aggiungere vettore coordinate [longitude, latitude, altitude]
+                    }
+                    if (sample.getTimestamp() != null) {
+                        obj.put("t", sample.getTimestamp()); //TODO Aggiungere vettore coordinate [longitude, latitude, altitude]
+                    }
+                }
+                else {
+
+                }
+
 
             } catch (Exception e) {}
 
