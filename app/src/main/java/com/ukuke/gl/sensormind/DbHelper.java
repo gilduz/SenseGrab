@@ -323,7 +323,7 @@ public class DbHelper extends SQLiteOpenHelper {
         Date date = new Date();
         return dateFormat.format(date);
     }
-
+// TODO: convertire nel database l'unità base come ms salvati in int e nell'interfaccia convertire il valore salvato in ms, sec, min, hour
     private int covertTimeUnit (String unit) {
         int time_unit = 0; //default seconds
         if (unit.equals("min")) {
