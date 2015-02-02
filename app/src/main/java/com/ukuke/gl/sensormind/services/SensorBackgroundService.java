@@ -19,6 +19,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.DbHelper;
+import com.ukuke.gl.sensormind.ServiceManager;
 import com.ukuke.gl.sensormind.support.DataSample;
 
 import java.util.ArrayList;
@@ -156,27 +157,24 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             case Sensor.TYPE_ACCELEROMETER:
                 counterAccelerometer++;
                 if (counterAccelerometer >= windowAccelerometer) {
-                    mSensorManager.unregisterListener(this, event.sensor);
                     counterAccelerometer = 0;
                 }
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 counterGyroscope++;
                 if (counterGyroscope >= windowGyroscope) {
-                    mSensorManager.unregisterListener(this, event.sensor);
                     counterGyroscope = 0;
                 }
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 counterMagnetometer++;
                 if (counterMagnetometer >= windowMagnetometer) {
-                    mSensorManager.unregisterListener(this, event.sensor);
                     counterMagnetometer = 0;
                 }
                 break;
-            default:
-                mSensorManager.unregisterListener(this, event.sensor);
         }
+
+        mSensorManager.unregisterListener(this, event.sensor);
 
     }
 
@@ -212,47 +210,58 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         //dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
         //listDataSample.add(dataSample);
 
+
+
+        ServiceManager.ServiceComponent.Configuration conf;
+        conf = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentActiveBySensorType(event.sensor.getType()).getActiveConfiguration();
+
+        String path = conf.getPath();
+
+        String path_feed_array = "test_1/v1/bm/array";
+        String path_feed_scalar = "test_1/v1/bm/scalar";
+
+
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
                 if (logging)
                     Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], event.values[1], event.values[2], 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_array, event.values[0], event.values[1], event.values[2], counterAccelerometer, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], event.values[1], event.values[2], 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_array, event.values[0], event.values[1], event.values[2], counterGyroscope, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(event.sensor.getName(), event.values[0], event.values[1], event.values[2], 1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path_feed_array, event.values[0], event.values[1], event.values[2], counterMagnetometer, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
         }

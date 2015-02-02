@@ -12,6 +12,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Notification;
@@ -60,89 +61,144 @@ public class MQTTService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-
-     //   super.onStartCommand(intent, flags, startId);
-		/*
-		 * Start the MQTT Thread.
-		 */
-//        JSONObject obj = new JSONObject();
-//
-//        try {
-//            String str = "Ciao";
-//            obj.put("d", 6.12);
-//        } catch (Exception e) {}
-//
-//        Bundle data = new Bundle();
-//
-//        String message = obj.toString();
-//        Log.d(TAG,"onStartCommand: " + message);
-//
-//        data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
-//        data.putCharSequence(MESSAGE, message);
-//        Message msg = Message.obtain(null, PUBLISH);
-//        msg.setData(data);
-//
-//        connection.makeRequest(msg);
-
-        syncWithSensorming();
+        syncWithSensormind();
 
         return START_STICKY;
     }
 
-    private void syncWithSensorming() {
+    private void syncWithSensormind() {
         List<DataSample> listData = new ArrayList<>();
 
-        if (dataDbHelper.numberOfUnsentEntries() > 0) {
-            listData = dataDbHelper.getAllUnsentDataSamples();
-        }
+        // Multi sample send
+        try {
+            while (dataDbHelper.getNumUnsentArrays() > 1) {
+                DataSample sample;
 
+                listData = dataDbHelper.getFirstUnsentArrayDataSamples();
+                JSONArray array_1 = new JSONArray();
+                JSONArray array_2 = new JSONArray();
+                JSONArray array_3 = new JSONArray();
 
-
-        for (int i = 0; i < listData.size(); i++) {
-            JSONObject obj = new JSONObject();
-            DataSample sample = listData.get(i);
-
-            try {
-                if (sample.getArrayCount() < 0) {
-                    if ((sample.getValue_1() != null) && (sample.getValue_2() != null) && (sample.getValue_3() != null)) {
-                        obj.put("d", sample.getValue_1()); //TODO Mettere vettoriale
-                    } else if (sample.getValue_1() != null) {
-                        obj.put("d", sample.getValue_1());
-                    }
-                    if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
-                        obj.put("l", 1); //TODO Aggiungere vettore coordinate [longitude, latitude, altitude]
-                    }
-                    if (sample.getTimestamp() != null) {
-                        obj.put("t", sample.getTimestamp()); //TODO Aggiungere vettore coordinate [longitude, latitude, altitude]
-                    }
-                    if (sample.getTimestamp() != null) {
-                        obj.put("t", sample.getTimestamp()); //TODO Aggiungere vettore coordinate [longitude, latitude, altitude]
-                    }
-                }
-                else {
-
+                // Split vector in 3 different arrays
+                for (int i = 0; i < listData.size() - 1; i++) {
+                    int j = 0;
+                    sample = listData.get(j);
+                    array_1.put(sample.getValue_1());
+                    array_2.put(sample.getValue_2());
+                    array_3.put(sample.getValue_3());
                 }
 
+                JSONObject obj_1 = new JSONObject();
+                JSONObject obj_2 = new JSONObject();
+                JSONObject obj_3 = new JSONObject();
 
-            } catch (Exception e) {}
+                obj_1.put("d", array_1);
+                obj_2.put("d", array_2);
+                obj_3.put("d", array_3);
 
-            Bundle data = new Bundle();
+                JSONArray arrayCoord = new JSONArray();
+                if ((listData.get(0).getLatitude() != null) && (listData.get(0).getLongitude() != null)) {
+                    arrayCoord.put(listData.get(0).getLatitude());
+                    arrayCoord.put(listData.get(0).getLongitude());
+                    arrayCoord.put(0);
+                    obj_1.put("l", arrayCoord);
+                    obj_2.put("l", arrayCoord);
+                    obj_3.put("l", arrayCoord);
+                }
 
-            String message = obj.toString();
-            //Log.d(TAG,"onStartCommand: " + message);
+                if (listData.get(0).getTimestamp() != null) {
+                    obj_1.put("t", listData.get(0).getTimestamp());
+                    obj_2.put("t", listData.get(0).getTimestamp());
+                    obj_3.put("t", listData.get(0).getTimestamp());
+                }
 
-            data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
-            data.putCharSequence(MESSAGE, message);
-            Message msg = Message.obtain(null, PUBLISH);
-            msg.setData(data);
+                // Invio 1
+                Bundle data_1 = new Bundle();
+                String message_1 = obj_1.toString();
+                //Log.d(TAG,"onStartCommand: " + message);
+                data_1.putCharSequence(TOPIC, listData.get(0).getFeedPath() + "_1");
+                data_1.putCharSequence(MESSAGE, message_1);
+                Message msg_1 = Message.obtain(null, PUBLISH);
+                msg_1.setData(data_1);
+                connection.makeRequest(msg_1);
 
-            connection.makeRequest(msg);
+                // Invio 2
+                Bundle data_2 = new Bundle();
+                String message_2 = obj_2.toString();
+                //Log.d(TAG,"onStartCommand: " + message);
+                data_2.putCharSequence(TOPIC, listData.get(0).getFeedPath() + "_2");
+                data_2.putCharSequence(MESSAGE, message_2);
+                Message msg_2 = Message.obtain(null, PUBLISH);
+                msg_2.setData(data_2);
+                connection.makeRequest(msg_2);
+
+                // Invio 3
+                Bundle data_3 = new Bundle();
+                String message_3 = obj_3.toString();
+                //Log.d(TAG,"onStartCommand: " + message);
+                data_3.putCharSequence(TOPIC, listData.get(0).getFeedPath() + "_3");
+                data_3.putCharSequence(MESSAGE, message_3);
+                Message msg_3 = Message.obtain(null, PUBLISH);
+                msg_3.setData(data_3);
+                connection.makeRequest(msg_3);
+
+                // Invio qui
+                dataDbHelper.setSentListOfDataSamples(listData);
+            }
+        } catch (Exception e) {}
+
+        if (listData.size()>0) {
+            Log.d(TAG, "Sent to sensormind " + listData.size() + " arrays");
+            dataDbHelper.setSentListOfDataSamples(listData);
         }
+
+        // Single sample send
+        listData = dataDbHelper.getAllUnsentSingleDataSamples();
+        try {
+            for (int i = 0; i < listData.size(); i++) {
+
+                DataSample sample = listData.get(i);
+                JSONObject obj = new JSONObject();
+
+                if ((sample.getValue_1() != null) && (sample.getValue_2() != null) && (sample.getValue_3() != null)) {
+                    JSONArray array = new JSONArray();
+                    array.put(sample.getValue_1());
+                    array.put(sample.getValue_2());
+                    array.put(sample.getValue_3());
+                    obj.put("d", array);
+                } else if (sample.getValue_1() != null) {
+                    obj.put("d", sample.getValue_1());
+                }
+                if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
+                    JSONArray array = new JSONArray();
+                    array.put(sample.getLatitude());
+                    array.put(sample.getLongitude());
+                    array.put(0);
+                    obj.put("l", array);
+                }
+                if (sample.getTimestamp() != null) {
+                    obj.put("t", sample.getTimestamp());
+                }
+
+                Bundle data = new Bundle();
+
+                String message = obj.toString();
+                //Log.d(TAG,"onStartCommand: " + message);
+
+                data.putCharSequence(TOPIC, sample.getFeedPath());
+                data.putCharSequence(MESSAGE, message);
+                Message msg = Message.obtain(null, PUBLISH);
+                msg.setData(data);
+
+                connection.makeRequest(msg);
+            }
+
+        }catch (Exception e) {}
 
 
         if (listData.size()>0) {
-            Log.d(TAG, "Sent to sensormind " + listData.size() + " samples");
-            dataDbHelper.deleteAllDataSamples();
+            Log.d(TAG, "Sent to sensormind " + listData.size() + " single samples");
+            dataDbHelper.setSentListOfDataSamples(listData);
         }
     }
 
@@ -401,9 +457,9 @@ public class MQTTService extends Service
                                 this.sendMessageDelayed(Message.obtain(null, CONNECT), timeout);
                                 return;
                             }
-					    
+
 					    /*
-					     * Re-subscribe to previously subscribed topics 
+					     * Re-subscribe to previously subscribed topics
 					     */
                             Iterator<String> i = topics.iterator();
                             while (i.hasNext())
