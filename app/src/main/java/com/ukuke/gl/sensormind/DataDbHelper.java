@@ -184,6 +184,18 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public Cursor getAllUnsentSingleDataCursor (){
+        db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0 and "+Data_arrayCount+" = -1", null );
+        return res;
+    }
+
+    public Cursor getAllUnsentArrayDataCursor (){
+        db = this.getReadableDatabase();
+        Cursor res = db.rawQuery("select * from "+Data_table+" where "+Data_sent+" = 0 and "+Data_arrayCount+" > -1", null );
+        return res;
+    }
+
     public List<DataSample> getAllUnsentDataSamples () {
         Cursor res = this.getAllUnsentCursor();
         List<DataSample> list = new ArrayList<>();
@@ -246,6 +258,80 @@ public class DataDbHelper extends SQLiteOpenHelper {
         res.close();
         closeDb();
         return list;
+    }
+
+    public List<DataSample> getAllUnsentSingleDataSamples () {
+        Cursor res = this.getAllUnsentSingleDataCursor();
+        List<DataSample> list = new ArrayList<>();
+        DataSample data;
+        String feed;
+        Float value1,value2,value3;
+        Double longitude,latitude;
+        Long timestamp;
+        int arrayCount,id;
+
+        res.moveToFirst();
+        while(!res.isAfterLast()) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
+
+            data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
+            data.setDbId(id);
+            list.add(data);
+            res.moveToNext();
+        }
+        res.close();
+        closeDb();
+        return list;
+    }
+
+    public List<DataSample> getFirstUnsentArrayDataSamples() {
+        Cursor res = this.getAllUnsentArrayDataCursor();//TODO da completare
+        List<DataSample> list = new ArrayList<>();
+        DataSample data;
+        String feed;
+        Float value1,value2,value3;
+        Double longitude,latitude;
+        Long timestamp;
+        int arrayCount,id;
+
+        res.moveToFirst();
+        while(!res.isAfterLast()) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
+
+            data = new DataSample(feed,value1,value2,value3,arrayCount,timestamp, longitude,latitude);
+            data.setDbId(id);
+            list.add(data);
+            res.moveToNext();
+        }
+        res.close();
+        closeDb();
+        return list;
+    }
+
+    public int getNumUnsentArrays(){
+        db = this.getReadableDatabase();
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_arrayCount+" = 0");
+        // se non va quello sopra usare questo:
+        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
+        int num = res.getCount();*/
+        closeDb();
+        return num;
     }
 
     public int deleteAllDataSamples (){
