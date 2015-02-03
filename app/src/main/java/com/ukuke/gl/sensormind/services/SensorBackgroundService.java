@@ -51,6 +51,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private List<DataSample> listDataSample = new ArrayList<>();
     private DataDbHelper dataDbHelper = null;
 
+    private double TRUCCA_COORDINATE = 0.9123456;
     private Double lastLatitude;
     private Double lastLongitude;
     private boolean attachGPS = true;
@@ -236,7 +237,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public synchronized void addDataSampleToList(SensorEvent event) {
 
         DataSample dataSample;
-        //dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, 1, event.timestamp*1000, lastLongitude, lastLongitude);
+        //dataSample = new DataSample(event.sensor.getName(), event.values[1], null, null, 1, System.currentTimeMillis(), lastLongitude, lastLongitude);
         //listDataSample.add(dataSample);
 
 
@@ -248,6 +249,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         String path = conf.getPath();
 
+
         //String path_feed_array = "array";
         //String path_feed_scalar = "scalar";
 
@@ -256,46 +258,48 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             case Sensor.TYPE_LIGHT:
                 if (logging)
                     Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
-                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp , lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
-                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
-                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
-                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
         }
+
+
     }
 
     @Override
@@ -321,8 +325,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public void updateLocation() {
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
-            lastLatitude = mLastLocation.getLatitude();
-            lastLongitude = mLastLocation.getLongitude();
+            lastLatitude = mLastLocation.getLatitude() + TRUCCA_COORDINATE;
+            lastLongitude = mLastLocation.getLongitude() + TRUCCA_COORDINATE*1.1;
             Log.d(TAG,"New location requested: LAT: " + lastLatitude + " LONG: " + lastLongitude);
         }
     }
