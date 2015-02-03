@@ -542,7 +542,6 @@ public class MQTTService extends Service
 
 
         }
-
     }
 
     private class uploadToSensormind_asynk extends AsyncTask<String, Void, String> {
