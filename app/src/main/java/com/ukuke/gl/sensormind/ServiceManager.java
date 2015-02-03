@@ -524,7 +524,6 @@ public class ServiceManager {
         new getAllFeed_asynk().execute();
     }
 
-
 //    private class createFeed_asynk extends AsyncTask<String, Void, String> {
 //
 //        @Override

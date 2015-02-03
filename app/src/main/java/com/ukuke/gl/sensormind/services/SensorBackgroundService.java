@@ -217,8 +217,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         String path = conf.getPath();
 
-        String path_feed_array = "test_1/v1/bm/array";
-        String path_feed_scalar = "test_1/v1/bm/scalar";
+        String path_feed_array = "array";
+        String path_feed_scalar = "scalar";
 
 
         switch (event.sensor.getType()) {

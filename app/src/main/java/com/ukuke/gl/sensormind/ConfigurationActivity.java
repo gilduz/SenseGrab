@@ -135,7 +135,7 @@ public class ConfigurationActivity extends Activity {
 
         try {
             interval = seekSamp.getProgress() * 1000;
-            window = seekSamp.getProgress();
+            window = seekWin.getProgress();
         } catch (Exception e) {
             interval = 1000L;
         }

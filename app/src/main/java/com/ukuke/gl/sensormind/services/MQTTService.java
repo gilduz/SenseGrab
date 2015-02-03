@@ -45,7 +45,6 @@ public class MQTTService extends Service
     private static int mid = 0;
     private static MQTTConnection connection = null;
     private final Messenger clientMessenger = new Messenger(new ClientHandler());
-    private DataDbHelper dataDbHelper = null;
     SharedPreferences prefs = null;
 
     private boolean isLoggedIn;
@@ -60,8 +59,8 @@ public class MQTTService extends Service
         super.onCreate();
         connection = new MQTTConnection();
 
-        connection.start(); // Spostato da onstartcommand
-        dataDbHelper = new DataDbHelper(this);
+        //connection.start(); // Spostato da onstartcommand
+        //dataDbHelper = new DataDbHelper(this);
 
         // Get shared preferences
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
@@ -75,7 +74,13 @@ public class MQTTService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
+        if (!isRunning())
+        {
+            connection.start();
+        }
+
         boolean isLoggedIn;
+
 
         //Log.d(TAG, "USERNAME" + prefs.getString("username", "NULL"));
 
@@ -84,7 +89,12 @@ public class MQTTService extends Service
         if (isLoggedIn) {
             username = prefs.getString("username", "NULL");
             password = prefs.getString("password", "NULL");
-            syncWithSensormind();
+            //syncWithSensormind();
+
+            Message msg = Message.obtain(null, MQTTConnection.MIO_PUBLISH_TUTTI);
+
+            connection.makeRequest(msg);
+
         }
         else {
             Log.d(TAG, "No credentials stored in sharedpreferences");
@@ -92,13 +102,64 @@ public class MQTTService extends Service
         return START_STICKY;
     }
 
+    private void syncTEST_2() {
+
+        DataDbHelper dataDbHelper = null;
+        dataDbHelper = new DataDbHelper(this);
+        List<DataSample> listData = new ArrayList<>();
+
+        if (dataDbHelper.numberOfUnsentEntries() > 0) {
+            listData = dataDbHelper.getAllUnsentDataSamples();
+        }
+
+
+
+        for (int i = 0; i < listData.size(); i++) {
+            JSONObject obj = new JSONObject();
+            DataSample sample = listData.get(i);
+
+            try {
+                obj.put("d", sample.getValue_1());
+
+            } catch (Exception e) {}
+
+            Bundle data = new Bundle();
+
+            String message = obj.toString();
+            //Log.d(TAG,"onStartCommand: " + message);
+
+            data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
+            data.putCharSequence(MESSAGE, message);
+            Message msg = Message.obtain(null, PUBLISH);
+            msg.setData(data);
+
+            connection.makeRequest(msg);
+        }
+
+
+        if (listData.size()>0) {
+            Log.d(TAG, "Sent to sensormind " + listData.size() + " samples");
+            dataDbHelper.deleteAllDataSamples();
+        }
+    }
+
     private void syncWithSensormind() {
+
+        // POI SPOSTALI DA QUI!!!
+        DataDbHelper dataDbHelper = null;
+        dataDbHelper = new DataDbHelper(this);
+
         List<DataSample> listData = new ArrayList<>();
 
         // Multi sample send
         try {
+            //for (int j = 0; j < dataDbHelper.numberOfUnsentArrays() - 1; j++) {
+
+            //}
             while (dataDbHelper.numberOfUnsentArrays() > 1) {
                 DataSample sample;
+
+                //Log.d(TAG, "Size List Data: " + listData.size());
 
                 listData = dataDbHelper.getFirstUnsentArrayDataSamples();
                 JSONArray array_1 = new JSONArray();
@@ -106,9 +167,8 @@ public class MQTTService extends Service
                 JSONArray array_3 = new JSONArray();
 
                 // Split vector in 3 different arrays
-                for (int i = 0; i < listData.size() - 1; i++) {
-                    int j = 0;
-                    sample = listData.get(j);
+                for (int i = 0; i < listData.size(); i++) {
+                    sample = listData.get(i);
                     array_1.put(sample.getValue_1());
                     array_2.put(sample.getValue_2());
                     array_3.put(sample.getValue_3());
@@ -138,11 +198,13 @@ public class MQTTService extends Service
                     obj_3.put("t", listData.get(0).getTimestamp());
                 }
 
+                String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
+
                 // Invio 1
                 Bundle data_1 = new Bundle();
                 String message_1 = obj_1.toString();
                 //Log.d(TAG,"onStartCommand: " + message);
-                data_1.putCharSequence(TOPIC, listData.get(0).getFeedPath() + "_1");
+                data_1.putCharSequence(TOPIC, path + "/1");
                 data_1.putCharSequence(MESSAGE, message_1);
                 Message msg_1 = Message.obtain(null, PUBLISH);
                 msg_1.setData(data_1);
@@ -152,7 +214,7 @@ public class MQTTService extends Service
                 Bundle data_2 = new Bundle();
                 String message_2 = obj_2.toString();
                 //Log.d(TAG,"onStartCommand: " + message);
-                data_2.putCharSequence(TOPIC, listData.get(0).getFeedPath() + "_2");
+                data_2.putCharSequence(TOPIC, path + "/2");
                 data_2.putCharSequence(MESSAGE, message_2);
                 Message msg_2 = Message.obtain(null, PUBLISH);
                 msg_2.setData(data_2);
@@ -162,7 +224,7 @@ public class MQTTService extends Service
                 Bundle data_3 = new Bundle();
                 String message_3 = obj_3.toString();
                 //Log.d(TAG,"onStartCommand: " + message);
-                data_3.putCharSequence(TOPIC, listData.get(0).getFeedPath() + "_3");
+                data_3.putCharSequence(TOPIC, path + "/3");
                 data_3.putCharSequence(MESSAGE, message_3);
                 Message msg_3 = Message.obtain(null, PUBLISH);
                 msg_3.setData(data_3);
@@ -170,32 +232,33 @@ public class MQTTService extends Service
 
                 // Scrivo su DB che i dati sono stati inviati
 
-                dataDbHelper.setSentListOfDataSamples(listData);
-            }
-        } catch (Exception e) {}
+                try {
+
+
+                    Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
+                    dataDbHelper.setSentListOfDataSamples(listData);
+                    Log.d(TAG, "Richiesta cancellazione");
+
+        } catch (Exception e) { Log.e(TAG, "Error DATABASE: " + e);}
+                }
+        } catch (Exception e) { Log.e(TAG, "Error trying to send an array: " + e);}
 
         if (listData.size()>0) {
             Log.d(TAG, "Sent to sensormind " + listData.size() + " arrays");
-            dataDbHelper.setSentListOfDataSamples(listData);
+            //dataDbHelper.setSentListOfDataSamples(listData);
         }
 
         // Single sample send
-        listData = dataDbHelper.getAllUnsentSingleDataSamples();
         try {
+            listData = dataDbHelper.getAllUnsentSingleDataSamples();
             for (int i = 0; i < listData.size(); i++) {
 
                 DataSample sample = listData.get(i);
                 JSONObject obj = new JSONObject();
 
-                if ((sample.getValue_1() != null) && (sample.getValue_2() != null) && (sample.getValue_3() != null)) {
-                    JSONArray array = new JSONArray();
-                    array.put(sample.getValue_1());
-                    array.put(sample.getValue_2());
-                    array.put(sample.getValue_3());
-                    obj.put("d", array);
-                } else if (sample.getValue_1() != null) {
-                    obj.put("d", sample.getValue_1());
-                }
+
+                obj.put("d", sample.getValue_1());
+
                 if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
                     JSONArray array = new JSONArray();
                     array.put(sample.getLatitude());
@@ -210,9 +273,11 @@ public class MQTTService extends Service
                 Bundle data = new Bundle();
 
                 String message = obj.toString();
-                //Log.d(TAG,"onStartCommand: " + message);
+                //Log.d(TAG, message);
+                //Log.d(TAG, sample.getFeedPath());
 
-                data.putCharSequence(TOPIC, sample.getFeedPath());
+                String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
+                data.putCharSequence(TOPIC, path);
                 data.putCharSequence(MESSAGE, message);
                 Message msg = Message.obtain(null, PUBLISH);
                 msg.setData(data);
@@ -220,7 +285,7 @@ public class MQTTService extends Service
                 connection.makeRequest(msg);
             }
 
-        }catch (Exception e) {}
+        }catch (Exception e) {Log.d(TAG, "Errore nel publish " + e);}
 
 
         if (listData.size()>0) {
@@ -228,6 +293,8 @@ public class MQTTService extends Service
             dataDbHelper.setSentListOfDataSamples(listData);
         }
     }
+
+
 
     @Override
     public void onDestroy()
@@ -241,7 +308,7 @@ public class MQTTService extends Service
 		/*
 		 * Return a reference to our client handler.
 		 */
-        return clientMessenger.getBinder();
+        return  clientMessenger.getBinder();
     }
 
     private synchronized static boolean isRunning()
@@ -372,7 +439,53 @@ public class MQTTService extends Service
         private static final int STOP = PUBLISH + 1;
         private static final int CONNECT = PUBLISH + 2;
         private static final int RESETTIMER = PUBLISH + 3;
+        public static final int MIO_PUBLISH_TUTTI = 10;
+
+
         private CONNECT_STATE connState = CONNECT_STATE.DISCONNECTED;
+
+        private void syncTEST() {
+
+            DataDbHelper dataDbHelper = null;
+            dataDbHelper = new DataDbHelper(getApplicationContext());
+
+            List<DataSample> listData = new ArrayList<>();
+
+            if (dataDbHelper.numberOfUnsentEntries() > 0) {
+                listData = dataDbHelper.getAllUnsentSingleDataSamples();
+            }
+
+
+
+            for (int i = 0; i < listData.size(); i++) {
+                JSONObject obj = new JSONObject();
+                DataSample sample = listData.get(i);
+
+                try {
+                    obj.put("d", sample.getValue_1());
+
+                } catch (Exception e) {}
+
+                Bundle data = new Bundle();
+
+                String message = obj.toString();
+                //Log.d(TAG,"onStartCommand: " + message);
+
+                String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
+
+                data.putCharSequence(TOPIC, path);
+                data.putCharSequence(MESSAGE, message);
+                Message msg = Message.obtain(null, PUBLISH);
+                msg.setData(data);
+
+                connection.makeRequest(msg);
+            }
+
+            if (listData.size()>0) {
+                Log.d(TAG, "Sent to sensormind " + listData.size() + " samples");
+                dataDbHelper.deleteAllDataSamples();
+            }
+        }
 
         MQTTConnection()
         {
@@ -423,8 +536,8 @@ public class MQTTService extends Service
                 try
                 {
 
-
-                    client = new MqttClient(uri, MqttClient.generateClientId(), null);
+                    client = new MqttClient(uri, username, null);
+                    //client = new MqttClient(uri, MqttClient.generateClientId(), null);
                     client.setCallback(this);
 
                 }
@@ -465,16 +578,19 @@ public class MQTTService extends Service
                         {
                             try
                             {
+                                //options.setUserName(username);
+                                //options.setPassword(password.toCharArray());
                                 options.setUserName(username);
                                 options.setPassword(password.toCharArray());
+
                                 client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
-                                Log.d(TAG, "MQTT Connected");
+                                Log.d(TAG, "MQTT Connected with username: " + username + " and password: " + password );
                                 timeout = MINTIMEOUT;
                             }
                             catch (MqttException e)
                             {
-                                Log.d(getClass().getCanonicalName(), "Connection attemp failed with reason code = " + e.getReasonCode() + e.getCause());
+                                Log.d(TAG, "Connection attempt failed with reason code = " + e.getReasonCode() + e.getCause());
                                 if (timeout < MAXTIMEOUT)
                                 {
                                     timeout *= 2;
@@ -486,6 +602,7 @@ public class MQTTService extends Service
 					    /*
 					     * Re-subscribe to previously subscribed topics
 					     */
+
                             Iterator<String> i = topics.iterator();
                             while (i.hasNext())
                             {
@@ -527,6 +644,7 @@ public class MQTTService extends Service
                     }
                     case PUBLISH:
                     {
+
                         boolean status = false;
                         Bundle b = msg.getData();
                         if (b != null)
@@ -552,6 +670,9 @@ public class MQTTService extends Service
                         ReplytoClient(msg.replyTo, msg.what, status);
                         break;
                     }
+                    case MIO_PUBLISH_TUTTI:
+                        syncWithSensormind();
+                        //syncTEST_2();
                 }
             }
 
@@ -575,11 +696,9 @@ public class MQTTService extends Service
                 {
                     MqttMessage message = new MqttMessage();
 
-
-
                     message.setPayload(msg.getBytes());
                     client.publish(topic, message);
-                    //Log.d(TAG,"PUBBLICATO");
+                    Log.d(TAG,"PUBBLICATO: " + topic + " : " + message);
                 }
                 catch (MqttException e)
                 {

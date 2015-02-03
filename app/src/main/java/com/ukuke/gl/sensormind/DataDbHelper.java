@@ -27,7 +27,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public static final String Data_table = "Data";
 
     // Data columns
-    public static final String Data_id = "id"; //int
+    public static final String Data_id = "_id"; //int
     public static final String Data_value1 ="value1"; //real
     public static final String Data_value2 ="value2"; //real
     public static final String Data_value3 ="value3"; //real
@@ -94,7 +94,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
             values.put(Data_lat, data.getLatitude());
             values.put(Data_timestamp, data.getTimestamp());
             values.put(Data_idFeed, feed);
-            values.put(Data_sent, 0);
+            values.put(Data_sent, "0");
 
             db.insert(Data_table, null, values);
             closeDb();
@@ -122,7 +122,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
                 values.put(Data_lat, array.get(i).getLatitude());
                 values.put(Data_timestamp, array.get(i).getTimestamp());
                 values.put(Data_idFeed, array.get(i).getFeedPath());
-                values.put(Data_sent, 0);
+                values.put(Data_sent, "0");
 
                 db.insert(Data_table, null, values);
             } else {
@@ -216,18 +216,30 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    private Cursor getAllPotentialElementOfAnArray(Cursor currentRow){//TODO verificare il funzionamento
+    private Cursor getAllPotentialElementOfAnArray(Cursor currentRow){//TODO verificare il funzionamento, non va!!!
+        String feed = currentRow.getString(currentRow.getColumnIndex(Data_idFeed));
+        int id = currentRow.getInt(currentRow.getColumnIndex(Data_id));
+        String query = "select * from " + Data_table + " where " + Data_idFeed +
+                " = '"+currentRow.getString(currentRow.getColumnIndex(Data_idFeed))+"' and " + Data_id + " >= " + Integer.toString(currentRow.getInt(currentRow.getColumnIndex(Data_id))) +
+                " and " + Data_arrayCount + " >= 0";
+        db = this.getReadableDatabase();
+        Cursor res = db.rawQuery(query, null);
+        //Log.d(TAG,"SON QUI " + res.getCount());
+        return res;
+    }
+
+    private Cursor getAllPossibleElementOfAnArray(String feed, int id){//TODO completare e verificare il funzionamento
         db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from " + Data_table + " where " + Data_idFeed +
-                " = '" + currentRow.getString(currentRow.getColumnIndex(Data_idFeed)) +
-                "' and " + Data_id + " >= '" + currentRow.getString(currentRow.getColumnIndex(Data_id)) +
-                "' and " + Data_arrayCount + " > -1", null);
+                " = '" + feed + "' and " + Data_id + " > " + Integer.toString(id) +
+                " and " + Data_arrayCount + " >= 0", null);
         return res;
     }
 
     //---------------LIST OF DATASAMPLES METHODS----------------------
 
     public List<DataSample> getAllUnsentDataSamples () {
+        db = this.getReadableDatabase();
         Cursor res = this.getAllUnsentCursor();
         List<DataSample> list = new ArrayList<>();
         DataSample data;
@@ -260,6 +272,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     public List<DataSample> getFirstNUnsentDataSamples (int N) {
+        db = this.getReadableDatabase();
         Cursor res = this.getAllUnsentCursor();
         List<DataSample> list = new ArrayList<>();
         DataSample data;
@@ -292,6 +305,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     public List<DataSample> getAllUnsentSingleDataSamples () {
+        db = this.getReadableDatabase();
         Cursor res = this.getAllUnsentSingleDataCursor();
         List<DataSample> list = new ArrayList<>();
         DataSample data;
@@ -324,6 +338,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     public List<DataSample> getFirstUnsentArrayDataSamples() {
+        db = this.getReadableDatabase();
         Cursor unsentArrayFirstElDb = this.getAllUnsentArrayFirstElementCursor();
         List<DataSample> list = new ArrayList<>();
         DataSample data;
@@ -347,11 +362,13 @@ public class DataDbHelper extends SQLiteOpenHelper {
                 //Log.d("DataDbHelper","Per il feed corrente c'è almeno un array completo");
                 //esiste un array completo, ciclo fino a che non arrivo alla fine (NON devo avere diverse robe nello stesso feed)
                 Cursor currentArrayCursor = getAllPotentialElementOfAnArray(unsentArrayFirstElDb);
+                currentArrayCursor.moveToFirst();
                 //eseguo il ciclo almeno la prima volta, e dopo faccio il check dell'arrayCount
                 //alla fine del primo ciclo nella condizione mi ritrovo 1>0
                 //il ciclo finisce quando arrivo al primo elemento dell'array successivo
                 do {
                     //Log.d("DataDbHelper","Sono dentro al ciclo do while");
+
                     value1 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value1));
                     value2 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value2));
                     value3 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value3));
@@ -426,15 +443,15 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     private int internalSetSentDataSampleById(int id, SQLiteDatabase DataBase){
         ContentValues value = new ContentValues();
-        value.put(Data_sent, 1);
-        return DataBase.update(Data_table,value,"id = "+id,null);
+        value.put(Data_sent, "1");
+        return DataBase.update(Data_table,value, Data_id + " = "+ Integer.toString(id),null);
     }
 
     public int setSentDataSampleById(int id){
         db = this.getWritableDatabase();
         ContentValues value = new ContentValues();
-        value.put(Data_sent, 1);
-        int res = db.update(Data_table,value,"id = "+id,null);
+        value.put(Data_sent, "1");
+        int res = db.update(Data_table,value, Data_id + " = "+ Integer.toString(id),null);
         closeDb();
         return res;
     }
@@ -565,7 +582,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
         db.close();
 
-        Log.d("DBHelper", "Ritorno");
 
         return array_list;
     }

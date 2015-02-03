@@ -92,6 +92,8 @@ public class RegisterActivity extends Activity {
                 Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
 
             }
             else {

@@ -34,8 +34,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 30; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 100; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 10; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 1 * 20; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
 
@@ -71,6 +71,8 @@ public class MainActivity extends Activity {
 
 
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -122,7 +124,7 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(this, MQTTService.class);
 
                 PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND, scheduledIntent);
+                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
             }
 
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);

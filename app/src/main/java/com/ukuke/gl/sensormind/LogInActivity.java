@@ -73,9 +73,10 @@ public class LogInActivity extends Activity {
         prefs.edit().putString("password",editText_password.getText().toString()).apply();
         //prefs.edit().putBoolean("CICCIO",true).apply();
         prefs.edit().commit();
-        Log.d(TAG,"VALORE: " + prefs.contains("username"));
-        Log.d(TAG,"VALORE: " + prefs.contains("password"));
         //new logIn_asynk().execute();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
     }
 
     private class logIn_asynk extends AsyncTask<String, Void, String> {
