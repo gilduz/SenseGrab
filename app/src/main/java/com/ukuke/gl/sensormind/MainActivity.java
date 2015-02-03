@@ -34,10 +34,12 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 10; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 1 * 20; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 2; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 5; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
+    String username;
+    String password;
 
     // MQTT
     private Messenger service = null;
@@ -61,6 +63,9 @@ public class MainActivity extends Activity {
 
         View v = new View(this);
 
+        username = prefs.getString("username", "NULL");
+        password = prefs.getString("password", "NULL");
+
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
         toggle.setChecked(prefs.getBoolean("enableGrabbing", true));
@@ -68,6 +73,9 @@ public class MainActivity extends Activity {
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
 
         prefs.edit().commit();
+
+
+
 
 
     }
@@ -95,7 +103,7 @@ public class MainActivity extends Activity {
         }
         else if (id == R.id.action_test) {
             //API = new SensormindAPI(prefs.getString("username","test_3"),
-
+            ServiceManager.getInstance(MainActivity.this).createFeed("PIPO_LABEL","PIPPO_MES_UNIT","PROVIAMO/1/2/3",1234);
             // prefs.getString("password","test_3"));
            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();

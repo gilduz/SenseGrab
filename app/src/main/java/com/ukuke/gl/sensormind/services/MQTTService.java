@@ -23,6 +23,7 @@ import android.app.Notification.Builder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -35,6 +36,7 @@ import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.MainActivity;
 import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.support.DataSample;
+import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 
 public class MQTTService extends Service
@@ -59,7 +61,7 @@ public class MQTTService extends Service
         super.onCreate();
         connection = new MQTTConnection();
 
-        //connection.start(); // Spostato da onstartcommand
+        connection.start(); // Spostato da onstartcommand
         //dataDbHelper = new DataDbHelper(this);
 
         // Get shared preferences
@@ -74,10 +76,13 @@ public class MQTTService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        if (!isRunning())
-        {
-            connection.start();
-        }
+        //if (!isRunning())
+        //{
+        //    connection.start();
+        //}
+
+
+
 
         boolean isLoggedIn;
 
@@ -91,9 +96,11 @@ public class MQTTService extends Service
             password = prefs.getString("password", "NULL");
             //syncWithSensormind();
 
-            Message msg = Message.obtain(null, MQTTConnection.MIO_PUBLISH_TUTTI);
+            //Message msg = Message.obtain(null, MQTTConnection.MIO_PUBLISH_TUTTI);
 
-            connection.makeRequest(msg);
+            //connection.makeRequest(msg);
+
+            new uploadToSensormind_asynk().execute();
 
         }
         else {
@@ -102,196 +109,6 @@ public class MQTTService extends Service
         return START_STICKY;
     }
 
-    private void syncTEST_2() {
-
-        DataDbHelper dataDbHelper = null;
-        dataDbHelper = new DataDbHelper(this);
-        List<DataSample> listData = new ArrayList<>();
-
-        if (dataDbHelper.numberOfUnsentEntries() > 0) {
-            listData = dataDbHelper.getAllUnsentDataSamples();
-        }
-
-
-
-        for (int i = 0; i < listData.size(); i++) {
-            JSONObject obj = new JSONObject();
-            DataSample sample = listData.get(i);
-
-            try {
-                obj.put("d", sample.getValue_1());
-
-            } catch (Exception e) {}
-
-            Bundle data = new Bundle();
-
-            String message = obj.toString();
-            //Log.d(TAG,"onStartCommand: " + message);
-
-            data.putCharSequence(TOPIC, "/test_1/v1/bm/Test");
-            data.putCharSequence(MESSAGE, message);
-            Message msg = Message.obtain(null, PUBLISH);
-            msg.setData(data);
-
-            connection.makeRequest(msg);
-        }
-
-
-        if (listData.size()>0) {
-            Log.d(TAG, "Sent to sensormind " + listData.size() + " samples");
-            dataDbHelper.deleteAllDataSamples();
-        }
-    }
-
-    private void syncWithSensormind() {
-
-        // POI SPOSTALI DA QUI!!!
-        DataDbHelper dataDbHelper = null;
-        dataDbHelper = new DataDbHelper(this);
-
-        List<DataSample> listData = new ArrayList<>();
-
-        // Multi sample send
-        try {
-            //for (int j = 0; j < dataDbHelper.numberOfUnsentArrays() - 1; j++) {
-
-            //}
-            while (dataDbHelper.numberOfUnsentArrays() > 1) {
-                DataSample sample;
-
-                //Log.d(TAG, "Size List Data: " + listData.size());
-
-                listData = dataDbHelper.getFirstUnsentArrayDataSamples();
-                JSONArray array_1 = new JSONArray();
-                JSONArray array_2 = new JSONArray();
-                JSONArray array_3 = new JSONArray();
-
-                // Split vector in 3 different arrays
-                for (int i = 0; i < listData.size(); i++) {
-                    sample = listData.get(i);
-                    array_1.put(sample.getValue_1());
-                    array_2.put(sample.getValue_2());
-                    array_3.put(sample.getValue_3());
-                }
-
-                JSONObject obj_1 = new JSONObject();
-                JSONObject obj_2 = new JSONObject();
-                JSONObject obj_3 = new JSONObject();
-
-                obj_1.put("d", array_1);
-                obj_2.put("d", array_2);
-                obj_3.put("d", array_3);
-
-                JSONArray arrayCoord = new JSONArray();
-                if ((listData.get(0).getLatitude() != null) && (listData.get(0).getLongitude() != null)) {
-                    arrayCoord.put(listData.get(0).getLatitude());
-                    arrayCoord.put(listData.get(0).getLongitude());
-                    arrayCoord.put(0);
-                    obj_1.put("l", arrayCoord);
-                    obj_2.put("l", arrayCoord);
-                    obj_3.put("l", arrayCoord);
-                }
-
-                if (listData.get(0).getTimestamp() != null) {
-                    obj_1.put("t", listData.get(0).getTimestamp());
-                    obj_2.put("t", listData.get(0).getTimestamp());
-                    obj_3.put("t", listData.get(0).getTimestamp());
-                }
-
-                String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
-
-                // Invio 1
-                Bundle data_1 = new Bundle();
-                String message_1 = obj_1.toString();
-                //Log.d(TAG,"onStartCommand: " + message);
-                data_1.putCharSequence(TOPIC, path + "/1");
-                data_1.putCharSequence(MESSAGE, message_1);
-                Message msg_1 = Message.obtain(null, PUBLISH);
-                msg_1.setData(data_1);
-                connection.makeRequest(msg_1);
-
-                // Invio 2
-                Bundle data_2 = new Bundle();
-                String message_2 = obj_2.toString();
-                //Log.d(TAG,"onStartCommand: " + message);
-                data_2.putCharSequence(TOPIC, path + "/2");
-                data_2.putCharSequence(MESSAGE, message_2);
-                Message msg_2 = Message.obtain(null, PUBLISH);
-                msg_2.setData(data_2);
-                connection.makeRequest(msg_2);
-
-                // Invio 3
-                Bundle data_3 = new Bundle();
-                String message_3 = obj_3.toString();
-                //Log.d(TAG,"onStartCommand: " + message);
-                data_3.putCharSequence(TOPIC, path + "/3");
-                data_3.putCharSequence(MESSAGE, message_3);
-                Message msg_3 = Message.obtain(null, PUBLISH);
-                msg_3.setData(data_3);
-                connection.makeRequest(msg_3);
-
-                // Scrivo su DB che i dati sono stati inviati
-
-                Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
-                dataDbHelper.setSentListOfDataSamples(listData);
-                Log.d(TAG, "Richiesta cancellazione");
-            }
-        } catch (Exception e) { Log.e(TAG, "Error trying to send an array: " + e);}
-
-        if (listData.size()>0) {
-            Log.d(TAG, "Sent to sensormind " + listData.size() + " arrays");
-            //dataDbHelper.setSentListOfDataSamples(listData);
-        }
-
-        // Single sample send
-        try {
-            if (dataDbHelper.numberOfUnsentEntries() > 0) {
-                listData = dataDbHelper.getAllUnsentSingleDataSamples();
-                for (int i = 0; i < listData.size(); i++) {
-
-                    DataSample sample = listData.get(i);
-                    JSONObject obj = new JSONObject();
-
-
-                    obj.put("d", sample.getValue_1());
-
-                    if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
-                        JSONArray array = new JSONArray();
-                        array.put(sample.getLatitude());
-                        array.put(sample.getLongitude());
-                        array.put(0);
-                        obj.put("l", array);
-                    }
-                    if (sample.getTimestamp() != null) {
-                        obj.put("t", sample.getTimestamp());
-                    }
-
-                    Bundle data = new Bundle();
-
-                    String message = obj.toString();
-                    //Log.d(TAG, message);
-                    //Log.d(TAG, sample.getFeedPath());
-
-                    String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
-                    data.putCharSequence(TOPIC, path);
-                    data.putCharSequence(MESSAGE, message);
-                    Message msg = Message.obtain(null, PUBLISH);
-                    msg.setData(data);
-
-                    connection.makeRequest(msg);
-                }
-                if (listData.size()>0) {
-                    Log.d(TAG, "Sent to sensormind " + listData.size() + " single samples");
-                    dataDbHelper.setSentListOfDataSamples(listData);
-                }
-            }
-
-
-        }catch (Exception e) {Log.d(TAG, "Errore nel publish singolo sample" + e);}
-
-
-
-    }
 
 
 
@@ -443,49 +260,6 @@ public class MQTTService extends Service
 
         private CONNECT_STATE connState = CONNECT_STATE.DISCONNECTED;
 
-        private void syncTEST() {
-
-            DataDbHelper dataDbHelper = null;
-            dataDbHelper = new DataDbHelper(getApplicationContext());
-
-            List<DataSample> listData = new ArrayList<>();
-
-            if (dataDbHelper.numberOfUnsentEntries() > 0) {
-                listData = dataDbHelper.getAllUnsentSingleDataSamples();
-            }
-
-
-
-            for (int i = 0; i < listData.size(); i++) {
-                JSONObject obj = new JSONObject();
-                DataSample sample = listData.get(i);
-
-                try {
-                    obj.put("d", sample.getValue_1());
-
-                } catch (Exception e) {}
-
-                Bundle data = new Bundle();
-
-                String message = obj.toString();
-                //Log.d(TAG,"onStartCommand: " + message);
-
-                String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
-
-                data.putCharSequence(TOPIC, path);
-                data.putCharSequence(MESSAGE, message);
-                Message msg = Message.obtain(null, PUBLISH);
-                msg.setData(data);
-
-                connection.makeRequest(msg);
-            }
-
-            if (listData.size()>0) {
-                Log.d(TAG, "Sent to sensormind " + listData.size() + " samples");
-                dataDbHelper.deleteAllDataSamples();
-            }
-        }
-
         MQTTConnection()
         {
             msgHandler = new MsgHandler();
@@ -514,6 +288,10 @@ public class MQTTService extends Service
         public void setIntentName(String name)
         {
             intentName = name;
+        }
+
+        public void run() {
+            Log.d(TAG, "SONO NEL RUN!");
         }
 
         private class MsgHandler extends Handler implements MqttCallback
@@ -670,7 +448,7 @@ public class MQTTService extends Service
                         break;
                     }
                     case MIO_PUBLISH_TUTTI:
-                        syncWithSensormind();
+                        //syncWithSensormind();
                         //syncTEST_2();
                 }
             }
@@ -701,7 +479,7 @@ public class MQTTService extends Service
                 }
                 catch (MqttException e)
                 {
-                    Log.d(getClass().getCanonicalName(), "Publish failed with reason code = " + e.getReasonCode());
+                    Log.d(TAG, "Publish failed with reason code = " + e.getReasonCode());
                     return false;
                 }
                 return true;
@@ -762,7 +540,210 @@ public class MQTTService extends Service
 
             }
 
+
         }
 
     }
+
+    private class uploadToSensormind_asynk extends AsyncTask<String, Void, String> {
+
+        private boolean res;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            syncWithSensormind();
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d(TAG, "Sensormind Sync completed");
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+        private void publishMessage(String path, String message) {
+            try {
+                MqttClient myC = connection.msgHandler.client;
+
+                MqttMessage mess = new MqttMessage();
+
+                mess.setPayload(message.getBytes());
+
+                myC.publish(path, mess);
+
+                Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
+            }catch (Exception e) { Log.d(TAG, "Errore in publishMessage: " + e );}
+        }
+
+        private void syncWithSensormind() {
+
+            // POI SPOSTALI DA QUI!!!
+            DataDbHelper dataDbHelper = null;
+            dataDbHelper = new DataDbHelper(getApplicationContext());
+
+            List<DataSample> listData = new ArrayList<>();
+
+            // Multi sample send
+            try {
+                //for (int j = 0; j < dataDbHelper.numberOfUnsentArrays() - 1; j++) {
+
+                //}
+                while (dataDbHelper.numberOfUnsentArrays() > 1) {
+                    DataSample sample;
+
+                    //Log.d(TAG, "Size List Data: " + listData.size());
+
+                    listData = dataDbHelper.getFirstUnsentArrayDataSamples();
+                    JSONArray array_1 = new JSONArray();
+                    JSONArray array_2 = new JSONArray();
+                    JSONArray array_3 = new JSONArray();
+
+                    // Split vector in 3 different arrays
+                    for (int i = 0; i < listData.size(); i++) {
+                        sample = listData.get(i);
+                        array_1.put(sample.getValue_1());
+                        array_2.put(sample.getValue_2());
+                        array_3.put(sample.getValue_3());
+                    }
+
+                    JSONObject obj_1 = new JSONObject();
+                    JSONObject obj_2 = new JSONObject();
+                    JSONObject obj_3 = new JSONObject();
+
+                    obj_1.put("d", array_1);
+                    obj_2.put("d", array_2);
+                    obj_3.put("d", array_3);
+
+                    JSONArray arrayCoord = new JSONArray();
+                    if ((listData.get(0).getLatitude() != null) && (listData.get(0).getLongitude() != null)) {
+                        arrayCoord.put(listData.get(0).getLatitude());
+                        arrayCoord.put(listData.get(0).getLongitude());
+                        arrayCoord.put(0);
+                        obj_1.put("l", arrayCoord);
+                        obj_2.put("l", arrayCoord);
+                        obj_3.put("l", arrayCoord);
+                    }
+
+                    if (listData.get(0).getTimestamp() != null) {
+                        obj_1.put("t", listData.get(0).getTimestamp());
+                        obj_2.put("t", listData.get(0).getTimestamp());
+                        obj_3.put("t", listData.get(0).getTimestamp());
+                    }
+
+                    String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
+
+//                    // Invio 1
+//                    Bundle data_1 = new Bundle();
+//                    String message_1 = obj_1.toString();
+//                    //Log.d(TAG,"onStartCommand: " + message);
+//                    data_1.putCharSequence(TOPIC, path + "/1");
+//                    data_1.putCharSequence(MESSAGE, message_1);
+//                    Message msg_1 = Message.obtain(null, PUBLISH);
+//                    msg_1.setData(data_1);
+//                    connection.makeRequest(msg_1);
+//
+//                    // Invio 2
+//                    Bundle data_2 = new Bundle();
+//                    String message_2 = obj_2.toString();
+//                    //Log.d(TAG,"onStartCommand: " + message);
+//                    data_2.putCharSequence(TOPIC, path + "/2");
+//                    data_2.putCharSequence(MESSAGE, message_2);
+//                    Message msg_2 = Message.obtain(null, PUBLISH);
+//                    msg_2.setData(data_2);
+//                    connection.makeRequest(msg_2);
+//
+//                    // Invio 3
+//                    Bundle data_3 = new Bundle();
+//                    String message_3 = obj_3.toString();
+//                    //Log.d(TAG,"onStartCommand: " + message);
+//                    data_3.putCharSequence(TOPIC, path + "/3");
+//                    data_3.putCharSequence(MESSAGE, message_3);
+//                    Message msg_3 = Message.obtain(null, PUBLISH);
+//                    msg_3.setData(data_3);
+//                    connection.makeRequest(msg_3);
+
+                    publishMessage(path + "/1", obj_1.toString());
+                    publishMessage(path + "/2", obj_2.toString());
+                    publishMessage(path + "/3", obj_3.toString());
+
+                    // Scrivo su DB che i dati sono stati inviati
+
+                    Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
+                    dataDbHelper.setSentListOfDataSamples(listData);
+                    Log.d(TAG, "Richiesta cancellazione");
+                }
+            } catch (Exception e) { Log.e(TAG, "Error trying to send an array: " + e);}
+
+            if (listData.size()>0) {
+                Log.d(TAG, "Sent to sensormind " + listData.size() + " arrays");
+                //dataDbHelper.setSentListOfDataSamples(listData);
+            }
+
+            // Single sample send
+            try {
+                if (dataDbHelper.numberOfUnsentEntries() > 0) {
+                    listData = dataDbHelper.getAllUnsentSingleDataSamples();
+                    for (int i = 0; i < listData.size(); i++) {
+
+                        DataSample sample = listData.get(i);
+                        JSONObject obj = new JSONObject();
+
+
+                        obj.put("d", sample.getValue_1());
+
+                        if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
+                            JSONArray array = new JSONArray();
+                            array.put(sample.getLatitude());
+                            array.put(sample.getLongitude());
+                            array.put(0);
+                            obj.put("l", array);
+                        }
+                        if (sample.getTimestamp() != null) {
+                            obj.put("t", sample.getTimestamp());
+                        }
+
+                        Bundle data = new Bundle();
+
+                        String message = obj.toString();
+                        //Log.d(TAG, message);
+                        //Log.d(TAG, sample.getFeedPath());
+
+                        String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
+                        data.putCharSequence(TOPIC, path);
+                        data.putCharSequence(MESSAGE, message);
+                        Message msg = Message.obtain(null, PUBLISH);
+                        msg.setData(data);
+
+                        publishMessage(path, message);
+
+
+
+                        //connection.makeRequest(msg);
+                    }
+                    if (listData.size()>0) {
+                        Log.d(TAG, "Sent to sensormind " + listData.size() + " single samples");
+                        dataDbHelper.setSentListOfDataSamples(listData);
+                    }
+                }
+
+
+            }catch (Exception e) {Log.d(TAG, "Errore nel publish singolo sample" + e);}
+
+
+
+
+
+
+        }
+    }
+
 }

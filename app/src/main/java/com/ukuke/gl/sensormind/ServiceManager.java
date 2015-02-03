@@ -524,6 +524,21 @@ public class ServiceManager {
         new getAllFeed_asynk().execute();
     }
 
+    public void createFeed(String label, String measureUnit, String path, int type) {
+
+        String fullPath = "/" + prefs.getString("username", "NULL") + "/v1/bm/" + path;
+
+        String params[] = new String[4];
+
+
+        params[0] = label;
+        params[1] = measureUnit;
+        params[2] = path;
+        params[3] = Integer.toString(type);
+
+        new createFeed_asynk().execute(params);
+    }
+
 //    private class createFeed_asynk extends AsyncTask<String, Void, String> {
 //
 //        @Override
@@ -570,5 +585,45 @@ public class ServiceManager {
         }
     }
 
+    private class createFeed_asynk extends AsyncTask<String, Void, String> {
+
+        private boolean res;
+
+        @Override
+        protected String doInBackground(String... params) {
+            boolean test;
+
+            if (prefs.getBoolean("loggedIn", false)) {
+                String username = prefs.getString("username", "NULL");
+                String password = prefs.getString("password", "NULL");
+
+                API = new SensormindAPI(username, password);
+                boolean result;
+
+                // Parametro 0: label
+                // Parametro 1: unità misura
+                // Parametro 2: s_uid
+                // Parametro 3: type_id da int
+
+                res = API.createFeed(params[0], false, params[1], params[2], Integer.valueOf(params[3]));
+
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.d(TAG, "Feed Creation: " + res );
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+    }
 
 }
