@@ -232,15 +232,10 @@ public class MQTTService extends Service
 
                 // Scrivo su DB che i dati sono stati inviati
 
-                try {
-
-
-                    Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
-                    dataDbHelper.setSentListOfDataSamples(listData);
-                    Log.d(TAG, "Richiesta cancellazione");
-
-        } catch (Exception e) { Log.e(TAG, "Error DATABASE: " + e);}
-                }
+                Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
+                dataDbHelper.setSentListOfDataSamples(listData);
+                Log.d(TAG, "Richiesta cancellazione");
+            }
         } catch (Exception e) { Log.e(TAG, "Error trying to send an array: " + e);}
 
         if (listData.size()>0) {
@@ -250,48 +245,52 @@ public class MQTTService extends Service
 
         // Single sample send
         try {
-            listData = dataDbHelper.getAllUnsentSingleDataSamples();
-            for (int i = 0; i < listData.size(); i++) {
+            if (dataDbHelper.numberOfUnsentEntries() > 0) {
+                listData = dataDbHelper.getAllUnsentSingleDataSamples();
+                for (int i = 0; i < listData.size(); i++) {
 
-                DataSample sample = listData.get(i);
-                JSONObject obj = new JSONObject();
+                    DataSample sample = listData.get(i);
+                    JSONObject obj = new JSONObject();
 
 
-                obj.put("d", sample.getValue_1());
+                    obj.put("d", sample.getValue_1());
 
-                if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
-                    JSONArray array = new JSONArray();
-                    array.put(sample.getLatitude());
-                    array.put(sample.getLongitude());
-                    array.put(0);
-                    obj.put("l", array);
+                    if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
+                        JSONArray array = new JSONArray();
+                        array.put(sample.getLatitude());
+                        array.put(sample.getLongitude());
+                        array.put(0);
+                        obj.put("l", array);
+                    }
+                    if (sample.getTimestamp() != null) {
+                        obj.put("t", sample.getTimestamp());
+                    }
+
+                    Bundle data = new Bundle();
+
+                    String message = obj.toString();
+                    //Log.d(TAG, message);
+                    //Log.d(TAG, sample.getFeedPath());
+
+                    String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
+                    data.putCharSequence(TOPIC, path);
+                    data.putCharSequence(MESSAGE, message);
+                    Message msg = Message.obtain(null, PUBLISH);
+                    msg.setData(data);
+
+                    connection.makeRequest(msg);
                 }
-                if (sample.getTimestamp() != null) {
-                    obj.put("t", sample.getTimestamp());
+                if (listData.size()>0) {
+                    Log.d(TAG, "Sent to sensormind " + listData.size() + " single samples");
+                    dataDbHelper.setSentListOfDataSamples(listData);
                 }
-
-                Bundle data = new Bundle();
-
-                String message = obj.toString();
-                //Log.d(TAG, message);
-                //Log.d(TAG, sample.getFeedPath());
-
-                String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
-                data.putCharSequence(TOPIC, path);
-                data.putCharSequence(MESSAGE, message);
-                Message msg = Message.obtain(null, PUBLISH);
-                msg.setData(data);
-
-                connection.makeRequest(msg);
             }
 
-        }catch (Exception e) {Log.d(TAG, "Errore nel publish " + e);}
+
+        }catch (Exception e) {Log.d(TAG, "Errore nel publish singolo sample" + e);}
 
 
-        if (listData.size()>0) {
-            Log.d(TAG, "Sent to sensormind " + listData.size() + " single samples");
-            dataDbHelper.setSentListOfDataSamples(listData);
-        }
+
     }
 
 
