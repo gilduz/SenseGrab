@@ -74,7 +74,7 @@ public class MainActivity extends Activity {
 
         prefs.edit().commit();
 
-
+        //createAllFeeds();
 
 
 
@@ -104,22 +104,7 @@ public class MainActivity extends Activity {
         else if (id == R.id.action_test) {
             //API = new SensormindAPI(prefs.getString("username","test_3"),
 
-            ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null","accelerometer/1",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null","accelerometer/2",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null","accelerometer/3",2);
-
-            ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null","gyroscope/1",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null","gyroscope/2",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null","gyroscope/3",2);
-
-            ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null","magnetometer/1",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null","magnetometer/2",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null","magnetometer/3",2);
-
-            ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux","light",1);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar","pressure",1);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null","proximity",1);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",1);
+            createAllFeeds();
 
             // prefs.getString("password","test_3"));
            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
@@ -167,7 +152,7 @@ public class MainActivity extends Activity {
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             scheduler.cancel(scheduledIntent);
             ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
-           // stopService(new Intent(this, MQTTService.class));
+            //stopService(new Intent(this, MQTTService.class));
 
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
@@ -254,6 +239,8 @@ public class MainActivity extends Activity {
         }
     }
 
+
+
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
             super(MainActivity.this, R.layout.item_view, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList());
@@ -277,6 +264,25 @@ public class MainActivity extends Activity {
             return itemView;
         }
 
+    }
+
+    private void createAllFeeds() {
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null","accelerometer/1",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null","accelerometer/2",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null","accelerometer/3",2);
+
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null","gyroscope/1",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null","gyroscope/2",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null","gyroscope/3",2);
+
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null","magnetometer/1",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null","magnetometer/2",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null","magnetometer/3",2);
+
+        ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux","light",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar","pressure",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null","proximity",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",1);
     }
 
 

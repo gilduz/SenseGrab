@@ -69,6 +69,8 @@ public class ConfigurationActivity extends Activity {
         seekSamp.setMax(60);
         seekWin.setMax(60);
 
+
+
         configuration = new ServiceManager.ServiceComponent.Configuration();
 
         // Set values from seekBars

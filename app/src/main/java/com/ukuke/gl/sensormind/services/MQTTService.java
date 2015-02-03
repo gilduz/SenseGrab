@@ -81,6 +81,12 @@ public class MQTTService extends Service
         //    connection.start();
         //}
 
+        if (prefs.getBoolean("enableGrabbing",false)) {
+
+          //  Message msg = Message.obtain(null, MQTTConnection.STOP);
+          //  connection.makeRequest(msg);
+
+        }
 
 
 
@@ -291,7 +297,7 @@ public class MQTTService extends Service
         }
 
         public void run() {
-            Log.d(TAG, "SONO NEL RUN!");
+            //Log.d(TAG, "SONO NEL RUN!");
         }
 
         private class MsgHandler extends Handler implements MqttCallback
