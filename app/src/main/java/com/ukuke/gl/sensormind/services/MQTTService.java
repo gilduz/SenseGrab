@@ -81,6 +81,12 @@ public class MQTTService extends Service
         //    connection.start();
         //}
 
+        if (prefs.getBoolean("enableGrabbing",false)) {
+
+          //  Message msg = Message.obtain(null, MQTTConnection.STOP);
+          //  connection.makeRequest(msg);
+
+        }
 
 
 

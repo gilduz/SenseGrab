@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             scheduler.cancel(scheduledIntent);
             ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
-           // stopService(new Intent(this, MQTTService.class));
+            //stopService(new Intent(this, MQTTService.class));
 
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
