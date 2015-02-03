@@ -535,6 +535,14 @@ public class ServiceManager {
         scheduler.cancel(scheduledIntent);
     }
 
+    public void stopFluentSampling() {
+        // Stop fluent sampling in service
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+        intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
+        //PendingIntent scheduledIntent = PendingIntent.getService(cn, 321, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        cn.startService(intent);
+    }
+
     public void addConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration) {
         if (USE_DB) {
             dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);

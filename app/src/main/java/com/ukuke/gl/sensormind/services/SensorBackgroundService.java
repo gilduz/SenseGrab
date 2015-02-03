@@ -118,7 +118,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             }
             if (args.containsKey(KEY_FLUENT_SAMPLING)) {
                 fluentSampling = args.getBoolean(KEY_FLUENT_SAMPLING);
+                    if (!fluentSampling) {
+                    // Deregistro tutti i sensori (soprattutto per acc magn e gyro)
+                    mSensorManager.unregisterListener(this);
+                }
             }
+
+
         }
 
         //TODO: Bisognerebbe aggiornare la posizione in background con asynktask

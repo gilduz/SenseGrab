@@ -116,10 +116,10 @@ public class MainActivity extends Activity {
             ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null","magnetometer/2",2);
             ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null","magnetometer/3",2);
 
-            ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux","light",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar","pressure",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null","proximity",2);
-            ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux","light",1);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar","pressure",1);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null","proximity",1);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",1);
 
             // prefs.getString("password","test_3"));
            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
@@ -166,6 +166,7 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(this, MQTTService.class);
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             scheduler.cancel(scheduledIntent);
+            ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
            // stopService(new Intent(this, MQTTService.class));
 
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
