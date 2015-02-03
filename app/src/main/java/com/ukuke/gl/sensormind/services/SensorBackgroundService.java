@@ -43,6 +43,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_ATTACH_GPS = "attach_gps";
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
     public static final String KEY_PERFORM_UPLOAD = "perform_upload";
+    public static final String KEY_FLUENT_SAMPLING = "fluent_sampling";
 
     public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
     private long timeOfLastLocationUpdateMs = 0;
@@ -65,6 +66,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     int windowGyroscope = 1;
     int windowMagnetometer = 1;
 
+    boolean fluentSamplingAccelerometer = false;
+    boolean fluentSamplingGyroscope = false;
+    boolean fluentSamplingMagnetometer = false;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -78,7 +83,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         boolean launchSensorAcquisition = false;
         int window = 1;
-
+        boolean fluentSampling = false;
 
         // get some properties from the intent
         if (args != null) {
@@ -110,6 +115,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     uploadListSampleOnSensormind();
                 };
             }
+            if (args.containsKey(KEY_FLUENT_SAMPLING)) {
+                fluentSampling = args.getBoolean(KEY_FLUENT_SAMPLING);
+            }
         }
 
         //TODO: Bisognerebbe aggiornare la posizione in background con asynktask
@@ -122,9 +130,18 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         // Se negli extra c'è il tipo di sensore lancia acquisizione sensore
         if (launchSensorAcquisition) {
             switch (sensorType) {
-                case Sensor.TYPE_ACCELEROMETER: windowAccelerometer = window; break;
-                case Sensor.TYPE_GYROSCOPE: windowGyroscope = window; break;
-                case Sensor.TYPE_MAGNETIC_FIELD: windowMagnetometer = window; break;
+                case Sensor.TYPE_ACCELEROMETER:
+                    windowAccelerometer = window;
+                    fluentSamplingAccelerometer = fluentSampling;
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    windowGyroscope = window;
+                    fluentSamplingGyroscope = fluentSampling;
+                    break;
+                case Sensor.TYPE_MAGNETIC_FIELD:
+                    windowMagnetometer = window;
+                    fluentSamplingMagnetometer = fluentSampling;
+                    break;
             }
             Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
             mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -159,11 +176,17 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 if (counterAccelerometer >= windowAccelerometer) {
                     counterAccelerometer = 0;
                 }
+                if (!fluentSamplingAccelerometer) {
+                    mSensorManager.unregisterListener(this, event.sensor);
+                }
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 counterGyroscope++;
                 if (counterGyroscope >= windowGyroscope) {
                     counterGyroscope = 0;
+                }
+                if (!fluentSamplingGyroscope) {
+                    mSensorManager.unregisterListener(this, event.sensor);
                 }
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
@@ -171,10 +194,16 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 if (counterMagnetometer >= windowMagnetometer) {
                     counterMagnetometer = 0;
                 }
+                if (!fluentSamplingMagnetometer) {
+                    mSensorManager.unregisterListener(this, event.sensor);
+                }
+
                 break;
+            default:
+                mSensorManager.unregisterListener(this, event.sensor);
         }
 
-        mSensorManager.unregisterListener(this, event.sensor);
+
 
     }
 
@@ -213,55 +242,57 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
 
         ServiceManager.ServiceComponent.Configuration conf;
-        conf = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentActiveBySensorType(event.sensor.getType()).getActiveConfiguration();
+
+        ServiceManager.ServiceComponent component = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentActiveBySensorType(event.sensor.getType());
+        conf = component.getActiveConfiguration();
 
         String path = conf.getPath();
 
-        String path_feed_array = "array";
-        String path_feed_scalar = "scalar";
+        //String path_feed_array = "array";
+        //String path_feed_scalar = "scalar";
 
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
                 if (logging)
                     Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
-                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
-                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
-                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
-                dataSample = new DataSample(path_feed_scalar, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(path_feed_array, event.values[0], event.values[1], event.values[2], counterAccelerometer, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(path_feed_array, event.values[0], event.values[1], event.values[2], counterGyroscope, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
                     Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                dataSample = new DataSample(path_feed_array, event.values[0], event.values[1], event.values[2], counterMagnetometer, event.timestamp*1000, lastLongitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, event.timestamp*1000, lastLongitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
         }

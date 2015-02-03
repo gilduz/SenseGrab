@@ -134,6 +134,7 @@ public class ConfigurationActivity extends Activity {
         int window = 1;// = 1;
 
         try {
+
             interval = seekSamp.getProgress() * 1000;
             window = seekWin.getProgress();
         } catch (Exception e) {
@@ -144,12 +145,13 @@ public class ConfigurationActivity extends Activity {
         configuration.setInterval(interval);
         configuration.setWindow(window);
         configuration.setConfigurationName(serviceComponent.getDysplayName());
-        configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path
+        //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path
         configuration.setAttachGPS(gpsSwitch.isActivated());
 
         ServiceManager.ServiceComponent component;
         component = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
 
+        configuration.setPath(component.getDefaultPath());
         component.removeConfiguration(confName.getText().toString());
         component.addConfiguration(configuration);
         component.setActiveConfiguration(configuration);

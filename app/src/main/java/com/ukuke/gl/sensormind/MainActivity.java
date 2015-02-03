@@ -34,8 +34,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 2; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 5; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 5; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 10; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     String username;
@@ -103,7 +103,24 @@ public class MainActivity extends Activity {
         }
         else if (id == R.id.action_test) {
             //API = new SensormindAPI(prefs.getString("username","test_3"),
-            ServiceManager.getInstance(MainActivity.this).createFeed("PIPO_LABEL","PIPPO_MES_UNIT","PROVIAMO/1/2/3",1234);
+
+            ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null","accelerometer/1",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null","accelerometer/2",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null","accelerometer/3",2);
+
+            ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null","gyroscope/1",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null","gyroscope/2",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null","gyroscope/3",2);
+
+            ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null","magnetometer/1",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null","magnetometer/2",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null","magnetometer/3",2);
+
+            ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux","light",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar","pressure",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null","proximity",2);
+            ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",2);
+
             // prefs.getString("password","test_3"));
            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();

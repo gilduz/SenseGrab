@@ -65,6 +65,7 @@ public class ServiceManager {
         private int availableImageID;
         private int componentImageID;
         private int sensorType;
+        private String defaultPath;
         boolean logging = false;
 
         Configuration activeConfiguration = null;
@@ -73,6 +74,14 @@ public class ServiceManager {
 
         public void setActiveConfiguration(Configuration activeConfiguration) {
             this.activeConfiguration = activeConfiguration;
+        }
+
+        public String getDefaultPath() {
+            return defaultPath;
+        }
+
+        public void setDefaultPath(String defaultPath) {
+            this.defaultPath = defaultPath;
         }
 
         public int addConfiguration(String configurationName, String path, long interval, int window, boolean attachGPS) {
@@ -134,30 +143,37 @@ public class ServiceManager {
                 case "Magnetic Field":
                     componentImageID = R.drawable.ic_language_grey600_48dp;
                     sensorType = Sensor.TYPE_MAGNETIC_FIELD;
+                    defaultPath = "magnetometer";
                     break;
                 case "Accelerometer":
                     componentImageID = R.drawable.ic_vibration_grey600_48dp;
                     sensorType = Sensor.TYPE_ACCELEROMETER;
+                    defaultPath = "accelerometer";
                     break;
                 case "Temperature":
                     componentImageID = R.drawable.ic_whatshot_grey600_48dp;
                     sensorType = Sensor.TYPE_AMBIENT_TEMPERATURE;
+                    defaultPath = "temperature";
                     break;
                 case "Gyroscope":
                     componentImageID = R.drawable.ic_autorenew_grey600_48dp;
                     sensorType = Sensor.TYPE_GYROSCOPE;
+                    defaultPath = "gyroscope";
                     break;
                 case "Light Sensor":
                     componentImageID = R.drawable.ic_flare_grey600_48dp;
                     sensorType = Sensor.TYPE_LIGHT;
+                    defaultPath = "light";
                     break;
                 case "Proximity Sensor":
                     componentImageID = R.drawable.ic_filter_list_grey600_48dp;
                     sensorType = Sensor.TYPE_PROXIMITY;
+                    defaultPath = "proximity";
                     break;
                 case "Pressure Sensor":
                     componentImageID = R.drawable.ic_filter_hdr_grey600_48dp;
                     sensorType = Sensor.TYPE_PRESSURE;
+                    defaultPath = "pressure";
                     break;
                 default:
                     componentImageID = R.drawable.ic_close_grey600_48dp;
@@ -300,7 +316,9 @@ public class ServiceManager {
 
                 configuration.setInterval(interval);
                 configuration.setConfigurationName("DAMMI UN NOME");
-                configuration.setPath("/Path/1");
+                //configuration.setPath("/Path/1");
+                configuration.setPath(service.getDefaultPath());
+
                 configuration.setAttachGPS(true);
                 configuration.setWindow(window);
 
@@ -488,6 +506,16 @@ public class ServiceManager {
             }
             try {
                 args.putBoolean(SensorBackgroundService.KEY_ATTACH_GPS, configuration.attachGPS);
+            } catch (Exception e) {
+            }
+
+            try {
+                boolean value;
+                if (configuration.getInterval() == 0) {
+                    value = true;
+                    args.putBoolean(SensorBackgroundService.KEY_FLUENT_SAMPLING, value);
+                }
+
             } catch (Exception e) {
             }
 
