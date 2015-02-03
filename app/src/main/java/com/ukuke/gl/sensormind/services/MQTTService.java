@@ -61,7 +61,7 @@ public class MQTTService extends Service
         super.onCreate();
         connection = new MQTTConnection();
 
-        connection.start(); // Spostato da onstartcommand
+        //connection.start(); // Spostato da onstartcommand
         //dataDbHelper = new DataDbHelper(this);
 
         // Get shared preferences
@@ -76,10 +76,10 @@ public class MQTTService extends Service
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        //if (!isRunning())
-        //{
-        //    connection.start();
-        //}
+        if (!isRunning())
+        {
+            connection.start();
+        }
 
 
 
@@ -291,7 +291,7 @@ public class MQTTService extends Service
         }
 
         public void run() {
-            Log.d(TAG, "SONO NEL RUN!");
+            //Log.d(TAG, "SONO NEL RUN!");
         }
 
         private class MsgHandler extends Handler implements MqttCallback
