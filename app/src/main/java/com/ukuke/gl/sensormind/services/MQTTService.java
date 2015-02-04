@@ -618,6 +618,7 @@ public class MQTTService extends Service
 
             if (connection.connState == CONNECT_STATE.CONNECTED) {
                 int numPublishedMessages = 0;
+                int numArrayPublished = 0;
 
                 //TODO: Fare il check di spedito per andare a settare il sent su Db
                 // POI SPOSTALI DA QUI!!!
@@ -634,7 +635,6 @@ public class MQTTService extends Service
                 // Multi sample send
                 try {
                     //for (int j = 0; j < dataDbHelper.numberOfUnsentArrays() - 1; j++) {
-
                     //}
                     while (dataDbHelper.numberOfUnsentArrays() > 1) {
                         DataSample sample;
@@ -642,6 +642,9 @@ public class MQTTService extends Service
                         //Log.d(TAG, "Size List Data: " + listData.size());
 
                         listData = dataDbHelper.getFirstUnsentArrayDataSamples();
+                        if (listData.size() <= 0) {break;} // TODO: Se non metto questo mi va in exception perchè ognitanto listData è vuota. perchè?
+
+                        numArrayPublished ++;
                         JSONArray array_1 = new JSONArray();
                         JSONArray array_2 = new JSONArray();
                         JSONArray array_3 = new JSONArray();
@@ -722,13 +725,17 @@ public class MQTTService extends Service
                         //Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
                         if (sent_1 && sent_2 && sent_3) {
                             dataDbHelper.setSentListOfDataSamples(listData);
-                            Log.d(TAG, "Sent to Mqtt " + listData.size() + " arrays");
                             //Log.d(TAG, "Requested send to Mqtt " + listData.size() + " arrays");
                         }
                         //Log.d(TAG, "Richiesta cancellazione");
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "Error in single sample publish : " + e);
+                    Log.e(TAG, "Error in array publish : " + e);
+                }
+
+                if (numArrayPublished > 0) {
+                    Log.i(TAG, "Sent to Mqtt " + numArrayPublished + " arrays");
+
                 }
 
 //            if (listData.size()>0) {
@@ -782,7 +789,7 @@ public class MQTTService extends Service
                             //connection.makeRequest(msg);
                         }
                         if (listDataSent.size() > 0) {
-                            Log.d(TAG, "Sent to Mqtt " + listDataSent.size() + " single samples");
+                            Log.i(TAG, "Sent to Mqtt " + listDataSent.size() + " single samples");
                             dataDbHelper.setSentListOfDataSamples(listDataSent);
                         }
                     }

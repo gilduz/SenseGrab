@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -103,12 +104,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             }
             if (args.containsKey(KEY_PERFORM_DATABASE_TRANSFER)) {
                 if (args.getBoolean(KEY_PERFORM_DATABASE_TRANSFER)) {
-                    saveListSampleOnDb();
-                };
-            }
-            if (args.containsKey(KEY_PERFORM_DATABASE_TRANSFER)) {
-                if (args.getBoolean(KEY_PERFORM_DATABASE_TRANSFER)) {
-                    saveListSampleOnDb();
+                    new saveListSampleOnDb().execute();
                 };
             }
             if (args.containsKey(KEY_PERFORM_UPLOAD)) {
@@ -214,22 +210,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     }
 
-    // Call saveListFeedOnDB somethimes to transfer data on database
-    public synchronized int saveListSampleOnDb() {
-        int dataTransferred = 0;
-        // TODO: Leo qui è dove richiamo il tuo metodo del DB passandogli listDataSample
-        if (listDataSample.size()>0) {
-            dataDbHelper.insertListOfData(listDataSample);
-
-            dataTransferred = listDataSample.size();
-            listDataSample.clear();
-            Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries with " + dataDbHelper.numberOfUnsentEntries() + " unsent samples");
-        }
-
-
-        return dataTransferred;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -293,13 +273,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
-                    Log.v(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.v(TAG, listDataSample.size() + ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
-                    Log.v(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.v(TAG, listDataSample.size() + ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
@@ -346,5 +326,53 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public void onConnectionFailed(ConnectionResult connectionResult) {
         //TODO: Se la connessione fallisce....che si fa?
     }
+
+
+    private class saveListSampleOnDb extends AsyncTask<String, Void, String> {
+
+        private boolean res;
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            // Call saveListFeedOnDB somethimes to transfer data on database
+                int dataTransferred = 0;
+                // TODO: Leo qui è dove richiamo il tuo metodo del DB passandogli listDataSample
+                if (listDataSample.size()>0) {
+                    dataDbHelper.insertListOfData(listDataSample);
+
+                    dataTransferred = listDataSample.size();
+                    listDataSample.clear();
+                    Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries with " + dataDbHelper.numberOfUnsentEntries() + " unsent samples");
+                }
+
+             return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            //Log.i(TAG, "Sensormind Sync completed");
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+
+
+        private void syncWithSensormind() {
+
+        }
+
+
+
+
+
+    }
+
+
 
 }

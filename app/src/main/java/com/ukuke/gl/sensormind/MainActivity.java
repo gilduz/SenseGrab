@@ -3,6 +3,7 @@ package com.ukuke.gl.sensormind;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -34,8 +35,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 15; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 30; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 1 * 60; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 3 * 60; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     String username;
@@ -52,36 +53,29 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Check shared preferences
-        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
-
-
-        ServiceManager.getInstance(MainActivity.this).initializeFromDB();
-
-        // Search  services
-        //int numAvailableServices = ServiceManager.getInstance(MainActivity.this).populateServiceComponentList();
-        //Toast.makeText(getApplicationContext(), "Found " + numAvailableServices + " available services" , Toast.LENGTH_LONG).show();
-
         View v = new View(this);
 
+        initEverything();
+    }
+
+    private void initEverything() {
+        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+        ServiceManager.getInstance(MainActivity.this).initializeFromDB();
+        // Get credentials if stored on shared preferences
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
-
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
         toggle.setChecked(prefs.getBoolean("enableGrabbing", true));
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
-
         prefs.edit().commit();
-
         //createAllFeeds();
 
         if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
             launchMQTTService();
+            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
         }
-
-
-
     }
 
 
@@ -135,7 +129,6 @@ public class MainActivity extends Activity {
 
             launchMQTTService();
 
-            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
@@ -310,4 +303,16 @@ public class MainActivity extends Activity {
             stopService(new Intent(this, MQTTService.class));
         //}
     }
+
+    public class MyReceiver extends BroadcastReceiver {
+        //TODO Istanziare all'avvio del telefono
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "Launch services after boot");
+            initEverything();
+        }
+    }
+
+
+
 }
