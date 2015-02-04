@@ -6,14 +6,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Environment;
-import android.util.Log;
 
 import com.ukuke.gl.sensormind.support.DataSample;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.io.File;
 
 /**
  *   Created by Leonardo on 30/01/2015.
@@ -173,19 +170,14 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public int numberOfUnsentArrays() {
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent+" = 0 and "+Data_arrayCount + " = 0");
-        // se non va quello sopra usare questo:
-        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_arrayCount+" = 0", null );
-        int num = res.getCount();*/
         closeDb();
         return num;
     }
 
-    public int numberOfCompleteArraysOnFeed(String feed) {
+    public int numberOfCompleteUnsentArraysOnFeed(String feed) {
         db = this.getReadableDatabase();
-        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_idFeed + " = '" + feed + "' and " + Data_arrayCount + " = 0");
-        // se non va quello sopra usare questo:
-        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_idFeed+" = '"+feed+"' and "+Data_arrayCount+" = 0", null );
-        int num = res.getCount();*/
+        int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_idFeed + " = '" + feed +
+                "' and " + Data_arrayCount + " = 0 and "+ Data_sent + " = 0");
         closeDb();
         return num - 1;
     }
@@ -222,19 +214,18 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    private Cursor getAllPotentialElementOfAnArray(Cursor currentRow) {//TODO verificare il funzionamento, non va!!!
+    private Cursor getAllPossibleElementsOfAnArray(Cursor currentRow) {//TODO verificare il funzionamento, non va!!!
         String feed = currentRow.getString(currentRow.getColumnIndex(Data_idFeed));
         int id = currentRow.getInt(currentRow.getColumnIndex(Data_id));
         String query = "select * from " + Data_table + " where " + Data_idFeed +
-                " = '" + currentRow.getString(currentRow.getColumnIndex(Data_idFeed)) + "' and " + Data_id + " >= " + Integer.toString(currentRow.getInt(currentRow.getColumnIndex(Data_id))) +
+                " = '" + feed + "' and " + Data_id + " >= " + Integer.toString(id) +
                 " and " + Data_arrayCount + " >= 0";
         db = this.getReadableDatabase();
         Cursor res = db.rawQuery(query, null);
-        //Log.d(TAG,"SON QUI " + res.getCount());
         return res;
     }
 
-    private Cursor getAllPossibleElementOfAnArray(String feed, int id) {//TODO completare e verificare il funzionamento
+    private Cursor getAllPossibleElementOfAnArrayByFeedAndId(String feed, int id) {//TODO completare e verificare il funzionamento
         db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from " + Data_table + " where " + Data_idFeed +
                 " = '" + feed + "' and " + Data_id + " > " + Integer.toString(id) +
@@ -364,10 +355,10 @@ public class DataDbHelper extends SQLiteOpenHelper {
             //Log.d("DataDbHelper","Sono dentro al primo for");
             feed = unsentArrayFirstElDb.getString(unsentArrayFirstElDb.getColumnIndex(Data_idFeed));
             //Controllo se esiste un array completo
-            if (numberOfCompleteArraysOnFeed(feed) > 0) {
+            if (numberOfCompleteUnsentArraysOnFeed(feed) > 0) {
                 //Log.d("DataDbHelper","Per il feed corrente c'è almeno un array completo");
                 //esiste un array completo, ciclo fino a che non arrivo alla fine (NON devo avere diverse robe nello stesso feed)
-                Cursor currentArrayCursor = getAllPotentialElementOfAnArray(unsentArrayFirstElDb);
+                Cursor currentArrayCursor = getAllPossibleElementsOfAnArray(unsentArrayFirstElDb);
                 currentArrayCursor.moveToFirst();
                 //eseguo il ciclo almeno la prima volta, e dopo faccio il check dell'arrayCount
                 //alla fine del primo ciclo nella condizione mi ritrovo 1>0
