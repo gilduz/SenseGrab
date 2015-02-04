@@ -10,6 +10,7 @@ import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.ArrayList;
 
@@ -25,22 +26,26 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String Samp_conf_table = "Samp_conf";
 
     // Sampling configurations columns
-    public static final String Samp_conf_id = "id"; //int
+    public static final String Samp_conf_id = "_id"; //int
     public static final String Samp_conf_name ="name"; //string
     public static final String Samp_conf_type ="type"; //int
+    public static final String Samp_conf_service_name = "service";//string
+    public static final String Samp_conf_path = "feed";//string
     public static final String Samp_conf_time ="time"; //int, sampling time
-    public static final String Samp_conf_time_unit ="unit"; //int, 0 for sec, 1 for min
+    //public static final String Samp_conf_time_unit ="unit"; //int, 0 for sec, 1 for min
     public static final String Samp_conf_window ="window"; //int window for streaming sensors, must be less than sampling time
     public static final String Samp_conf_gps ="gps"; //int, not boolean in SQLite, 0 is false, 1 is true
+    public static final String Samp_conf_active = "active";//int
     public static final String Samp_conf_date = "created";
 
-
+//TODO implementare nuove voci nel db
     private static final String Create_Conf_Table =
             "create table "+Samp_conf_table+"("+Samp_conf_id+" integer primary key autoincrement,"+
                     Samp_conf_name+" text not null,"+Samp_conf_type+" integer not null,"+
-                    Samp_conf_time+" integer not null,"+Samp_conf_time_unit+" integer not null,"+
+                    Samp_conf_service_name+" text not null,"+Samp_conf_path+" text not null,"+
+                    Samp_conf_time+" integer not null,"+
                     Samp_conf_window+" integer,"+Samp_conf_gps+" integer not null,"+
-                    Samp_conf_date+" datetime"+")";
+                    Samp_conf_active+" int not null,"+Samp_conf_date+" datetime"+")";
 
     public DbHelper(Context context) {
         super(context, DB_name, null, 1);
@@ -80,7 +85,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
             values.put(Samp_conf_time, time);
-            values.put(Samp_conf_time_unit, time_unit);
+            //values.put(Samp_conf_time_unit, time_unit);
             values.put(Samp_conf_window, window);
             values.put(Samp_conf_gps, intGPS);
             values.put(Samp_conf_date, getDateTime());
@@ -129,7 +134,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
             values.put(Samp_conf_time, time);
-            values.put(Samp_conf_time_unit, time_unit);
+            //values.put(Samp_conf_time_unit, time_unit);
             values.put(Samp_conf_window, window);
             values.put(Samp_conf_gps, intGPS);
             values.put(Samp_conf_date, getDateTime());
@@ -155,7 +160,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
             values.put(Samp_conf_time, time);
-            values.put(Samp_conf_time_unit, time_unit);
+            //values.put(Samp_conf_time_unit, time_unit);
             values.put(Samp_conf_window, window);
             values.put(Samp_conf_gps, intGPS);
             values.put(Samp_conf_date, getDateTime());
@@ -297,6 +302,43 @@ public class DbHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
+    //todo finire metodo
+    public int populateServiceComponentListWithAllConfigurations(List<ServiceManager.ServiceComponent> serviceComponentList){
+
+        clearConfigurationList(serviceComponentList);
+
+        //prendere tutte le configurazioni
+        Cursor allConf = this.getAllConfCursor();
+        int size = allConf.getCount();
+
+        allConf.moveToFirst();
+
+        for (int i = 0; i <size; i++) {
+
+            //chiedere l'id in lista dando il service name
+            int id = getIdByServiceName(allConf.getString(allConf.getColumnIndex(Samp_conf_service_name)),serviceComponentList);
+            if (id>-1) {
+                String name = allConf.getString(allConf.getColumnIndex(Samp_conf_name));
+                String path = allConf.getString(allConf.getColumnIndex(Samp_conf_path));
+                long time = allConf.getLong(allConf.getColumnIndex(Samp_conf_time));
+                int window = allConf.getInt(allConf.getColumnIndex(Samp_conf_window));
+                int attachGPS = allConf.getInt(allConf.getColumnIndex(Samp_conf_gps));
+
+                ServiceManager.ServiceComponent.Configuration conf = new ServiceManager.ServiceComponent.Configuration(name,path,time,window,reCovertIntToBool(attachGPS));
+                //avendo l'id vado ad aggiungere alla lista di configuration corrispondente
+                serviceComponentList.get(id).addConfiguration(conf);
+                //se la configurazione che sto gardando è attiva la metto in activeconfiguration
+                if (allConf.getInt(allConf.getColumnIndex(Samp_conf_active))!=0){
+                    serviceComponentList.get(id).setActiveConfiguration(conf);
+                }
+
+            }
+            allConf.moveToNext();
+        }
+
+        return 5;
+    }
+
     public int numberOfConfigurations(){
         SQLiteDatabase db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Samp_conf_table);
@@ -304,9 +346,24 @@ public class DbHelper extends SQLiteOpenHelper {
         return num;
     }
 
+    //--------------------------ACCESSORIES------------------------
+
+    private int getIdByServiceName(String name, List<ServiceManager.ServiceComponent> list) {
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getDysplayName().equals(name)){ return i;}
+        }
+        return -1;
+    }
+
+    private void clearConfigurationList(List<ServiceManager.ServiceComponent> list){
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).configurationList.clear();
+            list.get(i).setActiveConfiguration(null);
+        }
+    }
+
     private String getDateTime() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         Date date = new Date();
         return dateFormat.format(date);
     }
@@ -325,6 +382,10 @@ public class DbHelper extends SQLiteOpenHelper {
             intGPS = 1;
         }
         return intGPS;
+    }
+
+    private boolean reCovertIntToBool (int k) {
+        return (k!=0);
     }
 
 }
