@@ -25,10 +25,10 @@ public class DataDbHelper extends SQLiteOpenHelper {
 
     // DB name, comment which you won't use
     // Internal database
-    //public static final String DB_name = "DB_Sensormind_Data";
+    public static final String DB_name = "DB_Sensormind_Data";
     // External database
-    public static final String DB_name = Environment.getExternalStorageDirectory()
-            + File.separator + "Sensormind" + File.separator + "DB_Sensormind_Data";
+    //public static final String DB_name = Environment.getExternalStorageDirectory()
+    //        + File.separator + "Sensormind" + File.separator + "DB_Sensormind_Data";
 
     // Tables
     public static final String Data_table = "Data";
