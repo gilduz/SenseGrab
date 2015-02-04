@@ -300,7 +300,7 @@ public class MainActivity extends Activity {
 
     private void stopMQTTService() {
         //if (prefs.getBoolean("loggedIn",false)) {
-            Log.d(TAG, "Deactivate Mqtt service");
+            //Log.d(TAG, "Deactivate Mqtt service");
             stopService(new Intent(this, MQTTService.class));
         //}
     }

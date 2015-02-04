@@ -31,6 +31,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.MainActivity;
@@ -350,6 +351,7 @@ public class MQTTService extends Service
                             try {
                                 client.disconnect();
                                 client.close();
+                                Toast.makeText(getApplicationContext(), "MQTT Disconnected", Toast.LENGTH_LONG).show();
                             } catch (MqttException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
@@ -371,6 +373,7 @@ public class MQTTService extends Service
 
                                 client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
+                                Toast.makeText(getApplicationContext(), "MQTT Connected", Toast.LENGTH_LONG).show();
                                 Log.i(TAG, "MQTT Connected with username: " + username + " and password: " + password );
                                 timeout = MINTIMEOUT;
                             }
