@@ -358,7 +358,7 @@ public class DbHelper extends SQLiteOpenHelper {
     private void clearConfigurationList(List<ServiceManager.ServiceComponent> list){
         for (int i = 0; i < list.size(); i++) {
             list.get(i).configurationList.clear();
-            list.get(i).activeConfiguration=null;
+            list.get(i).setActiveConfiguration(null);
         }
     }
 
