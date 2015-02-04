@@ -789,7 +789,7 @@ public class MQTTService extends Service
                 } catch (Exception e) {
                     Log.d(TAG, "Error in single sample publish: " + e);
                 }
-                Log.i(TAG, "Sensormind Sync completed: " + numPublishedMessages + "published");
+                Log.i(TAG, "Sensormind sync completed: " + numPublishedMessages + " messages published");
             }
             else {
                 Log.d(TAG, "Nothing published because i'm not connected to MQTT");
