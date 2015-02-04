@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.DatabaseUtils;
 import android.database.Cursor;
-import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,6 +37,9 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String Samp_conf_active = "active";//int
     public static final String Samp_conf_date = "created";
 
+    //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+    //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+
 //TODO implementare nuove voci nel db
     private static final String Create_Conf_Table =
             "create table "+Samp_conf_table+"("+Samp_conf_id+" integer primary key autoincrement,"+
@@ -53,34 +55,48 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
-        //db.execSQL(Create_Type_Table);
         db.execSQL(Create_Conf_Table);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // delete tables
-        // db.execSQL("drop table if exists"+Samp_type_table);
         db.execSQL("drop table if exists"+Samp_conf_table);
         // create new tables
         onCreate(db);
     }
 
 
-    // Adapter methods
+    //---------------------------Adapter methods---------------------------
 
-    //NEW CONFIGURATION
+    //---------------------------ADD OR MODIFY-----------------------------
+
+    private boolean addOrUpdateConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive){
+        int _id = conf.getDbId();
+        if (_id>-1){
+            // è già stato creato, modifico
+            return this.updateConfiguration(conf,comp,isActive);
+        } else if (_id==-1) {
+            //è una nuova configurazione perché non gli è ancora stato assegnato un id, creo nuova configurazione
+            return this.newConfiguration(conf,comp,isActive);
+        } else return false;
+    }
+
+    //--------------------------NEW CONFIGURATION----------------------------
+    @Deprecated
     public boolean newConfiguration (String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
 
             int time_unit = covertTimeUnit(unit);
-            int intGPS = covertGps(gps);
+            int intGPS = convertBoolToInt(gps);
 
             SQLiteDatabase db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
+
+            //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
@@ -98,38 +114,74 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
+    private boolean newConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive) {
+        //TODO modificare la configuration activity per impostare i massimi e minimi valori delle seekbar tramite getmindelay per ogni sensore
+        // check if values are correct
+        long interval = conf.getInterval();
+        if (interval>0){
+
+            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            ContentValues values = new ContentValues();
+
+            //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+
+            values.put(Samp_conf_name, conf.getConfigurationName());
+            values.put(Samp_conf_type, comp.getSensorType());
+            values.put(Samp_conf_service_name, comp.getDysplayName());
+            values.put(Samp_conf_path, conf.getPath());
+            values.put(Samp_conf_time, interval);
+            values.put(Samp_conf_window, conf.getWindow());
+            values.put(Samp_conf_gps, convertBoolToInt(conf.isAttachGPS()));
+            values.put(Samp_conf_active, isActive);
+            values.put(Samp_conf_date, getDateTime());
+
+            int _id = (int) db.insert(Samp_conf_table, null, values);
+            conf.setDbId(_id);
+
+            db.close();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //------------------------CURSOR METHODS---------------------------
+
     public Cursor getConfCursorById(int id){
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where id = "+id, null );
-        return res;
+        return db.rawQuery( "select * from "+Samp_conf_table+" where id = "+id, null );
     }
 
     public Cursor getConfCursorByName(String name){
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery( "select * from "+Samp_conf_table+" where "+Samp_conf_name+" = '"+name+"'", null );
-        return res;
+        return db.rawQuery( "select * from "+Samp_conf_table+" where "+Samp_conf_name+" = '"+name+"'", null );
     }
 
     public Cursor getAllConfCursor(){
         // TODO Remember to close the cursor on upper level after use
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res = db.rawQuery( "select * from "+Samp_conf_table, null );
-        return res;
+        return db.rawQuery( "select * from "+Samp_conf_table, null );
     }
 
-    // UPDATE BY ID
+    //--------------------------UPDATE METHODS-------------------------
+
+    @Deprecated
     public boolean updateConfigurationById(int id, String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
 
             int time_unit = covertTimeUnit(unit);
-            int intGPS = covertGps(gps);
+            int intGPS = convertBoolToInt(gps);
 
             SQLiteDatabase db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
+
+            //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
@@ -145,17 +197,20 @@ public class DbHelper extends SQLiteOpenHelper {
         } else return false;
     }
 
-    // UPDATE BY NAME
+    @Deprecated
     public boolean updateConfigurationByName(String name, int type, int time, String unit, int window, boolean gps) {
         //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
 
             int time_unit = covertTimeUnit(unit);
-            int intGPS = covertGps(gps);
+            int intGPS = convertBoolToInt(gps);
 
             SQLiteDatabase db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
+
+            //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
@@ -173,7 +228,37 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    // DELETE BY ID
+    private boolean updateConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive) {
+        //TODO modificare la configuration activity per impostare i massimi e minimi valori delle seekbar tramite getmindelay per ogni sensore
+        // check if values are correct
+        long interval = conf.getInterval();
+        if (interval>0){
+
+            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            ContentValues values = new ContentValues();
+
+            //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+
+            values.put(Samp_conf_name, conf.getConfigurationName());
+            values.put(Samp_conf_type, comp.getSensorType());
+            values.put(Samp_conf_service_name, comp.getDysplayName());
+            values.put(Samp_conf_path, conf.getPath());
+            values.put(Samp_conf_time, interval);
+            values.put(Samp_conf_window, conf.getWindow());
+            values.put(Samp_conf_gps, convertBoolToInt(conf.isAttachGPS()));
+            values.put(Samp_conf_active, isActive);
+
+            db.update(Samp_conf_table, values,Samp_conf_id+" = ?",new String[] {Integer.toString(conf.getDbId())});
+            db.close();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //------------------------------DELETE METHODS------------------------------
+
     public int deleteConfigurationById(int id){
         SQLiteDatabase db = this.getWritableDatabase();
         int del = db.delete(Samp_conf_table,"id = ?",new String[] { Integer.toString(id) });
@@ -181,7 +266,6 @@ public class DbHelper extends SQLiteOpenHelper {
         return del;
     }
 
-    // DELETE BY NAME
     public int deleteConfigurationByName(String Name){
         // TODO: Bisogna aggiungere anche il tipo di sensore, altrimenti due sensori diversi non possono avere una configurazione con lo stesso nome. In generale sarebbe meglio se tutti i metodi prendessero come input direttamente l'oggetto ServiceComponent e l'oggetto Configuration
         SQLiteDatabase db = this.getWritableDatabase();
@@ -189,6 +273,8 @@ public class DbHelper extends SQLiteOpenHelper {
         db.close();
         return del;
     }
+
+    //-----------------------------RETURN ARRAYLIST METHODS-------------------------
 
     @SuppressWarnings("unchecked")
     public ArrayList getAllConfigurationsWithoutOrder(){
@@ -302,6 +388,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return array_list;
     }
 
+    //-------------------------------------POPULATE METHODS-----------------------------------
     //todo finire metodo
     public int populateServiceComponentListWithAllConfigurations(List<ServiceManager.ServiceComponent> serviceComponentList){
 
@@ -324,10 +411,12 @@ public class DbHelper extends SQLiteOpenHelper {
                 int window = allConf.getInt(allConf.getColumnIndex(Samp_conf_window));
                 int attachGPS = allConf.getInt(allConf.getColumnIndex(Samp_conf_gps));
 
-                ServiceManager.ServiceComponent.Configuration conf = new ServiceManager.ServiceComponent.Configuration(name,path,time,window,reCovertIntToBool(attachGPS));
+                ServiceManager.ServiceComponent.Configuration conf = new ServiceManager.ServiceComponent.Configuration(name,path,time,window, covertIntToBool(attachGPS));
+                conf.setDbId(allConf.getInt(allConf.getColumnIndex(Samp_conf_id)));
+
                 //avendo l'id vado ad aggiungere alla lista di configuration corrispondente
                 serviceComponentList.get(id).addConfiguration(conf);
-                //se la configurazione che sto gardando è attiva la metto in activeconfiguration
+                //se la configurazione che sto guardando è attiva la metto in activeconfiguration
                 if (allConf.getInt(allConf.getColumnIndex(Samp_conf_active))!=0){
                     serviceComponentList.get(id).setActiveConfiguration(conf);
                 }
@@ -336,8 +425,10 @@ public class DbHelper extends SQLiteOpenHelper {
             allConf.moveToNext();
         }
 
-        return 5;
+        return size;
     }
+
+    //----------------------------------------NUMERIC----------------------------------------
 
     public int numberOfConfigurations(){
         SQLiteDatabase db = this.getReadableDatabase();
@@ -346,7 +437,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return num;
     }
 
-    //--------------------------ACCESSORIES------------------------
+    //-----------------------------------ACCESSORIES-------------------------------------
 
     private int getIdByServiceName(String name, List<ServiceManager.ServiceComponent> list) {
         for (int i = 0; i < list.size(); i++) {
@@ -376,15 +467,11 @@ public class DbHelper extends SQLiteOpenHelper {
         return time_unit;
     }
 
-    private int covertGps (boolean gps) {
-        int intGPS = 0; //default false
-        if (gps) {
-            intGPS = 1;
-        }
-        return intGPS;
+    private int convertBoolToInt (boolean val) {
+        return val ? 1 : 0;
     }
 
-    private boolean reCovertIntToBool (int k) {
+    private boolean covertIntToBool(int k) {
         return (k!=0);
     }
 
