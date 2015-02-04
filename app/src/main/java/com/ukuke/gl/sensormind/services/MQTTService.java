@@ -351,6 +351,8 @@ public class MQTTService extends Service
                             try {
                                 client.disconnect();
                                 client.close();
+                                Log.i(TAG, "MQTT Disconnected" );
+
                                 Toast.makeText(getApplicationContext(), "MQTT Disconnected", Toast.LENGTH_LONG).show();
                             } catch (MqttException e) {
                                 // TODO Auto-generated catch block
