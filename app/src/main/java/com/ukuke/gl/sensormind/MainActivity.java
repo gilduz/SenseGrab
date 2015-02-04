@@ -141,6 +141,9 @@ public class MainActivity extends Activity {
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
                 ServiceManager.getInstance(MainActivity.this).startScheduleService(service);
             }
+            if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+                Toast.makeText(this, "Acquisition started", Toast.LENGTH_LONG).show();
+            }
 
         }
         else {
