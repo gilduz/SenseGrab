@@ -118,9 +118,6 @@ public class MQTTService extends Service
         return START_STICKY;
     }
 
-
-
-
     @Override
     public void onDestroy()
     {
@@ -385,6 +382,7 @@ public class MQTTService extends Service
                                     timeout *= 2;
                                 }
                                 this.sendMessageDelayed(Message.obtain(null, CONNECT), timeout);
+
                                 return;
                             }
 
@@ -405,32 +403,32 @@ public class MQTTService extends Service
                         timeout = MINTIMEOUT;
                         break;
                     }
-                    case SUBSCRIBE:
-                    {
-                        boolean status = false;
-                        Bundle b = msg.getData();
-                        if (b != null)
-                        {
-                            CharSequence cs = b.getCharSequence(TOPIC);
-                            if (cs != null)
-                            {
-                                String topic = cs.toString().trim();
-                                if (topic.isEmpty() == false)
-                                {
-                                    status = subscribe(topic);
-	        					/*
-	        					 * Save this topic for re-subscription if needed.
-	        					 */
-                                    if (status)
-                                    {
-                                        topics.add(topic);
-                                    }
-                                }
-                            }
-                        }
-                        ReplytoClient(msg.replyTo, msg.what, status);
-                        break;
-                    }
+//                    case SUBSCRIBE:
+//                    {
+//                        boolean status = false;
+//                        Bundle b = msg.getData();
+//                        if (b != null)
+//                        {
+//                            CharSequence cs = b.getCharSequence(TOPIC);
+//                            if (cs != null)
+//                            {
+//                                String topic = cs.toString().trim();
+//                                if (topic.isEmpty() == false)
+//                                {
+//                                    status = subscribe(topic);
+//	        					/*
+//	        					 * Save this topic for re-subscription if needed.
+//	        					 */
+//                                    if (status)
+//                                    {
+//                                        topics.add(topic);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        ReplytoClient(msg.replyTo, msg.what, status);
+//                        break;
+//                    }
                     case PUBLISH:
                     {
 
@@ -459,7 +457,7 @@ public class MQTTService extends Service
                         ReplytoClient(msg.replyTo, msg.what, status);
                         break;
                     }
-                    case MIO_PUBLISH_TUTTI:
+//                    case MIO_PUBLISH_TUTTI:
                         //syncWithSensormind();
                         //syncTEST_2();
                 }
@@ -581,7 +579,7 @@ public class MQTTService extends Service
         protected void onProgressUpdate(Void... values) {
         }
 
-        private boolean publishMessage(String path, String message) {
+        private boolean publishMessage_DISACTIVATED(String path, String message) {
             boolean res = false;
             try {
                 MqttClient myC = connection.msgHandler.client;
@@ -594,6 +592,20 @@ public class MQTTService extends Service
             return res;
         }
 
+        private boolean publishMessage(String path, String message) {
+            boolean res = false;
+            try {
+                Bundle data = new Bundle();
+                data.putCharSequence(TOPIC, path);
+                data.putCharSequence(MESSAGE, message);
+                Message msg = Message.obtain(null, PUBLISH);
+                msg.setData(data);
+
+            }catch (Exception e) { Log.d(TAG, "Errore in publishMessage: " + e );}
+            return res;
+        }
+
+
         private void syncWithSensormind() {
 
 
@@ -601,9 +613,9 @@ public class MQTTService extends Service
             DataDbHelper dataDbHelper = null;
             dataDbHelper = new DataDbHelper(getApplicationContext());
 
-            if (((dataDbHelper.getAllUnsentDataSamples().size() + dataDbHelper.numberOfUnsentArrays()) <= 0) || (connection.connState != CONNECT_STATE.CONNECTED )) {
-                return;
-            }
+            //if (((dataDbHelper.getAllUnsentDataSamples().size() + dataDbHelper.numberOfUnsentArrays()) <= 0) || (connection.connState != CONNECT_STATE.CONNECTED )) {
+            //    return;
+            //}
 
             List<DataSample> listData = new ArrayList<>();
 
