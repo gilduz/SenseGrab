@@ -264,7 +264,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             case Sensor.TYPE_LIGHT:
                 if (logging)
                     Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
-                dataSample = new DataSample(path, event.values[0], null, null, -1, event.timestamp , lastLatitude, lastLongitude);
+                dataSample = new DataSample(path, event.values[0], null, null, -1,  System.currentTimeMillis() , lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:

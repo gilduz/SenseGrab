@@ -299,9 +299,9 @@ public class MQTTService extends Service
             intentName = name;
         }
 
-        public void run() {
-            Log.d(TAG, "SONO NEL RUN!");
-        }
+        //public void run() {
+        //    Log.d(TAG, "SONO NEL RUN!");
+        //}
 
         private class MsgHandler extends Handler implements MqttCallback
         {
