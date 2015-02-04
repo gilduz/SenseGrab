@@ -600,7 +600,7 @@ public class MQTTService extends Service
                 data.putCharSequence(MESSAGE, message);
                 Message msg = Message.obtain(null, PUBLISH);
                 msg.setData(data);
-
+                connection.makeRequest(msg);
             }catch (Exception e) { Log.d(TAG, "Errore in publishMessage: " + e );}
             return res;
         }
