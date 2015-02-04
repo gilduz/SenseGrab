@@ -617,6 +617,7 @@ public class MQTTService extends Service
         private void syncWithSensormind() {
 
             if (connection.connState == CONNECT_STATE.CONNECTED) {
+                int numPublishedMessages = 0;
 
                 //TODO: Fare il check di spedito per andare a settare il sent su Db
                 // POI SPOSTALI DA QUI!!!
@@ -710,8 +711,11 @@ public class MQTTService extends Service
 //                    connection.makeRequest(msg_3);send
 
                         boolean sent_1 = publishMessage(path + "/1", obj_1.toString());
+                        numPublishedMessages++;
                         boolean sent_2 = publishMessage(path + "/2", obj_2.toString());
+                        numPublishedMessages++;
                         boolean sent_3 = publishMessage(path + "/3", obj_3.toString());
+                        numPublishedMessages++;
 
                         // Scrivo su DB che i dati sono stati inviati
 
@@ -770,6 +774,7 @@ public class MQTTService extends Service
                             msg.setData(data);
 
                             boolean sent = publishMessage(path, message);
+                            numPublishedMessages++;
                             if (sent) { // Se riesce ad inviarlo aggiungilo alla lista di sent
                                 listDataSent.add(sample);
                             }
@@ -784,7 +789,7 @@ public class MQTTService extends Service
                 } catch (Exception e) {
                     Log.d(TAG, "Error in single sample publish: " + e);
                 }
-                Log.i(TAG, "Sensormind Sync completed");
+                Log.i(TAG, "Sensormind Sync completed: " + numPublishedMessages + "published");
             }
             else {
                 Log.d(TAG, "Nothing published because i'm not connected to MQTT");
