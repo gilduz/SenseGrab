@@ -792,7 +792,7 @@ public class MQTTService extends Service
                 Log.i(TAG, "Sensormind sync completed: " + numPublishedMessages + " messages published");
             }
             else {
-                Log.d(TAG, "Nothing published because i'm not connected to MQTT");
+                Log.i(TAG, "Nothing published, i'm not connected to MQTT");
             }
         }
 
