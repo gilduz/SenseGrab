@@ -212,8 +212,6 @@ public class DbHelper extends SQLiteOpenHelper {
 
         db.close();
 
-        Log.d("DBHelper", "Ritorno");
-
         return array_list;
     }
 

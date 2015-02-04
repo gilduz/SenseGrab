@@ -76,6 +76,10 @@ public class MainActivity extends Activity {
 
         //createAllFeeds();
 
+        if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
+            launchMQTTService();
+        }
+
 
 
     }
@@ -129,14 +133,7 @@ public class MainActivity extends Activity {
 
         if (toggleButton.isChecked()) {
 
-            if (prefs.getBoolean("loggedIn",false)) {
-                Log.d(TAG, "Activate Mqtt service");
-                AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                Intent intent = new Intent(this, MQTTService.class);
-
-                PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
-            }
+            launchMQTTService();
 
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
@@ -153,10 +150,9 @@ public class MainActivity extends Activity {
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             scheduler.cancel(scheduledIntent);
             ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
-            if (prefs.getBoolean("loggedIn",false)) {
-                Log.d(TAG, "Deactivate Mqtt service");
-                stopService(new Intent(this, MQTTService.class));
-            }
+
+            stopMQTTService();
+
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
@@ -288,5 +284,24 @@ public class MainActivity extends Activity {
         ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",1);
     }
 
+    private void launchMQTTService() {
+            if (prefs.getBoolean("loggedIn",false)) {
+                Log.d(TAG, "Activate Mqtt service");
+                AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(this, MQTTService.class);
 
+                PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
+            }
+        else {
+                Log.d(TAG,"You need to login or register before send data via MQTT");
+            }
+    }
+
+    private void stopMQTTService() {
+        //if (prefs.getBoolean("loggedIn",false)) {
+            Log.d(TAG, "Deactivate Mqtt service");
+            stopService(new Intent(this, MQTTService.class));
+        //}
+    }
 }
