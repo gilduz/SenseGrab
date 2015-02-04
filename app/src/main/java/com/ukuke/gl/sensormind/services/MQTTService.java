@@ -371,7 +371,7 @@ public class MQTTService extends Service
 
                                 client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
-                                Log.d(TAG, "MQTT Connected with username: " + username + " and password: " + password );
+                                Log.i(TAG, "MQTT Connected with username: " + username + " and password: " + password );
                                 timeout = MINTIMEOUT;
                             }
                             catch (MqttException e)
@@ -484,11 +484,11 @@ public class MQTTService extends Service
 
                     message.setPayload(msg.getBytes());
                     client.publish(topic, message);
-                    Log.d(TAG,"Published topic: " + topic);// + " : " + message);
+                    Log.v(TAG,"Published topic: " + topic);// + " : " + message);
                 }
                 catch (MqttException e)
                 {
-                    Log.d(TAG, "Publish failed with reason code = " + e.getReasonCode());
+                    Log.e(TAG, "Publish failed with reason code = " + e.getReasonCode());
                     return false;
                 }
                 return true;
@@ -567,7 +567,7 @@ public class MQTTService extends Service
 
         @Override
         protected void onPostExecute(String result) {
-            Log.d(TAG, "Sensormind Sync completed");
+            //Log.i(TAG, "Sensormind Sync completed");
         }
 
         @Override
@@ -713,7 +713,7 @@ public class MQTTService extends Service
                         //Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
                         if (sent_1 && sent_2 && sent_3) {
                             dataDbHelper.setSentListOfDataSamples(listData);
-                            Log.d(TAG, "Send to Mqtt " + listData.size() + " arrays");
+                            Log.d(TAG, "Sent to Mqtt " + listData.size() + " arrays");
                             //Log.d(TAG, "Requested send to Mqtt " + listData.size() + " arrays");
                         }
                         //Log.d(TAG, "Richiesta cancellazione");
@@ -772,13 +772,14 @@ public class MQTTService extends Service
                             //connection.makeRequest(msg);
                         }
                         if (listDataSent.size() > 0) {
-                            Log.d(TAG, "Send to Mqtt " + listDataSent.size() + " single samples");
+                            Log.d(TAG, "Sent to Mqtt " + listDataSent.size() + " single samples");
                             dataDbHelper.setSentListOfDataSamples(listDataSent);
                         }
                     }
                 } catch (Exception e) {
                     Log.d(TAG, "Error in single sample publish: " + e);
                 }
+                Log.i(TAG, "Sensormind Sync completed");
             }
             else {
                 Log.d(TAG, "Nothing published because i'm not connected to MQTT");
