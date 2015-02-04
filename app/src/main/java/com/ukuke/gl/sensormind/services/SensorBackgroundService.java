@@ -311,7 +311,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onDestroy()
     {
-        Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+
     }
 
     protected synchronized void buildGoogleApiClient() {

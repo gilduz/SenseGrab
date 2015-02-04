@@ -162,6 +162,9 @@ public class MainActivity extends Activity {
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
             }
+            if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+                Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+            }
             stopService(new Intent(this, SensorBackgroundService.class));
         }
 
