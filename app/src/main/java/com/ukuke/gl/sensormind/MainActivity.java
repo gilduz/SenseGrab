@@ -141,6 +141,9 @@ public class MainActivity extends Activity {
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
                 ServiceManager.getInstance(MainActivity.this).startScheduleService(service);
             }
+            if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+                Toast.makeText(this, "Acquisition started", Toast.LENGTH_LONG).show();
+            }
 
         }
         else {
@@ -158,6 +161,9 @@ public class MainActivity extends Activity {
                 ServiceManager.ServiceComponent service;
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
+            }
+            if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+                Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
             }
             stopService(new Intent(this, SensorBackgroundService.class));
         }
@@ -300,7 +306,7 @@ public class MainActivity extends Activity {
 
     private void stopMQTTService() {
         //if (prefs.getBoolean("loggedIn",false)) {
-            Log.d(TAG, "Deactivate Mqtt service");
+            //Log.d(TAG, "Deactivate Mqtt service");
             stopService(new Intent(this, MQTTService.class));
         //}
     }

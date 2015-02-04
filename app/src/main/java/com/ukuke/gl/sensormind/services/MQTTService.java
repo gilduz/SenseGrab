@@ -31,6 +31,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.MainActivity;
@@ -350,6 +351,9 @@ public class MQTTService extends Service
                             try {
                                 client.disconnect();
                                 client.close();
+                                Log.i(TAG, "MQTT Disconnected" );
+
+                                Toast.makeText(getApplicationContext(), "MQTT Disconnected", Toast.LENGTH_LONG).show();
                             } catch (MqttException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
@@ -371,7 +375,8 @@ public class MQTTService extends Service
 
                                 client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
-                                Log.d(TAG, "MQTT Connected with username: " + username + " and password: " + password );
+                                Toast.makeText(getApplicationContext(), "MQTT Connected", Toast.LENGTH_LONG).show();
+                                Log.i(TAG, "MQTT Connected with username: " + username + " and password: " + password );
                                 timeout = MINTIMEOUT;
                             }
                             catch (MqttException e)
@@ -484,11 +489,11 @@ public class MQTTService extends Service
 
                     message.setPayload(msg.getBytes());
                     client.publish(topic, message);
-                    Log.d(TAG,"Published topic: " + topic);// + " : " + message);
+                    Log.v(TAG,"Published topic: " + topic);// + " : " + message);
                 }
                 catch (MqttException e)
                 {
-                    Log.d(TAG, "Publish failed with reason code = " + e.getReasonCode());
+                    Log.e(TAG, "Publish failed with reason code = " + e.getReasonCode());
                     return false;
                 }
                 return true;
@@ -567,7 +572,7 @@ public class MQTTService extends Service
 
         @Override
         protected void onPostExecute(String result) {
-            Log.d(TAG, "Sensormind Sync completed");
+            //Log.i(TAG, "Sensormind Sync completed");
         }
 
         @Override
@@ -604,72 +609,76 @@ public class MQTTService extends Service
                 Message msg = Message.obtain(null, PUBLISH);
                 msg.setData(data);
                 connection.makeRequest(msg);
+                res = true;
             }catch (Exception e) { Log.d(TAG, "Errore in publishMessage: " + e );}
             return res;
         }
 
         private void syncWithSensormind() {
 
+            if (connection.connState == CONNECT_STATE.CONNECTED) {
+                int numPublishedMessages = 0;
 
-            // POI SPOSTALI DA QUI!!!
-            DataDbHelper dataDbHelper = null;
-            dataDbHelper = new DataDbHelper(getApplicationContext());
+                //TODO: Fare il check di spedito per andare a settare il sent su Db
+                // POI SPOSTALI DA QUI!!!
+                DataDbHelper dataDbHelper = null;
+                dataDbHelper = new DataDbHelper(getApplicationContext());
 
-            //if (((dataDbHelper.getAllUnsentDataSamples().size() + dataDbHelper.numberOfUnsentArrays()) <= 0) || (connection.connState != CONNECT_STATE.CONNECTED )) {
-            //    return;
-            //}
-
-            List<DataSample> listData = new ArrayList<>();
-
-
-            // Multi sample send
-            try {
-                //for (int j = 0; j < dataDbHelper.numberOfUnsentArrays() - 1; j++) {
-
+                //if (((dataDbHelper.getAllUnsentDataSamples().size() + dataDbHelper.numberOfUnsentArrays()) <= 0) || (connection.connState != CONNECT_STATE.CONNECTED )) {
+                //    return;
                 //}
-                while (dataDbHelper.numberOfUnsentArrays() > 1) {
-                    DataSample sample;
 
-                    //Log.d(TAG, "Size List Data: " + listData.size());
+                List<DataSample> listData = new ArrayList<>();
 
-                    listData = dataDbHelper.getFirstUnsentArrayDataSamples();
-                    JSONArray array_1 = new JSONArray();
-                    JSONArray array_2 = new JSONArray();
-                    JSONArray array_3 = new JSONArray();
 
-                    // Split vector in 3 different arrays
-                    for (int i = 0; i < listData.size(); i++) {
-                        sample = listData.get(i);
-                        array_1.put(sample.getValue_1());
-                        array_2.put(sample.getValue_2());
-                        array_3.put(sample.getValue_3());
-                    }
+                // Multi sample send
+                try {
+                    //for (int j = 0; j < dataDbHelper.numberOfUnsentArrays() - 1; j++) {
 
-                    JSONObject obj_1 = new JSONObject();
-                    JSONObject obj_2 = new JSONObject();
-                    JSONObject obj_3 = new JSONObject();
+                    //}
+                    while (dataDbHelper.numberOfUnsentArrays() > 1) {
+                        DataSample sample;
 
-                    obj_1.put("d", array_1);
-                    obj_2.put("d", array_2);
-                    obj_3.put("d", array_3);
+                        //Log.d(TAG, "Size List Data: " + listData.size());
 
-                    JSONArray arrayCoord = new JSONArray();
-                    if ((listData.get(0).getLatitude() != null) && (listData.get(0).getLongitude() != null)) {
-                        arrayCoord.put(listData.get(0).getLatitude());
-                        arrayCoord.put(listData.get(0).getLongitude());
-                        arrayCoord.put(0);
-                        obj_1.put("l", arrayCoord);
-                        obj_2.put("l", arrayCoord);
-                        obj_3.put("l", arrayCoord);
-                    }
+                        listData = dataDbHelper.getFirstUnsentArrayDataSamples();
+                        JSONArray array_1 = new JSONArray();
+                        JSONArray array_2 = new JSONArray();
+                        JSONArray array_3 = new JSONArray();
 
-                    if (listData.get(0).getTimestamp() != null) {
-                        obj_1.put("t", listData.get(0).getTimestamp());
-                        obj_2.put("t", listData.get(0).getTimestamp());
-                        obj_3.put("t", listData.get(0).getTimestamp());
-                    }
+                        // Split vector in 3 different arrays
+                        for (int i = 0; i < listData.size(); i++) {
+                            sample = listData.get(i);
+                            array_1.put(sample.getValue_1());
+                            array_2.put(sample.getValue_2());
+                            array_3.put(sample.getValue_3());
+                        }
 
-                    String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
+                        JSONObject obj_1 = new JSONObject();
+                        JSONObject obj_2 = new JSONObject();
+                        JSONObject obj_3 = new JSONObject();
+
+                        obj_1.put("d", array_1);
+                        obj_2.put("d", array_2);
+                        obj_3.put("d", array_3);
+
+                        JSONArray arrayCoord = new JSONArray();
+                        if ((listData.get(0).getLatitude() != null) && (listData.get(0).getLongitude() != null)) {
+                            arrayCoord.put(listData.get(0).getLatitude());
+                            arrayCoord.put(listData.get(0).getLongitude());
+                            arrayCoord.put(0);
+                            obj_1.put("l", arrayCoord);
+                            obj_2.put("l", arrayCoord);
+                            obj_3.put("l", arrayCoord);
+                        }
+
+                        if (listData.get(0).getTimestamp() != null) {
+                            obj_1.put("t", listData.get(0).getTimestamp());
+                            obj_2.put("t", listData.get(0).getTimestamp());
+                            obj_3.put("t", listData.get(0).getTimestamp());
+                        }
+
+                        String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
 
 //                    // Invio 1
 //                    Bundle data_1 = new Bundle();
@@ -699,73 +708,95 @@ public class MQTTService extends Service
 //                    data_3.putCharSequence(MESSAGE, message_3);
 //                    Message msg_3 = Message.obtain(null, PUBLISH);
 //                    msg_3.setData(data_3);
-//                    connection.makeRequest(msg_3);
+//                    connection.makeRequest(msg_3);send
 
-                    publishMessage(path + "/1", obj_1.toString());
-                    publishMessage(path + "/2", obj_2.toString());
-                    publishMessage(path + "/3", obj_3.toString());
+                        boolean sent_1 = publishMessage(path + "/1", obj_1.toString());
+                        numPublishedMessages++;
+                        boolean sent_2 = publishMessage(path + "/2", obj_2.toString());
+                        numPublishedMessages++;
+                        boolean sent_3 = publishMessage(path + "/3", obj_3.toString());
+                        numPublishedMessages++;
 
-                    // Scrivo su DB che i dati sono stati inviati
+                        // Scrivo su DB che i dati sono stati inviati
 
-                    //Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
-                    dataDbHelper.setSentListOfDataSamples(listData);
-                    //Log.d(TAG, "Richiesta cancellazione");
+                        //Log.d(TAG, "Richiedo cancellazione di " + listData.size() + " samples al DB");
+                        if (sent_1 && sent_2 && sent_3) {
+                            dataDbHelper.setSentListOfDataSamples(listData);
+                            Log.d(TAG, "Sent to Mqtt " + listData.size() + " arrays");
+                            //Log.d(TAG, "Requested send to Mqtt " + listData.size() + " arrays");
+                        }
+                        //Log.d(TAG, "Richiesta cancellazione");
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error in single sample publish : " + e);
                 }
-            } catch (Exception e) { Log.e(TAG, "Error trying to send an array: " + e);}
 
-            if (listData.size()>0) {
-                Log.d(TAG, "Requested send to Mqtt " + listData.size() + " arrays");
-                //dataDbHelper.setSentListOfDataSamples(listData);
+//            if (listData.size()>0) {
+//                Log.d(TAG, "Send to Mqtt to Mqtt " + listData.size() + " arrays");
+//                //dataDbHelper.setSentListOfDataSamples(listData);
+//            }
+
+                // Single sample send
+                try {
+                    if (dataDbHelper.numberOfUnsentEntries() > 0) {
+
+                        List<DataSample> listDataSent = new ArrayList<>();
+                        listData = dataDbHelper.getAllUnsentSingleDataSamples();
+                        for (int i = 0; i < listData.size(); i++) {
+
+                            DataSample sample = listData.get(i);
+                            JSONObject obj = new JSONObject();
+
+
+                            obj.put("d", sample.getValue_1());
+
+                            if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
+                                JSONArray array = new JSONArray();
+                                array.put(sample.getLatitude());
+                                array.put(sample.getLongitude());
+                                array.put(0);
+                                obj.put("l", array);
+                            }
+                            if (sample.getTimestamp() != null) {
+                                obj.put("t", sample.getTimestamp());
+                            }
+
+                            Bundle data = new Bundle();
+
+                            String message = obj.toString();
+                            //Log.d(TAG, message);
+                            //Log.d(TAG, sample.getFeedPath());
+
+                            String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
+                            data.putCharSequence(TOPIC, path);
+                            data.putCharSequence(MESSAGE, message);
+                            Message msg = Message.obtain(null, PUBLISH);
+                            msg.setData(data);
+
+                            boolean sent = publishMessage(path, message);
+                            numPublishedMessages++;
+                            if (sent) { // Se riesce ad inviarlo aggiungilo alla lista di sent
+                                listDataSent.add(sample);
+                            }
+
+                            //connection.makeRequest(msg);
+                        }
+                        if (listDataSent.size() > 0) {
+                            Log.d(TAG, "Sent to Mqtt " + listDataSent.size() + " single samples");
+                            dataDbHelper.setSentListOfDataSamples(listDataSent);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "Error in single sample publish: " + e);
+                }
+                Log.i(TAG, "Sensormind sync completed: " + numPublishedMessages + " messages published");
             }
-
-            // Single sample send
-            try {
-                if (dataDbHelper.numberOfUnsentEntries() > 0) {
-                    listData = dataDbHelper.getAllUnsentSingleDataSamples();
-                    for (int i = 0; i < listData.size(); i++) {
-
-                        DataSample sample = listData.get(i);
-                        JSONObject obj = new JSONObject();
-
-
-                        obj.put("d", sample.getValue_1());
-
-                        if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
-                            JSONArray array = new JSONArray();
-                            array.put(sample.getLatitude());
-                            array.put(sample.getLongitude());
-                            array.put(0);
-                            obj.put("l", array);
-                        }
-                        if (sample.getTimestamp() != null) {
-                            obj.put("t", sample.getTimestamp());
-                        }
-
-                        Bundle data = new Bundle();
-
-                        String message = obj.toString();
-                        //Log.d(TAG, message);
-                        //Log.d(TAG, sample.getFeedPath());
-
-                        String path = "/" + username + "/v1/bm/" + sample.getFeedPath();
-                        data.putCharSequence(TOPIC, path);
-                        data.putCharSequence(MESSAGE, message);
-                        Message msg = Message.obtain(null, PUBLISH);
-                        msg.setData(data);
-
-                        publishMessage(path, message);
-
-
-
-                        //connection.makeRequest(msg);
-                    }
-                    if (listData.size()>0) {
-                        Log.d(TAG, "Requested send to Mqtt " + listData.size() + " single samples");
-                        dataDbHelper.setSentListOfDataSamples(listData);
-                    }
-                }
-            }catch (Exception e) {Log.d(TAG, "Errore nel publish singolo sample" + e);}
+            else {
+                Log.i(TAG, "Nothing published, i'm not connected to MQTT");
+            }
         }
+
+
 
 
 

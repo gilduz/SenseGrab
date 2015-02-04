@@ -68,7 +68,7 @@ public class ServiceManager {
         private String defaultPath;
         boolean logging = false;
 
-        Configuration activeConfiguration = null;
+        private Configuration activeConfiguration = null;
 
         public List<Configuration> configurationList = new ArrayList<>();
 

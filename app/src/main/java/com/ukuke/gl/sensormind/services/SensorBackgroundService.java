@@ -223,7 +223,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
             dataTransferred = listDataSample.size();
             listDataSample.clear();
-            Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries");
+            Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries with " + dataDbHelper.numberOfUnsentEntries() + " unsent samples");
         }
 
 
@@ -263,43 +263,43 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LIGHT:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
+                    Log.v(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
                 dataSample = new DataSample(path, event.values[0], null, null, -1,  System.currentTimeMillis() , lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PROXIMITY:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
+                    Log.v(TAG, listDataSample.size() +  ": SENSOR PROXIMITY: \t" + event.values[0]);
                 dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
+                    Log.v(TAG, listDataSample.size() +  ": SENSOR TEMPERATURE: \t" + event.values[0]);
                 dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_PRESSURE:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
+                    Log.v(TAG, listDataSample.size() +  ": SENSOR PRESSURE: \t\t" + event.values[0]);
                 dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_ACCELEROMETER:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.v(TAG, listDataSample.size() +  ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.v(TAG, listDataSample.size() +  ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 if (logging)
-                    Log.d(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
+                    Log.v(TAG, listDataSample.size() +  ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                 dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
                 listDataSample.add(dataSample);
                 break;
@@ -311,7 +311,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onDestroy()
     {
-        Toast.makeText(this, "SensorBackgroundService Stopped", Toast.LENGTH_LONG).show();
+
     }
 
     protected synchronized void buildGoogleApiClient() {
