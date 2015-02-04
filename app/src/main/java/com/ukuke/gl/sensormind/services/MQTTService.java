@@ -642,6 +642,7 @@ public class MQTTService extends Service
                         //Log.d(TAG, "Size List Data: " + listData.size());
 
                         listData = dataDbHelper.getFirstUnsentArrayDataSamples();
+                        if (listData.size() <= 0) {break;} // TODO: Se non metto questo mi va in exception perchè ognitanto listData è vuota. perchè?
                         JSONArray array_1 = new JSONArray();
                         JSONArray array_2 = new JSONArray();
                         JSONArray array_3 = new JSONArray();
@@ -728,7 +729,7 @@ public class MQTTService extends Service
                         //Log.d(TAG, "Richiesta cancellazione");
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "Error in single sample publish : " + e);
+                    Log.e(TAG, "Error in array publish : " + e);
                 }
 
 //            if (listData.size()>0) {
