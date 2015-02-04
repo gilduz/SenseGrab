@@ -118,6 +118,9 @@ public class MQTTService extends Service
         return START_STICKY;
     }
 
+
+
+
     @Override
     public void onDestroy()
     {
@@ -296,20 +299,17 @@ public class MQTTService extends Service
             intentName = name;
         }
 
-        //public void run() {
-            //Log.d(TAG, "SONO NEL RUN!");
-        //}
+        public void run() {
+            Log.d(TAG, "SONO NEL RUN!");
+        }
 
         private class MsgHandler extends Handler implements MqttCallback
         {
             private final String HOST = "137.204.213.190";//ipMqtt;
             private final int PORT = 1884;//portMqtt;
             private final String uri = "tcp://" + HOST + ":" + PORT;
-            //private final int MINTIMEOUT = 2000; // DEFAULT
-            //private final int MAXTIMEOUT = 32000; // DEFAULT
-            private final int MINTIMEOUT = 5000;
+            private final int MINTIMEOUT = 2000;
             private final int MAXTIMEOUT = 32000;
-
             private int timeout = MINTIMEOUT;
             private MqttClient client = null;
             private MqttConnectOptions options = new MqttConnectOptions();
@@ -355,7 +355,7 @@ public class MQTTService extends Service
                                 e.printStackTrace();
                             }
                         }
-                        //getLooper().quit(); // Questo prima era selezionato!
+                        //getLooper().quit(); //DISATTIVATO SENNO CRASJHA!!!
                         break;
                     }
                     case CONNECT:
@@ -382,7 +382,6 @@ public class MQTTService extends Service
                                     timeout *= 2;
                                 }
                                 this.sendMessageDelayed(Message.obtain(null, CONNECT), timeout);
-
                                 return;
                             }
 
@@ -403,32 +402,32 @@ public class MQTTService extends Service
                         timeout = MINTIMEOUT;
                         break;
                     }
-//                    case SUBSCRIBE:
-//                    {
-//                        boolean status = false;
-//                        Bundle b = msg.getData();
-//                        if (b != null)
-//                        {
-//                            CharSequence cs = b.getCharSequence(TOPIC);
-//                            if (cs != null)
-//                            {
-//                                String topic = cs.toString().trim();
-//                                if (topic.isEmpty() == false)
-//                                {
-//                                    status = subscribe(topic);
-//	        					/*
-//	        					 * Save this topic for re-subscription if needed.
-//	        					 */
-//                                    if (status)
-//                                    {
-//                                        topics.add(topic);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        ReplytoClient(msg.replyTo, msg.what, status);
-//                        break;
-//                    }
+                    case SUBSCRIBE:
+                    {
+                        boolean status = false;
+                        Bundle b = msg.getData();
+                        if (b != null)
+                        {
+                            CharSequence cs = b.getCharSequence(TOPIC);
+                            if (cs != null)
+                            {
+                                String topic = cs.toString().trim();
+                                if (topic.isEmpty() == false)
+                                {
+                                    status = subscribe(topic);
+	        					/*
+	        					 * Save this topic for re-subscription if needed.
+	        					 */
+                                    if (status)
+                                    {
+                                        topics.add(topic);
+                                    }
+                                }
+                            }
+                        }
+                        ReplytoClient(msg.replyTo, msg.what, status);
+                        break;
+                    }
                     case PUBLISH:
                     {
 
@@ -457,7 +456,7 @@ public class MQTTService extends Service
                         ReplytoClient(msg.replyTo, msg.what, status);
                         break;
                     }
-//                    case MIO_PUBLISH_TUTTI:
+                    case MIO_PUBLISH_TUTTI:
                         //syncWithSensormind();
                         //syncTEST_2();
                 }
@@ -471,7 +470,7 @@ public class MQTTService extends Service
                 }
                 catch (MqttException e)
                 {
-                    Log.d(TAG, "Subscribe failed with reason code = " + e.getReasonCode());
+                    Log.d(getClass().getCanonicalName(), "Subscribe failed with reason code = " + e.getReasonCode());
                     return false;
                 }
                 return true;
@@ -485,7 +484,7 @@ public class MQTTService extends Service
 
                     message.setPayload(msg.getBytes());
                     client.publish(topic, message);
-                    Log.d(TAG,"Published successfully: " + topic );//+ " : " + message);
+                    Log.d(TAG,"Published topic: " + topic);// + " : " + message);
                 }
                 catch (MqttException e)
                 {
@@ -498,7 +497,7 @@ public class MQTTService extends Service
             @Override
             public void connectionLost(Throwable arg0)
             {
-                Log.d(TAG, "MQTT Connection lost...");
+                Log.d(getClass().getCanonicalName(), "connectionLost");
                 connState = CONNECT_STATE.DISCONNECTED;
                 sendMessageDelayed(Message.obtain(null, CONNECT), timeout);
             }
@@ -512,7 +511,7 @@ public class MQTTService extends Service
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception
             {
-                Log.d(TAG, topic + ":" + message.toString());
+                Log.d(getClass().getCanonicalName(), topic + ":" + message.toString());
 
                 if (intentName != null)
                 {
@@ -587,7 +586,9 @@ public class MQTTService extends Service
                 mess.setPayload(message.getBytes());
                 myC.publish(path, mess);
                 res = true;
-                Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
+                Log.d(TAG,"Published topic: " + path);// + " : " + message);
+
+                //Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
             }catch (Exception e) { Log.d(TAG, "Errore in publishMessage: " + e );}
             return res;
         }
@@ -595,6 +596,8 @@ public class MQTTService extends Service
         private boolean publishMessage(String path, String message) {
             boolean res = false;
             try {
+
+                //path = "CIAO";
                 Bundle data = new Bundle();
                 data.putCharSequence(TOPIC, path);
                 data.putCharSequence(MESSAGE, message);
@@ -604,7 +607,6 @@ public class MQTTService extends Service
             }catch (Exception e) { Log.d(TAG, "Errore in publishMessage: " + e );}
             return res;
         }
-
 
         private void syncWithSensormind() {
 
@@ -762,14 +764,11 @@ public class MQTTService extends Service
                         dataDbHelper.setSentListOfDataSamples(listData);
                     }
                 }
-
-
             }catch (Exception e) {Log.d(TAG, "Errore nel publish singolo sample" + e);}
-
-
-
-
         }
+
+
+
     }
 
 }
