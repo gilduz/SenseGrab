@@ -19,9 +19,8 @@ import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 public class RegisterActivity extends Activity {
 
-    SensormindAPI API;
     private static final String TAG = RegisterActivity.class.getSimpleName();
-
+    SensormindAPI API;
     EditText editText_username;
     EditText editText_password;
     EditText editText_firstname;
@@ -94,7 +93,6 @@ public class RegisterActivity extends Activity {
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
-
             }
             else {
                 Log.d(TAG,"Registration failed!");

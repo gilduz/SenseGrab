@@ -143,37 +143,37 @@ public class ServiceManager {
                 case "Magnetic Field":
                     componentImageID = R.drawable.ic_language_grey600_48dp;
                     sensorType = Sensor.TYPE_MAGNETIC_FIELD;
-                    defaultPath = "magnetometer";
+                    defaultPath = MainActivity.MODEL_NAME + "/magnetometer";
                     break;
                 case "Accelerometer":
                     componentImageID = R.drawable.ic_vibration_grey600_48dp;
                     sensorType = Sensor.TYPE_ACCELEROMETER;
-                    defaultPath = "accelerometer";
+                    defaultPath = MainActivity.MODEL_NAME + "/accelerometer";
                     break;
                 case "Temperature":
                     componentImageID = R.drawable.ic_whatshot_grey600_48dp;
                     sensorType = Sensor.TYPE_AMBIENT_TEMPERATURE;
-                    defaultPath = "temperature";
+                    defaultPath = MainActivity.MODEL_NAME + "/temperature";
                     break;
                 case "Gyroscope":
                     componentImageID = R.drawable.ic_autorenew_grey600_48dp;
                     sensorType = Sensor.TYPE_GYROSCOPE;
-                    defaultPath = "gyroscope";
+                    defaultPath = MainActivity.MODEL_NAME + "/gyroscope";
                     break;
                 case "Light Sensor":
                     componentImageID = R.drawable.ic_flare_grey600_48dp;
                     sensorType = Sensor.TYPE_LIGHT;
-                    defaultPath = "light";
+                    defaultPath = MainActivity.MODEL_NAME + "/light";
                     break;
                 case "Proximity Sensor":
                     componentImageID = R.drawable.ic_filter_list_grey600_48dp;
                     sensorType = Sensor.TYPE_PROXIMITY;
-                    defaultPath = "proximity";
+                    defaultPath = MainActivity.MODEL_NAME + "/proximity";
                     break;
                 case "Pressure Sensor":
                     componentImageID = R.drawable.ic_filter_hdr_grey600_48dp;
                     sensorType = Sensor.TYPE_PRESSURE;
-                    defaultPath = "pressure";
+                    defaultPath = MainActivity.MODEL_NAME + "/pressure";
                     break;
                 default:
                     componentImageID = R.drawable.ic_close_grey600_48dp;

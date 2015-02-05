@@ -39,6 +39,8 @@ public class MainActivity extends Activity {
     public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 10 * 60; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
+    public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
+
     String username;
     String password;
 
@@ -282,22 +284,22 @@ public class MainActivity extends Activity {
     }
 
     private void createAllFeeds() {
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null","accelerometer/1",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null","accelerometer/2",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null","accelerometer/3",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null", MODEL_NAME + "/accelerometer/1",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null", MODEL_NAME + "/accelerometer/2",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null", MODEL_NAME + "/accelerometer/3",2);
 
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null","gyroscope/1",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null","gyroscope/2",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null","gyroscope/3",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null", MODEL_NAME + "/gyroscope/1",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null", MODEL_NAME + "/gyroscope/2",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null", MODEL_NAME + "/gyroscope/3",2);
 
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null","magnetometer/1",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null","magnetometer/2",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null","magnetometer/3",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null", MODEL_NAME + "/magnetometer/1",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null", MODEL_NAME + "/magnetometer/2",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null", MODEL_NAME + "/magnetometer/3",2);
 
-        ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux","light",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar","pressure",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null","proximity",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null","temperature",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux", MODEL_NAME + "/light",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar", MODEL_NAME + "/pressure",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null", MODEL_NAME + "/proximity",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null", MODEL_NAME + "/temperature",1);
     }
 
     private void launchMQTTService() {
