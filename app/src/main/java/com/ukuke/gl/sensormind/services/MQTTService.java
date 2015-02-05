@@ -325,6 +325,7 @@ public class MQTTService extends Service
 
                     //client = new MqttClient(uri, username, null);
                     client = new MqttClient(uri, MqttClient.generateClientId(), null);
+                    //client = new MqttClient(uri, "1i", null);
                     client.setCallback(this);
 
                 }
@@ -368,8 +369,8 @@ public class MQTTService extends Service
                         {
                             try
                             {
-                                //options.setUserName(username);
-                                //options.setPassword(password.toCharArray());
+                                options.setUserName(username);
+                                options.setPassword(password.toCharArray());
 
                                 client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
