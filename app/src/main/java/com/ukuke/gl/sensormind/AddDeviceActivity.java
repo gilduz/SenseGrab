@@ -19,6 +19,7 @@ public class AddDeviceActivity extends Activity {
 
     public final static String TYPE_SENSOR = "sensor_type";
     public final static String ENABLES_SENSOR = "sensor_enable";
+    public final static String MODIFY_CONFIGURATION = "modify_configuration";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

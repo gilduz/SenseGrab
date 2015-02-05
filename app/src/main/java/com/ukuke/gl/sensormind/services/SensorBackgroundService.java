@@ -142,6 +142,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     fluentSamplingGyroscope = fluentSampling;
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
+                    //Log.d(TAG, "Scusi dovrei loggare il magnetometro");
                     windowMagnetometer = window;
                     fluentSamplingMagnetometer = fluentSampling;
                     break;

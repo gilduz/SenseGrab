@@ -88,8 +88,8 @@
                     android:layout_alignParentRight="true"
                     android:layout_alignTop="@+id/Conf_Sam_seekBar"
                     android:gravity="center_vertical|center_horizontal"
-                    android:maxWidth="30sp"
-                    android:minWidth="30sp"
+                    android:maxWidth="40sp"
+                    android:minWidth="40sp"
                     android:text="@string/defaultNum5"
                     android:textSize="15sp" />
 
@@ -165,8 +165,8 @@
                     android:layout_alignParentRight="true"
                     android:layout_alignTop="@+id/Conf_Win_seekBar"
                     android:gravity="center_vertical|center_horizontal"
-                    android:maxWidth="30sp"
-                    android:minWidth="30sp"
+                    android:maxWidth="40sp"
+                    android:minWidth="40sp"
                     android:text="@string/defaultNum5"
                     android:textSize="15sp" />
             </RelativeLayout>

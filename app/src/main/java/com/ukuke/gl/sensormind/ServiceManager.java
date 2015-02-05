@@ -215,7 +215,7 @@ public class ServiceManager {
             private String configurationName;
             private String path;
             private boolean attachGPS;
-            private int dbId;
+            private int dbId = -1;
 
 
             Configuration() {
@@ -271,7 +271,7 @@ public class ServiceManager {
                 this.configurationName = configurationName;
             }
 
-            public boolean isAttachGPS() {
+            public boolean getAttachGPS() {
                 return attachGPS;
             }
 
@@ -285,7 +285,8 @@ public class ServiceManager {
         return serviceComponentList;
     }
 
-    public int initializeFromDB() {
+    @Deprecated
+    public int initializeFromDB_old() {
         // TODO: Da implementare
         // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
         USE_DB = true;
@@ -330,6 +331,26 @@ public class ServiceManager {
             }
         }
 
+
+        return 0;
+    }
+
+    public int initializeFromDB() {
+        // TODO: Da implementare
+        // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
+        USE_DB = true;
+        dbHelper = new DbHelper(cn);
+
+        int numConf = dbHelper.populateServiceComponentListWithAllConfigurations(serviceComponentList);
+        Log.d(TAG,"Found " + numConf + " configurations in Db");
+
+
+        for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
+            if (getServiceComponentAvailableList().get(i).getActiveConfiguration() != null) {
+                addServiceComponentActive(getServiceComponentAvailableList().get(i));
+                startScheduleService(getServiceComponentAvailableList().get(i));
+            }
+        }
 
         return 0;
     }
@@ -543,13 +564,28 @@ public class ServiceManager {
         cn.startService(intent);
     }
 
-    public void addConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration) {
+    @Deprecated
+    public void addConfigurationServiceToDB_old(ServiceComponent component, ServiceComponent.Configuration configuration) {
         if (USE_DB) {
             dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
         }
     }
 
-    public void removeConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration) {
+    public void addConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration, boolean isActive) {
+        if (USE_DB) {
+//            dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
+            dbHelper.addOrUpdateConfiguration(configuration, component, isActive);
+        }
+    }
+
+    public void removeConfigurationServiceToDB(ServiceComponent.Configuration configuration) {
+        if (USE_DB) {
+            // TODO: Aggiungere anche il tipo di sensore!
+            dbHelper.deleteConfigurationById(configuration.getDbId());
+        }
+    }
+    @Deprecated
+    public void removeConfigurationServiceToDB_old(ServiceComponent component, ServiceComponent.Configuration configuration) {
         if (USE_DB) {
             // TODO: Aggiungere anche il tipo di sensore!
             dbHelper.deleteConfigurationByName(configuration.getConfigurationName());

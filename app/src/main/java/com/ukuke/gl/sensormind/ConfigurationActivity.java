@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
@@ -17,7 +18,7 @@ import android.widget.Toast;
 public class ConfigurationActivity extends Activity {
 
     // Database
-    DbHelper db;
+    DbHelper dbHelper;
 
     // Dynamic views in activity_configuration.xml
     EditText confName; //Name
@@ -27,6 +28,8 @@ public class ConfigurationActivity extends Activity {
     TextView textWin;
     RadioGroup radioGr;
     Switch gpsSwitch;
+    Button buttonDelete;
+    Button buttonSave;
 
     // Initialize and set default value for seekBars
     int progressSamp = 5;
@@ -38,6 +41,7 @@ public class ConfigurationActivity extends Activity {
     private boolean logging = true;
     private ServiceManager.ServiceComponent serviceComponent;
     private ServiceManager.ServiceComponent.Configuration configuration;
+    private boolean isAModify;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +51,7 @@ public class ConfigurationActivity extends Activity {
 
         intentAddDevice = getIntent();
         typeSensor = intentAddDevice.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
+        isAModify = intentAddDevice.getBooleanExtra(AddDeviceActivity.MODIFY_CONFIGURATION, false);
 
         serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
 
@@ -65,13 +70,57 @@ public class ConfigurationActivity extends Activity {
         // Gps switch
         gpsSwitch = (Switch) findViewById(R.id.Conf_gps);
 
+        // Buttons
+        buttonDelete = (Button) findViewById(R.id.Conf_delete);
+        buttonSave = (Button) findViewById(R.id.Conf_save);
 
-        seekSamp.setMax(60);
-        seekWin.setMax(60);
 
 
 
-        configuration = new ServiceManager.ServiceComponent.Configuration();
+        if (!isAModify) {
+            buttonDelete.setVisibility(View.GONE);
+            confName.setText("Default_Name");
+            configuration = new ServiceManager.ServiceComponent.Configuration();
+
+        }
+        else {
+            configuration = serviceComponent.getActiveConfiguration(); // TODO Da cambiare per gestire config generiche
+            confName.setText(serviceComponent.getActiveConfiguration().getConfigurationName());
+
+            int sampSeekValue = 0;
+            // MILLISECONDS
+            if (serviceComponent.getActiveConfiguration().getInterval() < 1000) {
+                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval();
+                radioGr.check(R.id.Conf_radioMill);
+
+
+            }
+            // SECONDS
+            else if ((serviceComponent.getActiveConfiguration().getInterval() >= 1000) && (serviceComponent.getActiveConfiguration().getInterval() < 60000)) {
+                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval() / 1000;
+                radioGr.check(R.id.Conf_radioSec);
+            }
+            // MINUTES
+            else if ((serviceComponent.getActiveConfiguration().getInterval() >= 60000) && (serviceComponent.getActiveConfiguration().getInterval() < 36000000)) {
+                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval() / 60000;
+                radioGr.check(R.id.Conf_radioMin);
+            }
+            // HOURS
+            else if (serviceComponent.getActiveConfiguration().getInterval() > 3600000) {
+                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval() / 3600000;
+                radioGr.check(R.id.Conf_radioHour);
+            }
+
+            seekSamp.setProgress(sampSeekValue);
+            textSamp.setText(Integer.toString(sampSeekValue));
+            seekWin.setProgress(serviceComponent.getActiveConfiguration().getWindow());
+            textWin.setText(Long.toString(serviceComponent.getActiveConfiguration().getWindow()));
+
+            confName.setText(serviceComponent.getActiveConfiguration().getConfigurationName());
+            gpsSwitch.setChecked(serviceComponent.getActiveConfiguration().getAttachGPS());
+        }
+
+
 
         // Set values from seekBars
         seekSamp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -131,13 +180,26 @@ public class ConfigurationActivity extends Activity {
     }
 
     public void onButtonSaveClicked(View view) {
-        long interval;
+
+        long interval = 1000;
 
         int window = 1;// = 1;
 
         try {
 
-            interval = seekSamp.getProgress() * 1000;
+            if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioMill) {
+                interval = seekSamp.getProgress();
+            }
+            else if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioSec) {
+                interval = seekSamp.getProgress() * 1000;
+            }
+            else if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioMin) {
+                interval = seekSamp.getProgress() * 60000;
+            }
+            else if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioHour) {
+                interval = seekSamp.getProgress() * 3600000;
+            }
+
             window = seekWin.getProgress();
         } catch (Exception e) {
             interval = 1000L;
@@ -146,21 +208,19 @@ public class ConfigurationActivity extends Activity {
 
         configuration.setInterval(interval);
         configuration.setWindow(window);
-        configuration.setConfigurationName(serviceComponent.getDysplayName());
+        configuration.setConfigurationName("Default_Name");
         //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path
-        configuration.setAttachGPS(gpsSwitch.isActivated());
+        configuration.setAttachGPS(gpsSwitch.isChecked());
 
-        ServiceManager.ServiceComponent component;
-        component = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
-
-        configuration.setPath(component.getDefaultPath());
-        component.removeConfiguration(confName.getText().toString());
-        component.addConfiguration(configuration);
-        component.setActiveConfiguration(configuration);
+        configuration.setPath(serviceComponent.getDefaultPath());
+        serviceComponent.removeConfiguration(confName.getText().toString());
+        serviceComponent.addConfiguration(configuration);
+        serviceComponent.setActiveConfiguration(configuration);
 
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).addConfigurationServiceToDB(serviceComponent, configuration);
+        ServiceManager.getInstance(ConfigurationActivity.this).addConfigurationServiceToDB(serviceComponent, configuration, true); // TODO Gestire l'attivo o no
+
 
         Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
@@ -172,7 +232,7 @@ public class ConfigurationActivity extends Activity {
         ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         //TODO: Sistema qui sotto!
         configuration.setConfigurationName(serviceComponent.getDysplayName());
-        ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(serviceComponent, configuration);
+        ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(configuration);
         Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
         startActivity(intentMain);
@@ -182,6 +242,6 @@ public class ConfigurationActivity extends Activity {
     //TODO aggiungere metodo saveOrUpdate() che differenzia a seconda di getextras (persare se settare una variabile invece che usare 2 volte getextras
     //TODO implementare scrittura o modifica su stringa database
 
-    //TODO aggiungere metodo delete con alert per confermare, implementare cancellazione riga db
+    //TODO aggiungere metodo delete con alert per confermare, implementare cancellazione riga dbHelper
 
 }

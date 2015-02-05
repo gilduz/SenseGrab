@@ -38,9 +38,9 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String Samp_conf_date = "created";
 
     //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
-    //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+    //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
-//TODO implementare nuove voci nel db
+//TODO implementare nuove voci nel dbHelper
     private static final String Create_Conf_Table =
             "create table "+Samp_conf_table+"("+Samp_conf_id+" integer primary key autoincrement,"+
                     Samp_conf_name+" text not null,"+Samp_conf_type+" integer not null,"+
@@ -96,7 +96,7 @@ public class DbHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
-            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+            //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
@@ -124,7 +124,7 @@ public class DbHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
-            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+            //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, conf.getConfigurationName());
             values.put(Samp_conf_type, comp.getSensorType());
@@ -132,7 +132,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_path, conf.getPath());
             values.put(Samp_conf_time, interval);
             values.put(Samp_conf_window, conf.getWindow());
-            values.put(Samp_conf_gps, convertBoolToInt(conf.isAttachGPS()));
+            values.put(Samp_conf_gps, convertBoolToInt(conf.getAttachGPS()));
             values.put(Samp_conf_active, isActive);
             values.put(Samp_conf_date, getDateTime());
 
@@ -181,7 +181,7 @@ public class DbHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
-            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+            //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
@@ -210,7 +210,7 @@ public class DbHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
-            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+            //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, name);
             values.put(Samp_conf_type, type);
@@ -238,7 +238,7 @@ public class DbHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
-            //Data types on db  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
+            //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, conf.getConfigurationName());
             values.put(Samp_conf_type, comp.getSensorType());
@@ -246,7 +246,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_path, conf.getPath());
             values.put(Samp_conf_time, interval);
             values.put(Samp_conf_window, conf.getWindow());
-            values.put(Samp_conf_gps, convertBoolToInt(conf.isAttachGPS()));
+            values.put(Samp_conf_gps, convertBoolToInt(conf.getAttachGPS()));
             values.put(Samp_conf_active, isActive);
 
             db.update(Samp_conf_table, values,Samp_conf_id+" = ?",new String[] {Integer.toString(conf.getDbId())});
@@ -261,7 +261,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public int deleteConfigurationById(int id){
         SQLiteDatabase db = this.getWritableDatabase();
-        int del = db.delete(Samp_conf_table,"id = ?",new String[] { Integer.toString(id) });
+        int del = db.delete(Samp_conf_table, Samp_conf_id + " = ?",new String[] { Integer.toString(id) });
         db.close();
         return del;
     }
@@ -269,7 +269,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public int deleteConfigurationByName(String Name){
         // TODO: Bisogna aggiungere anche il tipo di sensore, altrimenti due sensori diversi non possono avere una configurazione con lo stesso nome. In generale sarebbe meglio se tutti i metodi prendessero come input direttamente l'oggetto ServiceComponent e l'oggetto Configuration
         SQLiteDatabase db = this.getWritableDatabase();
-        int del = db.delete(Samp_conf_table,Samp_conf_name+" = ?",new String[] {Name});
+        int del = db.delete(Samp_conf_table, Samp_conf_name+" = ?",new String[] {Name});
         db.close();
         return del;
     }
@@ -299,7 +299,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         res.close();
 
-        //Log.d("DBHelper", "Chiudo il db");
+        //Log.d("DBHelper", "Chiudo il dbHelper");
 
         db.close();
 

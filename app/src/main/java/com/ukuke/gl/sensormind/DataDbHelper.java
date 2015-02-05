@@ -66,7 +66,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // delete tables
-        // db.execSQL("drop table if exists"+Samp_type_table);
+        // dbHelper.execSQL("drop table if exists"+Samp_type_table);
         db.execSQL("drop table if exists " + Data_table);
         // create new tables
         onCreate(db);
@@ -151,7 +151,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent + " = 0");
         // se non va quello sopra usare questo:
-        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 0", null );
+        /*Cursor res = dbHelper.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 0", null );
         int num = res.getCount();*/
         closeDb();
         return num;
@@ -161,7 +161,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent + " = 1");
         // se non va quello sopra usare questo:
-        /*Cursor res = db.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
+        /*Cursor res = dbHelper.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
         int num = res.getCount();*/
         closeDb();
         return num;

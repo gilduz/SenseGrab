@@ -171,9 +171,11 @@ public class MainActivity extends Activity {
         if (prefs.getBoolean("firstrun", true)) {
             Log.i("MainActivity","This is a first run. Set up everything!");
             prefs.edit().putBoolean("firstrun", false).apply();
+            Intent intent = new Intent(this, LogInActivity.class);
+            startActivity(intent);
         }
         else {
-            Log.v("MainActivity", "This is not a first run. Let's continue");
+            //Log.v("MainActivity", "This is not a first run. Let's continue");
         }
 
         populateListView();
@@ -194,7 +196,8 @@ public class MainActivity extends Activity {
                 // Come back to Main Activity
                 Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
                 intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getSensorType());
-                intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
+                //intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
+                intent.putExtra(AddDeviceActivity.MODIFY_CONFIGURATION, true);
                 startActivity(intent);
             }
         });
