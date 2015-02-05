@@ -69,7 +69,7 @@ public class MQTTService extends Service
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
 
-        ipMqtt = prefs.getString("ip_MQTT","137.204.213.190");
+        ipMqtt = prefs.getString("ip_MQTT", "137.204.213.190");
         portMqtt = prefs.getInt("port_MQTT",1884);
 
     }
@@ -306,8 +306,8 @@ public class MQTTService extends Service
 
         private class MsgHandler extends Handler implements MqttCallback
         {
-            private final String HOST = ipMqtt;//"test.mosquitto.org";//"137.204.213.190";//ipMqtt;
-            private final int PORT = portMqtt;//1883;//1884;//portMqtt;
+            private final String HOST = "137.204.213.190";//ipMqtt;
+            private final int PORT = 1884;//portMqtt;
             private final String uri = "tcp://" + HOST + ":" + PORT;
             private final int MINTIMEOUT = 2000;
             private final int MAXTIMEOUT = 32000;
