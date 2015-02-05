@@ -74,13 +74,13 @@ public class ConfigurationActivity extends Activity {
         buttonDelete = (Button) findViewById(R.id.Conf_delete);
         buttonSave = (Button) findViewById(R.id.Conf_save);
 
-
-
+        //TODO Aggiungere nascondino window, spiegare che minchia è window, settare i valori di default e i valori massimi per ogni tipo di sensore. Puzzi un po'
 
         if (!isAModify) {
             buttonDelete.setVisibility(View.GONE);
             confName.setText("Default_Name");
             configuration = new ServiceManager.ServiceComponent.Configuration();
+
 
         }
         else {
