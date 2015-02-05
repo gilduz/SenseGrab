@@ -37,6 +37,8 @@ public class DbHelper extends SQLiteOpenHelper {
     public static final String Samp_conf_active = "active";//int
     public static final String Samp_conf_date = "created";
 
+    private SQLiteDatabase db;
+
     //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
     //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
@@ -54,14 +56,14 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL(Create_Conf_Table);
+    public void onCreate(SQLiteDatabase DataBase) {
+        DataBase.execSQL(Create_Conf_Table);
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(SQLiteDatabase DataBase, int oldVersion, int newVersion) {
         // delete tables
-        db.execSQL("drop table if exists"+Samp_conf_table);
+        DataBase.execSQL("drop table if exists"+Samp_conf_table);
         // create new tables
         onCreate(db);
     }
@@ -92,7 +94,7 @@ public class DbHelper extends SQLiteOpenHelper {
             int time_unit = covertTimeUnit(unit);
             int intGPS = convertBoolToInt(gps);
 
-            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
@@ -107,7 +109,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_date, getDateTime());
 
             db.insert(Samp_conf_table, null, values);
-            db.close();
+            closeDb();
             return true;
         } else {
             return false;
@@ -120,7 +122,7 @@ public class DbHelper extends SQLiteOpenHelper {
         long interval = conf.getInterval();
         if (interval>0){
 
-            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
@@ -139,7 +141,7 @@ public class DbHelper extends SQLiteOpenHelper {
             int _id = (int) db.insert(Samp_conf_table, null, values);
             conf.setDbId(_id);
 
-            db.close();
+            closeDb();
             return true;
         } else {
             return false;
@@ -150,19 +152,19 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public Cursor getConfCursorById(int id){
         // TODO Remember to close the cursor on upper level after use
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         return db.rawQuery( "select * from "+Samp_conf_table+" where id = "+id, null );
     }
 
     public Cursor getConfCursorByName(String name){
         // TODO Remember to close the cursor on upper level after use
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         return db.rawQuery( "select * from "+Samp_conf_table+" where "+Samp_conf_name+" = '"+name+"'", null );
     }
 
     public Cursor getAllConfCursor(){
         // TODO Remember to close the cursor on upper level after use
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         return db.rawQuery( "select * from "+Samp_conf_table, null );
     }
 
@@ -177,7 +179,7 @@ public class DbHelper extends SQLiteOpenHelper {
             int time_unit = covertTimeUnit(unit);
             int intGPS = convertBoolToInt(gps);
 
-            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
@@ -192,7 +194,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_date, getDateTime());
 
             db.update(Samp_conf_table, values,"id = ? ", new String[] { Integer.toString(id) } );
-            db.close();
+            closeDb();
             return true;
         } else return false;
     }
@@ -206,7 +208,7 @@ public class DbHelper extends SQLiteOpenHelper {
             int time_unit = covertTimeUnit(unit);
             int intGPS = convertBoolToInt(gps);
 
-            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
@@ -221,7 +223,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_date, getDateTime());
 
             db.update(Samp_conf_table, values,Samp_conf_name+" = ? ", new String[] {name} );
-            db.close();
+            closeDb();
             return true;
         } else {
             return false;
@@ -234,7 +236,7 @@ public class DbHelper extends SQLiteOpenHelper {
         long interval = conf.getInterval();
         if (interval>0){
 
-            SQLiteDatabase db = this.getWritableDatabase(); //open database
+            db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
             //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
@@ -250,7 +252,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(Samp_conf_active, isActive);
 
             db.update(Samp_conf_table, values,Samp_conf_id+" = ?",new String[] {Integer.toString(conf.getDbId())});
-            db.close();
+            closeDb();
             return true;
         } else {
             return false;
@@ -260,17 +262,17 @@ public class DbHelper extends SQLiteOpenHelper {
     //------------------------------DELETE METHODS------------------------------
 
     public int deleteConfigurationById(int id){
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
         int del = db.delete(Samp_conf_table, Samp_conf_id + " = ?",new String[] { Integer.toString(id) });
-        db.close();
+        closeDb();
         return del;
     }
 
     public int deleteConfigurationByName(String Name){
         // TODO: Bisogna aggiungere anche il tipo di sensore, altrimenti due sensori diversi non possono avere una configurazione con lo stesso nome. In generale sarebbe meglio se tutti i metodi prendessero come input direttamente l'oggetto ServiceComponent e l'oggetto Configuration
-        SQLiteDatabase db = this.getWritableDatabase();
+        db = this.getWritableDatabase();
         int del = db.delete(Samp_conf_table, Samp_conf_name+" = ?",new String[] {Name});
-        db.close();
+        closeDb();
         return del;
     }
 
@@ -281,7 +283,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // TODO: Non funziona... e se non ci sono configurazioni? controllare anche altri getallconf...
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
 
         //Log.d("DBHelper", "Sono arrivato a prima del Cursor");
 
@@ -301,7 +303,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         //Log.d("DBHelper", "Chiudo il dbHelper");
 
-        db.close();
+        closeDb();
 
         return array_list;
     }
@@ -310,15 +312,16 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList getAllConfigurationsOrderedByName(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+Samp_conf_name+" asc", null);
-        db.close();
+        closeDb();
         res.moveToFirst();
         while(!res.isAfterLast()){
             array_list.add(res.getString(res.getColumnIndex(Samp_conf_name)));
             res.moveToNext();
         }
         res.close();
+        closeDb();
         return array_list;
     }
 
@@ -326,7 +329,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList getAllConfigurationsOrderedByType(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+Samp_conf_type+" asc", null);
         res.moveToFirst();
         while(!res.isAfterLast()){
@@ -334,7 +337,7 @@ public class DbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         res.close();
-        db.close();
+        closeDb();
         return array_list;
     }
 
@@ -342,7 +345,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList getAllConfigurationsOrderedByTypeThenName(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+
                 Samp_conf_type+" asc, "+Samp_conf_name+" asc", null);
         res.moveToFirst();
@@ -351,7 +354,7 @@ public class DbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         res.close();
-        db.close();
+        closeDb();
         return array_list;
     }
 
@@ -359,7 +362,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList getAllConfTypesWithoutOrder(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table, null);
         res.moveToFirst();
         while(!res.isAfterLast()){
@@ -367,7 +370,7 @@ public class DbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         res.close();
-        db.close();
+        closeDb();
         return array_list;
     }
 
@@ -375,7 +378,7 @@ public class DbHelper extends SQLiteOpenHelper {
     public ArrayList getAllConfTypesOrderedByType(){
         ArrayList array_list = new ArrayList();
         //hp = new HashMap();
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from "+Samp_conf_table+" order by "+
                 Samp_conf_type+" asc", null);
         res.moveToFirst();
@@ -384,7 +387,7 @@ public class DbHelper extends SQLiteOpenHelper {
             res.moveToNext();
         }
         res.close();
-        db.close();
+        closeDb();
         return array_list;
     }
 
@@ -424,18 +427,28 @@ public class DbHelper extends SQLiteOpenHelper {
             }
             allConf.moveToNext();
         }
-
+        allConf.close();
+        closeDb();
         return size;
     }
 
     //----------------------------------------NUMERIC----------------------------------------
 
     public int numberOfConfigurations(){
-        SQLiteDatabase db = this.getReadableDatabase();
+        db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Samp_conf_table);
-        db.close();
+        closeDb();
         return num;
     }
+
+    //---------------CLOSE METHOD----------------------
+
+    public void closeDb() {
+        if (db.isOpen()) {
+            db.close();
+        }
+    }
+
 
     //-----------------------------------ACCESSORIES-------------------------------------
 
