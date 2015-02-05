@@ -71,7 +71,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     //---------------------------ADD OR MODIFY-----------------------------
 
-    private boolean addOrUpdateConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive){
+    public boolean addOrUpdateConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive){
         int _id = conf.getDbId();
         if (_id>-1){
             // è già stato creato, modifico

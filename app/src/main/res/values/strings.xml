@@ -39,5 +39,7 @@
     <string name="conf_min">min</string>
     <string name="title_activity_log_in">Login</string>
     <string name="title_activity_register">Registration</string>
+    <string name="Conf_ms">millis</string>
+    <string name="conf_hour">hour</string>
 
 </resources>
