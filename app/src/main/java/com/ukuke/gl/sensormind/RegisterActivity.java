@@ -85,7 +85,7 @@ public class RegisterActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            prefs.edit().putBoolean("loggedIn", validRegistration).commit();
+            prefs.edit().putBoolean("loggedIn", validRegistration).apply();
 
             if (validRegistration) {
                 Log.d(TAG,"Registration succeed!");

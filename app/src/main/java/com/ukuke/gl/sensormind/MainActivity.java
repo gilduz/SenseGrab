@@ -66,11 +66,13 @@ public class MainActivity extends Activity {
         password = prefs.getString("password", "NULL");
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
-        toggle.setChecked(prefs.getBoolean("enableGrabbing", true));
+        toggle.setChecked(prefs.getBoolean("enableGrabbing", false));
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
         prefs.edit().commit();
         //createAllFeeds();
+
+
 
         if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
             launchMQTTService();
