@@ -35,8 +35,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 1 * 60; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 3 * 60; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 3 * 60; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 10 * 60; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     String username;
@@ -112,11 +112,21 @@ public class MainActivity extends Activity {
             //AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         }
 
+        else if (id == R.id.action_settings) {
+           // TODO Da aggiungere una activity settings semplice
+           // Intent intent = new Intent(this, SettingsActivity.class);
+           // startActivity(intent);
+        }
+
         else if (id == R.id.action_log_in) {
             Intent intent = new Intent(this, LogInActivity.class);
             startActivity(intent);
         }
 
+        else if (id == R.id.action_logout) {
+            prefs.edit().putBoolean("loggedIn",false);
+            stopMQTTService();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -130,6 +140,8 @@ public class MainActivity extends Activity {
         if (toggleButton.isChecked()) {
 
             launchMQTTService();
+            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
+
 
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
                 ServiceManager.ServiceComponent service;
