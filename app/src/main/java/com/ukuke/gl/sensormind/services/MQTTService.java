@@ -257,7 +257,7 @@ public class MQTTService extends Service {
                 try {
 
                     //client = new MqttClient(uri, username, null);
-                    client = new MqttClient(uri, MqttClient.generateClientId(), null);
+                    client = new MqttClient(uri, MqttClient.generateClientId(),null);
                     //client = new MqttClient(uri, "1i", null);
                     client.setCallback(this);
 

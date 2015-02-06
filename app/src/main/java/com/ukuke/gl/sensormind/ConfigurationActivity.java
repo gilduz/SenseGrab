@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,10 +16,32 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class ConfigurationActivity extends Activity {
+public class ConfigurationActivity extends Activity /*implements OnClickListener*/ {
+
+    // CONSTANT VALUES
+    //Editable
+    private static final long DEFAULT_INTERVAL = 1000;
+    private static final int DEFAULT_WINDOW = 2;
+    private static final int STEP_MILLIS = 50;
+    private static final String DEFAULT_NAME = "Default_Name";
+    //Do not edit!
+    private static final int MILLIS_IN_SEC = 1000;
+    private static final int MILLIS_IN_MIN = 60*MILLIS_IN_SEC;
+    private static final int MILLIS_IN_HOUR = 60*MILLIS_IN_MIN;
+    private static final int MIN_MILLIS = 250;
+    private int relativeMinMilliS;//related to each sensor, going close to this value forces streaming
+    private int usedMinMillis;
+    private static final int MAX_SEEK_MILLIS = MILLIS_IN_SEC-STEP_MILLIS;
+    private int maxSeekSampMillis;
+    private static final int MAX_SEEK_SEC = 59;
+    private static final int MAX_SEEK_MIN = 59;
+    private static final int MAX_SEEK_HOUR = 24;
+
+    private static String TAG = ConfigurationActivity.class.getSimpleName();
+
 
     // Database
-    DbHelper dbHelper;
+    //DbHelper dbHelper;
 
     // Dynamic views in activity_configuration.xml
     EditText confName; //Name
@@ -32,11 +55,11 @@ public class ConfigurationActivity extends Activity {
     Button buttonSave;
 
     // Initialize and set default value for seekBars
-    int progressSamp = 5;
-    int progressWin = 5;
+    long progressSamp = DEFAULT_INTERVAL;
+    int progressWin = DEFAULT_WINDOW;
 
     // Gildo
-    private Intent intentAddDevice;
+    private Intent intent;
     private int typeSensor;
     private boolean logging = true;
     private ServiceManager.ServiceComponent serviceComponent;
@@ -48,13 +71,21 @@ public class ConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
 
-
-        intentAddDevice = getIntent();
-        typeSensor = intentAddDevice.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
-        isAModify = intentAddDevice.getBooleanExtra(AddDeviceActivity.MODIFY_CONFIGURATION, false);
+        //-----------------------EXTRAS------------------------
+        intent = getIntent();
+        typeSensor = intent.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
+        isAModify = intent.getBooleanExtra(AddDeviceActivity.MODIFY_CONFIGURATION, false);
 
         serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
+        relativeMinMilliS = serviceComponent.getMinDelay()/1000;
+        if (relativeMinMilliS >STEP_MILLIS){
+            usedMinMillis = (int) Math.ceil((relativeMinMilliS /1000)/STEP_MILLIS);
+        } else usedMinMillis = MIN_MILLIS;
+        maxSeekSampMillis = MAX_SEEK_MILLIS-usedMinMillis;
 
+        setTitle(serviceComponent.getDysplayName());
+
+        //-----------------------GRAPHIC ELEMENTS------------------------
         // seek bars and relative value views
         seekSamp = (SeekBar) findViewById(R.id.Conf_Sam_seekBar);
         textSamp = (TextView) findViewById(R.id.Conf_viewSeekbarValue);
@@ -74,45 +105,76 @@ public class ConfigurationActivity extends Activity {
         buttonDelete = (Button) findViewById(R.id.Conf_delete);
         buttonSave = (Button) findViewById(R.id.Conf_save);
 
+        //---------------------LISTENERS----------------------
+        //Seekbars listener
+        SeekBar.OnSeekBarChangeListener seekListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                switch (seekBar.getId()) {
+                    case R.id.Conf_Sam_seekBar: {
+                        textSamp.setText(String.valueOf(getTextSampValue(progress, radioGr.getCheckedRadioButtonId())));
+                        progressSamp = progress;
+                        break;
+                    }
+                    case R.id.Conf_Win_seekBar: {
+                        textWin.setText(String.valueOf(progress));
+                        progressWin = progress;
+                        break;
+                    }
+                }
+
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        };
+
+        RadioGroup.OnCheckedChangeListener radioListener = new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId){
+                    case R.id.Conf_radioMill:
+                        seekSamp.setMax(maxSeekSampMillis/STEP_MILLIS);
+                        break;
+                    case R.id.Conf_radioSec:
+                        seekSamp.setMax(MAX_SEEK_SEC-1);
+                        break;
+                    case R.id.Conf_radioMin:
+                        seekSamp.setMax(MAX_SEEK_MIN-1);
+                        break;
+                    case R.id.Conf_radioHour:
+                        seekSamp.setMax(MAX_SEEK_HOUR-1);
+                        break;
+                    default:break;
+                }
+            }
+        };
+
+
+
         //TODO Aggiungere nascondino window, spiegare che minchia è window, settare i valori di default e i valori massimi per ogni tipo di sensore. Puzzi un po'
 
         if (!isAModify) {
+            //NEW CONFIGURATION
             buttonDelete.setVisibility(View.GONE);
-            confName.setText("Default_Name");
-            configuration = new ServiceManager.ServiceComponent.Configuration();
+            //configuration = new ServiceManager.ServiceComponent.Configuration();
+            setDefaultValues();
 
 
-        }
-        else {
-            configuration = serviceComponent.getActiveConfiguration(); // TODO Da cambiare per gestire config generiche
+        } else {
+            //MODIFYING OLD CONFIGURATION
+            configuration = serviceComponent.getActiveConfiguration(); // TODO Passare DbId tramite extras per gestire molteplici configurazioni
             confName.setText(serviceComponent.getActiveConfiguration().getConfigurationName());
 
-            int sampSeekValue = 0;
-            // MILLISECONDS
-            if (serviceComponent.getActiveConfiguration().getInterval() < 1000) {
-                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval();
-                radioGr.check(R.id.Conf_radioMill);
-
-
-            }
-            // SECONDS
-            else if ((serviceComponent.getActiveConfiguration().getInterval() >= 1000) && (serviceComponent.getActiveConfiguration().getInterval() < 60000)) {
-                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval() / 1000;
-                radioGr.check(R.id.Conf_radioSec);
-            }
-            // MINUTES
-            else if ((serviceComponent.getActiveConfiguration().getInterval() >= 60000) && (serviceComponent.getActiveConfiguration().getInterval() < 36000000)) {
-                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval() / 60000;
-                radioGr.check(R.id.Conf_radioMin);
-            }
-            // HOURS
-            else if (serviceComponent.getActiveConfiguration().getInterval() > 3600000) {
-                sampSeekValue = (int) serviceComponent.getActiveConfiguration().getInterval() / 3600000;
-                radioGr.check(R.id.Conf_radioHour);
-            }
-
+            long millis = serviceComponent.getActiveConfiguration().getInterval();
+            Log.d(TAG,"L'intervallo della configurazione attiva è: "+millis+" millisecondi");
+            int rightRadio = getRightRadio(millis);
+            int sampSeekValue = getProgressSeekSamp((int)millis,rightRadio);
+            radioGr.check(rightRadio);
             seekSamp.setProgress(sampSeekValue);
-            textSamp.setText(Integer.toString(sampSeekValue));
+            textSamp.setText(Long.toString(getTextSampValue(sampSeekValue,rightRadio)));
             seekWin.setProgress(serviceComponent.getActiveConfiguration().getWindow());
             textWin.setText(Long.toString(serviceComponent.getActiveConfiguration().getWindow()));
 
@@ -121,38 +183,14 @@ public class ConfigurationActivity extends Activity {
         }
 
 
-
         // Set values from seekBars
-        seekSamp.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                textSamp.setText(String.valueOf(progress));
-                progressSamp = progress;
-            }
+        seekSamp.setOnSeekBarChangeListener(seekListener);
+        seekWin.setOnSeekBarChangeListener(seekListener);
+        radioGr.setOnCheckedChangeListener(radioListener);
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
 
-        seekWin.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                textWin.setText(String.valueOf(progress));
-                progressWin = progress;
-            }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-
-        //TODO Aggiungere condizione getExtras per differenziare se si arriva da add device o da main
-        //TODO se si arriva da add device prendere il tipo sensore
         //TODO se si arriva da main è una modifica, cambiare testo save in update
     }
 
@@ -172,43 +210,49 @@ public class ConfigurationActivity extends Activity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.Conf_load_conf:
+                return true;
+            case R.id.Conf_default_values:
+                setDefaultValues();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+
+    /*@Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.Conf_radioMill:{
+
+            }
+        }
+    }*/
+
     public void onButtonSaveClicked(View view) {
 
-        long interval = 1000;
+        long interval = DEFAULT_INTERVAL;
 
-        int window = 1;// = 1;
+        int window = DEFAULT_WINDOW;
 
         try {
 
-            if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioMill) {
-                interval = seekSamp.getProgress();
-            }
-            else if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioSec) {
-                interval = seekSamp.getProgress() * 1000;
-            }
-            else if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioMin) {
-                interval = seekSamp.getProgress() * 60000;
-            }
-            else if (radioGr.getCheckedRadioButtonId() == R.id.Conf_radioHour) {
-                interval = seekSamp.getProgress() * 3600000;
-            }
-
+            interval = getMillis(seekSamp.getProgress(), radioGr.getCheckedRadioButtonId());
             window = seekWin.getProgress();
         } catch (Exception e) {
-            interval = 1000L;
+            interval = DEFAULT_INTERVAL;
         }
         // TODO: Non è stato fatto sec/min
 
+        if (!isAModify) {
+            configuration = new ServiceManager.ServiceComponent.Configuration();
+        }
+
         configuration.setInterval(interval);
         configuration.setWindow(window);
-        configuration.setConfigurationName("Default_Name");
+        configuration.setConfigurationName(confName.getText().toString());
         //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path
         configuration.setAttachGPS(gpsSwitch.isChecked());
 
@@ -224,6 +268,7 @@ public class ConfigurationActivity extends Activity {
 
         Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();
         Intent intentMain = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intentMain);
     }
 
@@ -234,10 +279,91 @@ public class ConfigurationActivity extends Activity {
         configuration.setConfigurationName(serviceComponent.getDysplayName());
         ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(configuration);
         Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
-        Intent intentMain = new Intent(this, MainActivity.class);
-        startActivity(intentMain);
+        Intent intent=new Intent(this,MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
 
     }
+
+    private void setDefaultValues(){
+        confName.setText(DEFAULT_NAME);
+        radioGr.check(R.id.Conf_radioSec);
+        progressSamp = getProgressSeekSamp((int)DEFAULT_INTERVAL,R.id.Conf_radioSec);
+        seekSamp.setMax(MAX_SEEK_SEC-1);
+        seekSamp.setProgress((int)progressSamp);
+        textSamp.setText(String.valueOf(getTextSampValue((int) progressSamp, radioGr.getCheckedRadioButtonId())));
+        seekWin.setProgress(DEFAULT_WINDOW);
+        textWin.setText(Integer.toString(DEFAULT_WINDOW));
+    }
+
+    private int getProgressSeekSamp(int millis, int radioId){
+        switch (radioId){
+            case R.id.Conf_radioMill:
+                seekSamp.setMax(maxSeekSampMillis/STEP_MILLIS);
+                return (millis-usedMinMillis)/STEP_MILLIS;
+            case R.id.Conf_radioSec:
+                seekSamp.setMax(MAX_SEEK_SEC-1);
+                return (millis/MILLIS_IN_SEC)-1;
+            case R.id.Conf_radioMin:
+                seekSamp.setMax(MAX_SEEK_MIN-1);
+                return (millis/MILLIS_IN_MIN)-1;
+            case R.id.Conf_radioHour:
+                seekSamp.setMax(MAX_SEEK_HOUR-1);
+                return (millis/MILLIS_IN_HOUR)-1;
+        }
+        return 0;
+    }
+
+    private int getRightRadio(long millis){
+        // MILLISECONDS
+        if (millis < MILLIS_IN_SEC) {
+            return R.id.Conf_radioMill;
+        }
+        // SECONDS
+        else if ((millis >= MILLIS_IN_SEC) && (millis < MILLIS_IN_MIN)) {
+            return R.id.Conf_radioSec;
+        }
+        // MINUTES
+        else if ((millis >= MILLIS_IN_MIN) && (millis < MILLIS_IN_HOUR)) {
+            return R.id.Conf_radioMin;
+        }
+        // HOURS
+        else if (millis > MILLIS_IN_HOUR) {
+            return R.id.Conf_radioHour;
+        }
+        //Default
+        return R.id.Conf_radioSec;
+    }
+
+    private long getMillis(int progress, int radioId){
+        switch (radioId){
+            case R.id.Conf_radioMill:
+                return progress*STEP_MILLIS+usedMinMillis;
+            case R.id.Conf_radioSec:
+                return (progress+1)*MILLIS_IN_SEC;
+            case R.id.Conf_radioMin:
+                return (progress+1)*MILLIS_IN_MIN;
+            case R.id.Conf_radioHour:
+                return (progress+1)*MILLIS_IN_HOUR;
+        }
+        return DEFAULT_INTERVAL;
+    }
+
+    private long getTextSampValue(int progress, int radioId){
+        switch (radioId){
+            case R.id.Conf_radioMill:
+                return progress*STEP_MILLIS+usedMinMillis;
+            case R.id.Conf_radioSec:
+                return (progress+1);
+            case R.id.Conf_radioMin:
+                return (progress+1);
+            case R.id.Conf_radioHour:
+                return (progress+1);
+        }
+        return 1;
+    }
+
+
 
     //TODO aggiungere metodo saveOrUpdate() che differenzia a seconda di getextras (persare se settare una variabile invece che usare 2 volte getextras
     //TODO implementare scrittura o modifica su stringa database

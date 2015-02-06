@@ -42,5 +42,7 @@
     <string name="title_activity_register">Registration</string>
     <string name="Conf_ms">millis</string>
     <string name="conf_hour">hour</string>
+    <string name="restore_defaults">Restore default</string>
+    <string name="load_conf">Load</string>
 
 </resources>

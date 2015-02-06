@@ -37,9 +37,10 @@ public class ServiceManager {
 
     SensormindAPI API = null;
 
+    Context cn;
     SensorManager sensorManager;
     private boolean scanDone = false;
-    Context cn;
+
 
     private boolean USE_DB = false;
     DbHelper dbHelper;
@@ -58,6 +59,8 @@ public class ServiceManager {
         return mInstance;
     }
 
+
+    //TODO Gildo, ho dovuto rimuovere static perchè ho inserito qua il calcolo di minDelay, una alternativa potrebbe essere di usare il setMinDelay da fuori, ma era lunga e non avevo voglia....
     public static class ServiceComponent {
         // Object to describe a component
         private String dysplayName;
@@ -65,6 +68,7 @@ public class ServiceManager {
         private int availableImageID;
         private int componentImageID;
         private int sensorType;
+        private int minDelay;
         private String defaultPath;
         boolean logging = false;
 
@@ -199,6 +203,14 @@ public class ServiceManager {
             return dysplayName;
         }
 
+        public int getMinDelay() {
+            return minDelay;
+        }
+
+        public void setMinDelay(int minDelay) {
+            this.minDelay = minDelay;
+        }
+
         public boolean getExists() {
             return exists;
         }
@@ -288,7 +300,7 @@ public class ServiceManager {
     @Deprecated
     public int initializeFromDB_old() {
         // TODO: Da implementare
-        // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
+        // TODO: recuperare la feed list da database?
         USE_DB = true;
         dbHelper = new DbHelper(cn);
         int numConf = dbHelper.numberOfConfigurations();
@@ -371,6 +383,13 @@ public class ServiceManager {
         }
     }
 
+    private int getListIndexFromSensorType (List<ServiceComponent> list, int sensorType){
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).getSensorType()== sensorType) return i;
+        }
+        return -1;
+    }
+
     public List<ServiceComponent> getServiceComponentActiveList() {
         return serviceComponentActiveList;
     }
@@ -426,6 +445,7 @@ public class ServiceManager {
     public int populateServiceComponentList() {
         // Discovery Components
         int numAvailableServices = 0;
+        int index = -1;
 
         sensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
 
@@ -433,6 +453,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", false));
@@ -440,6 +464,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
             serviceComponentList.add(new ServiceComponent("Accelerometer", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_ACCELEROMETER);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Accelerometer", false));
@@ -447,6 +475,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null) {
             serviceComponentList.add(new ServiceComponent("Temperature", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_AMBIENT_TEMPERATURE);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Temperature", false));
@@ -455,6 +487,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             serviceComponentList.add(new ServiceComponent("Gyroscope", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Gyroscope", false));
@@ -462,6 +498,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
             serviceComponentList.add(new ServiceComponent("Light Sensor", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_LIGHT);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Light Sensor", true));
@@ -469,6 +509,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null) {
             serviceComponentList.add(new ServiceComponent("Proximity Sensor", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_PROXIMITY);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Proximity Sensor", false));
@@ -476,6 +520,10 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null) {
             serviceComponentList.add(new ServiceComponent("Pressure Sensor", true));
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_PRESSURE);
+            if (index > -1) {
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE).getMinDelay());
+            }
             numAvailableServices++;
         } else {
             serviceComponentList.add(new ServiceComponent("Pressure Sensor", false));
@@ -580,14 +628,12 @@ public class ServiceManager {
 
     public void removeConfigurationServiceToDB(ServiceComponent.Configuration configuration) {
         if (USE_DB) {
-            // TODO: Aggiungere anche il tipo di sensore!
             dbHelper.deleteConfigurationById(configuration.getDbId());
         }
     }
     @Deprecated
     public void removeConfigurationServiceToDB_old(ServiceComponent component, ServiceComponent.Configuration configuration) {
         if (USE_DB) {
-            // TODO: Aggiungere anche il tipo di sensore!
             dbHelper.deleteConfigurationByName(configuration.getConfigurationName());
         }
     }

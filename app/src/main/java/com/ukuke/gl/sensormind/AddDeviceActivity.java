@@ -57,6 +57,7 @@ public class AddDeviceActivity extends Activity {
     public void onBackPressed(){
         //Your code here
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
