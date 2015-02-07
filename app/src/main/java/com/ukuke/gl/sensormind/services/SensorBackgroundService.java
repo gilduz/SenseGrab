@@ -62,10 +62,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         // get sensor manager on starting the service
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        // have a default sensor configured
+        Bundle args = null;
+
         int sensorType = Sensor.TYPE_LIGHT;
 
-        Bundle args = intent.getExtras();
+        try {
+            args = intent.getExtras();
+        }catch (Exception e) {}
 
         boolean launchSensorAcquisition = false;
         int window = 1;
