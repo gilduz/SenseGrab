@@ -351,7 +351,4 @@ public class MainActivity extends Activity {
             initEverything();
         }
     }
-
-
-
 }
