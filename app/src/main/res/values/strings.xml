@@ -35,8 +35,8 @@
     <string name="conf_window">Window amplitude</string> <!-- TODO trovare nome migliore -->
     <string name="conf_gps">Attach GPS location</string>
     <string name="defaultNum5">5</string>
-    <string name="conf_saveButton">Save</string>
-    <string name="conf_deleteButton">Delete</string>
+    <string name="conf_saveButton">Launch</string>
+    <string name="conf_deactivateButton">Stop</string>
     <string name="conf_sec">sec</string>
     <string name="conf_min">min</string>
 
@@ -44,6 +44,8 @@
     <string name="conf_hour">hour</string>
     <string name="restore_defaults">Restore default</string>
     <string name="conf_load">Load</string>
-    <string name="conf_deactivate">Deactivate</string>
+    <string name="conf_delete">Delete</string>
+    <string name="conf_save_no_run">Save and no launch</string>
+    <string name="add_device_text">Item checked are already sampling</string>
 
 </resources>

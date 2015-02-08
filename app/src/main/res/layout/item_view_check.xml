@@ -23,11 +23,23 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Gyroscope"
             android:id="@+id/item_textView"
-            android:layout_marginLeft="35dp"
-            android:layout_marginStart="35dp"
+            android:layout_marginLeft="28dp"
+            android:layout_marginStart="28dp"
             android:layout_alignBottom="@+id/item_imageView"
             android:layout_toRightOf="@+id/item_imageView"
             android:layout_toEndOf="@+id/item_imageView" />
 
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/item_checkBox"
+            android:layout_marginRight="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_alignBottom="@+id/item_textView"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:clickable="false"
+            android:focusable="false"
+            android:checked="false"/>
     </RelativeLayout>
 </LinearLayout>

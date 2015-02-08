@@ -196,20 +196,20 @@
         android:minWidth="100sp"
         android:text="@string/conf_saveButton"
         style="?android:buttonBarButtonStyle"
-        android:onClick="onButtonSaveClicked" />
+        android:onClick="onButtonLaunchClicked" />
 
     <Button
-        android:id="@+id/Conf_delete"
+        android:id="@+id/Conf_deactivate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:maxWidth="150sp"
         android:minWidth="100sp"
-        android:text="@string/conf_deleteButton"
+        android:text="@string/conf_deactivateButton"
         style="?android:buttonBarButtonStyle"
         android:layout_alignParentBottom="true"
-        android:onClick="onButtonDeleteClicked" />
+        android:onClick="onButtonDectivateClicked" />
 
 
 </RelativeLayout>

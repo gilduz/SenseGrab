@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -101,7 +102,7 @@ public class AddDeviceActivity extends Activity {
         public View getView(int position, View convertView, ViewGroup parent) {
             View itemView = convertView;
             if (itemView == null) {
-                itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
+                itemView = getLayoutInflater().inflate(R.layout.item_view_check, parent, false);
             }
 
             ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getServiceComponentAvailableList().get(position);
@@ -111,6 +112,9 @@ public class AddDeviceActivity extends Activity {
 
             TextView myText = (TextView) itemView.findViewById(R.id.item_textView);
             myText.setText(currentServiceComponent.getDysplayName());
+
+            CheckBox checkBox = (CheckBox) itemView.findViewById(R.id.item_checkBox);
+            checkBox.setChecked(currentServiceComponent.getActiveConfiguration()!=null);
 
             return itemView;
             //return super.getView(position, convertView, parent);
