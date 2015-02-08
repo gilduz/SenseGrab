@@ -56,9 +56,11 @@ public class AddDeviceActivity extends Activity {
     @Override
     public void onBackPressed(){
         //Your code here
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        /*Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(intent);*/
+        finish();
     }
 
     private void registerClickCallback() {
@@ -76,8 +78,10 @@ public class AddDeviceActivity extends Activity {
 
                 Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
                 intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position).getSensorType());
-
+                //intent.putExtra(MODIFY_CONFIGURATION,false);
+                //intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID,-1);
                 startActivity(intent);
+                finish();
             }
         });
     }

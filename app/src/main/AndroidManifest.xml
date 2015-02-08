@@ -37,7 +37,8 @@
         <activity
             android:name=".AddDeviceActivity"
             android:label="@string/title_activity_add_device"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:noHistory="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
@@ -51,7 +52,8 @@
         <activity
             android:name=".ConfigurationActivity"
             android:label="@string/title_activity_configuration"
-            android:parentActivityName=".AddDeviceActivity" >
+            android:parentActivityName=".AddDeviceActivity"
+            android:noHistory="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
@@ -59,7 +61,8 @@
         <activity
             android:name=".LogInActivity"
             android:label="@string/title_activity_log_in"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:noHistory="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
@@ -67,7 +70,8 @@
         <activity
             android:name=".RegisterActivity"
             android:label="@string/title_activity_register"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:noHistory="true">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.RegisterActivity" />
@@ -86,14 +90,14 @@
             </intent-filter>
         </receiver>
 
-        <activity
+        <!--<activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
-        </activity>
+        </activity>-->
     </application>
 
 </manifest>

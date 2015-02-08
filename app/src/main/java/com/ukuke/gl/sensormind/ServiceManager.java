@@ -120,6 +120,15 @@ public class ServiceManager {
             return null;
         }
 
+        public Configuration getConfigurationByDbId(int dbId) {
+            for (int i = 0; i < configurationList.size(); i++) {
+                if (configurationList.get(i).getDbId() == dbId) {
+                    return configurationList.get(i);
+                }
+            }
+            return null;
+        }
+
         public int getConfigurationSize() {
             return configurationList.size();
         }
@@ -127,6 +136,16 @@ public class ServiceManager {
         public int removeConfiguration(String configurationName) {
             for (int i = 0; i < configurationList.size(); i++) {
                 if (configurationList.get(i).getConfigurationName() == configurationName) {
+                    configurationList.remove(i);
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public int removeConfigurationByDbId(int dbId) {
+            for (int i = 0; i < configurationList.size(); i++) {
+                if (configurationList.get(i).getDbId() == dbId) {
                     configurationList.remove(i);
                     return i;
                 }
@@ -619,7 +638,7 @@ public class ServiceManager {
         }
     }
 
-    public void addConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration, boolean isActive) {
+    public void addOrUpdateConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration, boolean isActive) {
         if (USE_DB) {
 //            dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
             dbHelper.addOrUpdateConfiguration(configuration, component, isActive);

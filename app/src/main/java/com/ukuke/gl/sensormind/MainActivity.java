@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Messenger;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.SharedPreferences;
@@ -40,8 +41,7 @@ public class MainActivity extends Activity {
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
-
-    private boolean doubleBackToExitPressedOnce;
+    private static long back_pressed;
     String username;
     String password;
 
@@ -182,22 +182,11 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
-            }
-        }, 2000);
+    public void onBackPressed()
+    {
+        if (back_pressed + 2000 > System.currentTimeMillis()) super.onBackPressed();
+        else Toast.makeText(getBaseContext(), "Press once again to exit!", Toast.LENGTH_SHORT).show();
+        back_pressed = System.currentTimeMillis();
     }
 
     @Override
@@ -229,11 +218,12 @@ public class MainActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
-                // Come back to Main Activity
+                // Go to Configuration Activity to modify current active configuration
                 Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
                 intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getSensorType());
                 //intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
                 intent.putExtra(AddDeviceActivity.MODIFY_CONFIGURATION, true);
+                intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID,ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getActiveConfiguration().getDbId());
                 startActivity(intent);
             }
         });

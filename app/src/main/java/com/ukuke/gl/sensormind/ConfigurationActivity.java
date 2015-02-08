@@ -1,6 +1,8 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.os.Bundle;
@@ -8,9 +10,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -23,22 +30,21 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private static final long DEFAULT_INTERVAL = 1000;
     private static final int DEFAULT_WINDOW = 2;
     private static final int STEP_MILLIS = 50;
-    private static final String DEFAULT_NAME = "Default_Name";
+    private static final int MIN_MILLIS = 250;
+
     //Do not edit!
     private static final int MILLIS_IN_SEC = 1000;
     private static final int MILLIS_IN_MIN = 60*MILLIS_IN_SEC;
     private static final int MILLIS_IN_HOUR = 60*MILLIS_IN_MIN;
-    private static final int MIN_MILLIS = 250;
-    private int relativeMinMilliS;//related to each sensor, going close to this value forces streaming
-    private int usedMinMillis;
     private static final int MAX_SEEK_MILLIS = MILLIS_IN_SEC-STEP_MILLIS;
-    private int maxSeekSampMillis;
     private static final int MAX_SEEK_SEC = 59;
     private static final int MAX_SEEK_MIN = 59;
     private static final int MAX_SEEK_HOUR = 24;
-
     private static String TAG = ConfigurationActivity.class.getSimpleName();
 
+    // EXTRAS VALUES
+    public final static String CONFIGURATION_DB_ID = "configuration_db_id";
+    private String DEFAULT_NAME = "Default_Name";
 
     // Database
     //DbHelper dbHelper;
@@ -53,37 +59,34 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     Switch gpsSwitch;
     Button buttonDelete;
     Button buttonSave;
+    RelativeLayout windowSetting;
+    Menu menu;
+    MenuItem load = null;
+    MenuItem deactivate = null;
 
     // Initialize and set default value for seekBars
     long progressSamp = DEFAULT_INTERVAL;
     int progressWin = DEFAULT_WINDOW;
 
-    // Gildo
+    // Variables
     private Intent intent;
     private int typeSensor;
     private boolean logging = true;
     private ServiceManager.ServiceComponent serviceComponent;
     private ServiceManager.ServiceComponent.Configuration configuration;
     private boolean isAModify;
+    private int dbId;
+    private int usedMinMillis;
+    public int activeConfigurationId = -1;
+    private int maxSeekSampMillis;
+
+    // Others
+    AlertDialog alertLoadList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_configuration);
-
-        //-----------------------EXTRAS------------------------
-        intent = getIntent();
-        typeSensor = intent.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
-        isAModify = intent.getBooleanExtra(AddDeviceActivity.MODIFY_CONFIGURATION, false);
-
-        serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
-        relativeMinMilliS = serviceComponent.getMinDelay()/1000;
-        if (relativeMinMilliS >STEP_MILLIS){
-            usedMinMillis = (int) Math.ceil((relativeMinMilliS /1000)/STEP_MILLIS);
-        } else usedMinMillis = MIN_MILLIS;
-        maxSeekSampMillis = MAX_SEEK_MILLIS-usedMinMillis;
-
-        setTitle(serviceComponent.getDysplayName());
 
         //-----------------------GRAPHIC ELEMENTS------------------------
         // seek bars and relative value views
@@ -91,6 +94,9 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         textSamp = (TextView) findViewById(R.id.Conf_viewSeekbarValue);
         seekWin = (SeekBar) findViewById(R.id.Conf_Win_seekBar);
         textWin = (TextView) findViewById(R.id.Conf_viewWinSeekbarValue);
+
+        // Relative layout
+        windowSetting = (RelativeLayout) findViewById(R.id.Conf_windowSetting);
 
         // Name
         confName = (EditText) findViewById(R.id.Conf_InsertName);
@@ -130,7 +136,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         };
-
+        //Radiogroup listener
         RadioGroup.OnCheckedChangeListener radioListener = new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -139,6 +145,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         seekSamp.setMax(maxSeekSampMillis/STEP_MILLIS);
                         break;
                     case R.id.Conf_radioSec:
+
                         seekSamp.setMax(MAX_SEEK_SEC-1);
                         break;
                     case R.id.Conf_radioMin:
@@ -152,53 +159,79 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             }
         };
 
+        //-----------------------EXTRAS------------------------
+        intent = getIntent();
+        typeSensor = intent.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
+        isAModify = intent.getBooleanExtra(AddDeviceActivity.MODIFY_CONFIGURATION, false);// if it's not a modify set the default value false
+        dbId = intent.getIntExtra(CONFIGURATION_DB_ID,-1);// if it's a new configuration set dbId with the default value -1
 
+        //Set values from extras
+        serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
+        try {
+            activeConfigurationId = serviceComponent.getActiveConfiguration().getDbId();
+        } catch (Exception e) {}
+        int relativeMinMicroS = serviceComponent.getMinDelay();
+        if (relativeMinMicroS > 0){
+            usedMinMillis = (int) Math.ceil((((double)relativeMinMicroS)/ 1000)/STEP_MILLIS)*STEP_MILLIS;
+            Log.d(TAG,serviceComponent.getDysplayName()+" relativeMinMicros: "+relativeMinMicroS);
+            Log.d(TAG,"Math.ceil((relativeMinMicroS)/ 1000): "+Math.ceil(((double)relativeMinMicroS)/ 1000));
+            Log.d(TAG,"Math.ceil(((relativeMinMicroS)/ 1000)/STEP_MILLIS): "+Math.ceil((((double)relativeMinMicroS)/ 1000)/STEP_MILLIS));
+            Log.d(TAG,"Math.ceil(((relativeMinMicroS)/ 1000)/STEP_MILLIS)*STEP_MILLIS: "+Math.ceil((((double)relativeMinMicroS)/ 1000)/STEP_MILLIS)*STEP_MILLIS);
+            Log.d(TAG,serviceComponent.getDysplayName()+" usedMinMillis: "+usedMinMillis);
+        } else usedMinMillis = MIN_MILLIS;
+        maxSeekSampMillis = MAX_SEEK_MILLIS-usedMinMillis;
 
-        //TODO Aggiungere nascondino window, spiegare che minchia è window, settare i valori di default e i valori massimi per ogni tipo di sensore. Puzzi un po'
+        setTitle(serviceComponent.getDysplayName());
+        DEFAULT_NAME = serviceComponent.getDysplayName();
+
+        // Hide window setting for not streaming sensors
+        switch (typeSensor){
+            // Not streaming sensors
+            case Sensor.TYPE_LIGHT:
+            case Sensor.TYPE_PRESSURE:
+            case Sensor.TYPE_PROXIMITY:
+            case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                windowSetting.setVisibility(View.GONE);
+                break;
+            default:
+                break;
+        }
+
+        //TODO aggiungere il testo dentro a window per spiegare cos'è
 
         if (!isAModify) {
             //NEW CONFIGURATION
             buttonDelete.setVisibility(View.GONE);
             //configuration = new ServiceManager.ServiceComponent.Configuration();
             setDefaultValues();
-
-
         } else {
             //MODIFYING OLD CONFIGURATION
-            configuration = serviceComponent.getActiveConfiguration(); // TODO Passare DbId tramite extras per gestire molteplici configurazioni
-            confName.setText(serviceComponent.getActiveConfiguration().getConfigurationName());
-
-            long millis = serviceComponent.getActiveConfiguration().getInterval();
-            Log.d(TAG,"L'intervallo della configurazione attiva è: "+millis+" millisecondi");
-            int rightRadio = getRightRadio(millis);
-            int sampSeekValue = getProgressSeekSamp((int)millis,rightRadio);
-            radioGr.check(rightRadio);
-            seekSamp.setProgress(sampSeekValue);
-            textSamp.setText(Long.toString(getTextSampValue(sampSeekValue,rightRadio)));
-            seekWin.setProgress(serviceComponent.getActiveConfiguration().getWindow());
-            textWin.setText(Long.toString(serviceComponent.getActiveConfiguration().getWindow()));
-
-            confName.setText(serviceComponent.getActiveConfiguration().getConfigurationName());
-            gpsSwitch.setChecked(serviceComponent.getActiveConfiguration().getAttachGPS());
+            setValuesFromConfigurationById(dbId);
         }
 
-
-        // Set values from seekBars
+        // Set Listeners
         seekSamp.setOnSeekBarChangeListener(seekListener);
         seekWin.setOnSeekBarChangeListener(seekListener);
         radioGr.setOnCheckedChangeListener(radioListener);
 
-
-
-
-        //TODO se si arriva da main è una modifica, cambiare testo save in update
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        this.menu = menu;
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_configuration, menu);
+        // Hiding Load if necessary
+        load = menu.findItem(R.id.Conf_load_conf);
+        int size = serviceComponent.configurationList.size();
+        if (size<1 || (size == 1 && isAModify)) {
+            load.setVisible(false);
+        }
+        // Hiding Deactivate if necessary
+        deactivate = menu.findItem(R.id.Conf_deactivate);
+        if (dbId == activeConfigurationId && isAModify){
+            deactivate.setVisible(true);
+        } else deactivate.setVisible(false);
         return true;
     }
 
@@ -212,24 +245,26 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.Conf_load_conf:
+                alertLoadList();
                 return true;
             case R.id.Conf_default_values:
                 setDefaultValues();
+                return true;
+            case R.id.Conf_deactivate:
+                ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
+                ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
+                ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+                serviceComponent.setActiveConfiguration(null);
+                Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
+                activeConfigurationId=-1;
+                deactivate.setVisible(false);
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-
-    /*@Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.Conf_radioMill:{
-
-            }
-        }
-    }*/
+    //---------------------------SAVE---------------------------------
 
     public void onButtonSaveClicked(View view) {
 
@@ -238,51 +273,150 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         int window = DEFAULT_WINDOW;
 
         try {
-
             interval = getMillis(seekSamp.getProgress(), radioGr.getCheckedRadioButtonId());
             window = seekWin.getProgress();
-        } catch (Exception e) {
-            interval = DEFAULT_INTERVAL;
-        }
-        // TODO: Non è stato fatto sec/min
+        } catch (Exception e) {}
 
         if (!isAModify) {
+            // it's a new configuration, let's create it
             configuration = new ServiceManager.ServiceComponent.Configuration();
+        } else {
+            // it's an old configuration, let's remove it from the list before re-adding it
+            serviceComponent.removeConfigurationByDbId(dbId);
         }
 
+        //Set configuration values
         configuration.setInterval(interval);
         configuration.setWindow(window);
         configuration.setConfigurationName(confName.getText().toString());
-        //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path
+        //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path?
         configuration.setAttachGPS(gpsSwitch.isChecked());
-
         configuration.setPath(serviceComponent.getDefaultPath());
-        serviceComponent.removeConfiguration(confName.getText().toString());
+        configuration.setDbId(dbId);
+
+        //Add configuration to the list
         serviceComponent.addConfiguration(configuration);
-        serviceComponent.setActiveConfiguration(configuration);
 
-        ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).addConfigurationServiceToDB(serviceComponent, configuration, true); // TODO Gestire l'attivo o no
+        //Alert for activation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Do you want to start sampling with this configuration?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //The user clicks Yes
+                        //Deactivating old active configuration
+                        if (dbId != activeConfigurationId && activeConfigurationId != -1) {
+                            ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
+                        }
 
+                        //Activating current configuration
+                        serviceComponent.setActiveConfiguration(configuration);
+                        ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
+                        ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
+                        ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
 
-        Toast.makeText(this, "Service added", Toast.LENGTH_LONG).show();
-        Intent intentMain = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intentMain);
+                        Toast.makeText(getApplicationContext(), "Service added", Toast.LENGTH_LONG).show();
+
+                        backToMain();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // The user clicks No
+                        ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, false);
+
+                        Toast.makeText(getApplicationContext(), "Configuration saved", Toast.LENGTH_LONG).show();
+
+                        backToMain();
+                    }
+                });
+        AlertDialog d = builder.create();
+        d.setTitle("Saving configuration");
+        d.show();
     }
 
-    public void onButtonDeleteClicked(View view) {
-        ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
-        //TODO: Sistema qui sotto!
-        configuration.setConfigurationName(serviceComponent.getDysplayName());
-        ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(configuration);
-        Toast.makeText(this, "Service removed", Toast.LENGTH_LONG).show();
-        Intent intent=new Intent(this,MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+    //---------------------------DELETE---------------------------------
 
+    public void onButtonDeleteClicked(View view) {
+        //Alert for confirmation
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure to delete this configuration? (this cannot be undone)")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //The user click Yes
+                        if (dbId == activeConfigurationId){
+                            //I'm deleting the active configuration, so stop the service
+                            ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
+                            ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+                            serviceComponent.setActiveConfiguration(null);
+                            Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
+                        }
+
+                        //Removing from the list and from Db
+                        serviceComponent.removeConfigurationByDbId(dbId);
+                        ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(configuration);
+
+                        backToMain();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                    }
+                });
+        AlertDialog d = builder.create();
+        d.setTitle("Deleting configuration");
+        d.show();
+
+    }
+
+    private void alertLoadList() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        ListView list = new ListView(getApplicationContext());
+        list.setAdapter(new ConfigurationListAdapter());
+        builder.setTitle("Load saved configuration");
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (alertLoadList.isShowing()) {
+                    alertLoadList.dismiss();
+                }
+                isAModify = true;
+                configuration = serviceComponent.configurationList.get(position);
+                dbId = configuration.getDbId();
+                setValuesFromConfigurationById(dbId);
+                if (dbId == activeConfigurationId){ // In this case i have to show the menuitem as visible recreating the menu
+                    deactivate.setVisible(true);
+                }
+                Toast.makeText(getApplicationContext(), "Loaded configuration: " +
+                        configuration.getConfigurationName(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setView(list);
+        builder.setNegativeButton("cancel",null);
+        alertLoadList = builder.create();
+        alertLoadList.show();
+    }
+
+    private class ConfigurationListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent.Configuration> {
+        public ConfigurationListAdapter() {
+            super(getApplicationContext(), R.layout.alert_item_view, serviceComponent.configurationList);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View itemView = convertView;
+            if (itemView == null) {
+                itemView = getLayoutInflater().inflate(R.layout.alert_item_view, parent, false);
+            }
+
+            ServiceManager.ServiceComponent.Configuration currentConf = serviceComponent.configurationList.get(position);
+
+            TextView myText = (TextView) itemView.findViewById(R.id.item_alertTextView);
+            myText.setText(currentConf.getConfigurationName());
+
+            return itemView;
+            //return super.getView(position, convertView, parent);
+        }
     }
 
     private void setDefaultValues(){
@@ -294,6 +428,29 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         textSamp.setText(String.valueOf(getTextSampValue((int) progressSamp, radioGr.getCheckedRadioButtonId())));
         seekWin.setProgress(DEFAULT_WINDOW);
         textWin.setText(Integer.toString(DEFAULT_WINDOW));
+    }
+
+    private void setValuesFromConfigurationById (int DbId){
+        if (DbId > -1 && serviceComponent.getConfigurationByDbId(DbId) != null) {
+            configuration = serviceComponent.getConfigurationByDbId(DbId);
+        } else configuration = serviceComponent.getActiveConfiguration();
+
+        if (configuration!=null) {
+            confName.setText(configuration.getConfigurationName());
+
+            long millis = configuration.getInterval();
+            //Log.d(TAG,"L'intervallo della configurazione attiva è: "+millis+" millisecondi");
+            int rightRadio = getRightRadio(millis);
+            int sampSeekValue = getProgressSeekSamp((int) millis, rightRadio);
+            radioGr.check(rightRadio);
+            seekSamp.setProgress(sampSeekValue);
+            textSamp.setText(Long.toString(getTextSampValue(sampSeekValue, rightRadio)));
+            seekWin.setProgress(configuration.getWindow());
+            textWin.setText(Long.toString(configuration.getWindow()));
+
+            confName.setText(configuration.getConfigurationName());
+            gpsSwitch.setChecked(configuration.getAttachGPS());
+        } else setDefaultValues();
     }
 
     private int getProgressSeekSamp(int millis, int radioId){
@@ -363,11 +520,12 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         return 1;
     }
 
-
-
-    //TODO aggiungere metodo saveOrUpdate() che differenzia a seconda di getextras (persare se settare una variabile invece che usare 2 volte getextras
-    //TODO implementare scrittura o modifica su stringa database
-
-    //TODO aggiungere metodo delete con alert per confermare, implementare cancellazione riga dbHelper
-
+    private void backToMain(){
+        //Back to main
+        Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(intent);
+        finish();
+    }
 }

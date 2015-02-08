@@ -25,7 +25,8 @@
     <string name="action_log_in">Login</string>
     <string name="action_settings">Settings</string>
     <string name="action_logout">Logout</string>
-
+    <string name="title_activity_log_in">Login</string>
+    <string name="title_activity_register">Registration</string>
 
     <!-- Configuration Activity -->
     <string name="conf_help">Set up a name for this sampling configuration.\nRemember to use different names for each configuration.</string>
@@ -38,11 +39,11 @@
     <string name="conf_deleteButton">Delete</string>
     <string name="conf_sec">sec</string>
     <string name="conf_min">min</string>
-    <string name="title_activity_log_in">Login</string>
-    <string name="title_activity_register">Registration</string>
-    <string name="Conf_ms">millis</string>
+
+    <string name="conf_ms">millis</string>
     <string name="conf_hour">hour</string>
     <string name="restore_defaults">Restore default</string>
-    <string name="load_conf">Load</string>
+    <string name="conf_load">Load</string>
+    <string name="conf_deactivate">Deactivate</string>
 
 </resources>
