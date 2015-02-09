@@ -15,6 +15,7 @@ import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.ukuke.gl.sensormind.DataDbHelper;
@@ -23,6 +24,8 @@ import com.ukuke.gl.sensormind.support.DataSample;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.android.gms.location.ActivityRecognitionResult;
+import com.google.android.gms.location.DetectedActivity;
 
 public class SensorBackgroundService extends Service implements SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -31,7 +34,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_WINDOW = "num_samples";
     public static final String KEY_ATTACH_GPS = "attach_gps";
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
-    public static final String KEY_PERFORM_UPLOAD = "perform_upload";
     public static final String KEY_FLUENT_SAMPLING = "fluent_sampling";
     public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
@@ -56,6 +58,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private Double lastLongitude;
     private boolean attachGPS = true;
     private LocationRequest mLocationRequest; // Se si vuole implementare....
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -106,6 +109,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
 
         }
+
+
 
         //TODO: Bisognerebbe aggiornare la posizione in background con asynktask
         // Se voglio aggiungere la posizione ed è passato l'intervallo minimo per l'aggiornamento
@@ -271,6 +276,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
+                //.addApi(ActivityRecognition.API)
                 .build();
     }
 
@@ -280,6 +286,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     }
 
     public void updateLocation() {
+
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             lastLatitude = mLastLocation.getLatitude() + TRUCCA_COORDINATE;
