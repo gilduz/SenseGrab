@@ -29,23 +29,24 @@
     <string name="title_activity_register">Registration</string>
 
     <!-- Configuration Activity -->
-    <string name="conf_help">Set up a name for this sampling configuration.\nRemember to use different names for each configuration.</string>
+    <!-- <string name="conf_help">Set up a name for this sampling configuration.\nRemember to use different names for each configuration.</string> -->
+    <string name="conf_help">Configure the service</string>
     <string name="conf_name">Name </string>
     <string name="conf_samp">Sampling time</string>
     <string name="conf_window">Window amplitude</string> <!-- TODO trovare nome migliore -->
-    <string name="conf_gps">Attach GPS location</string>
+    <string name="conf_gps">Attach location</string>
     <string name="defaultNum5">5</string>
-    <string name="conf_saveButton">Launch</string>
+    <string name="conf_saveButton">Start</string>
     <string name="conf_deactivateButton">Stop</string>
     <string name="conf_sec">sec</string>
     <string name="conf_min">min</string>
 
     <string name="conf_ms">millis</string>
     <string name="conf_hour">hour</string>
-    <string name="restore_defaults">Restore default</string>
+    <string name="restore_defaults">Restore</string>
     <string name="conf_load">Load</string>
     <string name="conf_delete">Delete</string>
-    <string name="conf_save_no_run">Save and no launch</string>
+    <string name="conf_save_no_run">Save</string>
     <string name="add_device_text">Item checked are already sampling</string>
 
 </resources>

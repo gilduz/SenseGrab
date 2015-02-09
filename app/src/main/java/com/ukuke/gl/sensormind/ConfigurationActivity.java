@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.os.Bundle;
 import android.view.Menu;
@@ -78,6 +79,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private int usedMinMillis;
     public int activeConfigurationId = -1;
     private int maxSeekSampMillis;
+    private SharedPreferences prefs;
 
     // Others
     AlertDialog alertLoadList;
@@ -161,7 +163,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         intent = getIntent();
         typeSensor = intent.getIntExtra(AddDeviceActivity.TYPE_SENSOR, Sensor.TYPE_LIGHT);
         isAModify = intent.getBooleanExtra(AddDeviceActivity.MODIFY_CONFIGURATION, false);// if it's not a modify set the default value false
-        dbId = intent.getIntExtra(CONFIGURATION_DB_ID,-1);// if it's a new configuration set dbId with the default value -1
+        dbId = intent.getIntExtra(CONFIGURATION_DB_ID, -1);// if it's a new configuration set dbId with the default value -1
+        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
         //Set values from extras
         serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
@@ -299,7 +302,9 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         //Activating current configuration
         serviceComponent.setActiveConfiguration(configuration);
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
+        if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
+            ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
+        }
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
 
         Toast.makeText(getApplicationContext(), "Service added", Toast.LENGTH_LONG).show();
@@ -426,9 +431,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String message;
         if (dbId == activeConfigurationId && isAModify) {
-            message = "This is current active configuration, if you want to save and launch click Launch;" +
-                    "/n saving now will stop acquisition, are you sure to stop and overwrite current configuration?";
-        } else message = "Are you sure to stop and overwrite current configuration without launching it?";
+            message = "Do you want to overwrite the current configuration?";
+            //message = "This is current active configuration, if you want to save and launch click Launch;" +
+            //        "/n saving now will stop acquisition, are you sure to stop and overwrite current configuration?";
+        } else message = "Do you want to overwrite the current configuration?\"";//"Are you sure to stop and overwrite current configuration without launching it?";
         builder.setMessage(message)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {

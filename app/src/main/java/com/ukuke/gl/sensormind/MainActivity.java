@@ -36,8 +36,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 3 * 60; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 10 * 60; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 1 * 60; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 2 * 60; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");

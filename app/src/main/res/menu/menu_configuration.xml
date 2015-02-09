@@ -5,9 +5,9 @@
     <item android:icon="@drawable/ic_action_collection"
         android:id="@+id/Conf_load_conf" android:title="@string/conf_load"
         android:orderInCategory="100" app:showAsAction="always" />
-    <item android:id="@+id/Conf_default_values" android:title="@string/restore_defaults"
-        android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/Conf_save_no_run" android:title="@string/conf_save_no_run"
+        android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/Conf_default_values" android:title="@string/restore_defaults"
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/Conf_delete" android:title="@string/conf_delete"
         android:orderInCategory="100" app:showAsAction="never" />

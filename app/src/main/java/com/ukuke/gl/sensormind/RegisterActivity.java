@@ -75,6 +75,7 @@ public class RegisterActivity extends Activity {
     private class logIn_asynk extends AsyncTask<String, Void, String> {
 
         @Override
+        //TODO Aggiungere il timezone
         protected String doInBackground(String... params) {
             SensormindAPI API = new SensormindAPI(editText_username.getText().toString(),editText_password.getText().toString());
             validRegistration = API.registerNewAccount(editText_firstname.getText().toString(), editText_lastname.getText().toString(), "55", editText_email.getText().toString());

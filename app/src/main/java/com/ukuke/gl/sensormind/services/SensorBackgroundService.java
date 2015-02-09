@@ -1,5 +1,6 @@
 package com.ukuke.gl.sensormind.services;
 
+import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -111,6 +112,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         if ((attachGPS) && (System.currentTimeMillis() > (timeOfLastLocationUpdateMs + INTERVAL_UPDATE_LOCATION_MS))) {
             updateLocation();
             timeOfLastLocationUpdateMs = System.currentTimeMillis();
+            flush(); // TODO è un test.... se funziona cambia il timer
         }
         ;
 
@@ -135,6 +137,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
         return START_STICKY;
+    }
+
+    @TargetApi(19)
+    private void flush() {
+        mSensorManager.flush(this);
     }
 
     @Override

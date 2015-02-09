@@ -448,7 +448,7 @@ public class MQTTService extends Service {
 
         }
         public void run() {
-        //    Log.d(TAG, "SONO NEL RUN!");
+            //    Log.d(TAG, "SONO NEL RUN!");
         }
     }
 
@@ -477,8 +477,8 @@ public class MQTTService extends Service {
         protected void onProgressUpdate(Void... values) {
         }
 
-        @Deprecated
-        private boolean publishMessage_DISACTIVATED(String path, String message) {
+        //@Deprecated
+        private boolean publishMessage(String path, String message) {
             boolean res = false;
             try {
                 MqttClient myC = connection.msgHandler.client;
@@ -487,7 +487,6 @@ public class MQTTService extends Service {
                 myC.publish(path, mess);
                 res = true;
                 Log.d(TAG, "Published topic: " + path);// + " : " + message);
-
                 //Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
             } catch (Exception e) {
                 Log.d(TAG, "Errore in publishMessage: " + e);
@@ -495,7 +494,7 @@ public class MQTTService extends Service {
             return res;
         }
 
-        private boolean publishMessage(String path, String message) {
+        private boolean publishMessage_DISACTIVATED(String path, String message) {
             boolean res = false;
             try {
 

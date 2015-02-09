@@ -40,6 +40,7 @@
             android:layout_alignParentEnd="true"
             android:clickable="false"
             android:focusable="false"
-            android:checked="false"/>
+            android:checked="false"
+            />
     </RelativeLayout>
 </LinearLayout>
