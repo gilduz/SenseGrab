@@ -48,5 +48,6 @@
     <string name="conf_delete">Delete</string>
     <string name="conf_save_no_run">Save</string>
     <string name="add_device_text">Item checked are already sampling</string>
+    <string name="conf_stream">Streaming</string>
 
 </resources>

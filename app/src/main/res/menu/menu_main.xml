@@ -7,9 +7,8 @@
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_logout" android:title="@string/action_logout"
         android:orderInCategory="100" app:showAsAction="never" />
-    <!--<item android:id="@+id/action_settings" android:title="@string/action_settings"
+    <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
-   -->
     <item android:id="@+id/action_test" android:title="@string/action_test"
         android:orderInCategory="100" app:showAsAction="never" />
 </menu>

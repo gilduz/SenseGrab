@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioGroup;
@@ -29,8 +30,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     //Editable
     private static final long DEFAULT_INTERVAL = 1000;
     private static final int DEFAULT_WINDOW = 2;
+    private static final int DEFAULT_MAX_WINDOW = 100;
     private static final int STEP_MILLIS = 50;
-    private static final int MIN_MILLIS = 250;
+    private static final int MIN_MILLIS = 500;
+    private static final int MIN_WIN = 2;
 
     //Do not edit!
     private static final int MILLIS_IN_SEC = 1000;
@@ -57,12 +60,14 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     TextView textWin;
     RadioGroup radioGr;
     Switch gpsSwitch;
+    Switch streamSwitch;
     Button buttonDeactivate;
     Button buttonSave;
     RelativeLayout windowSetting;
+    RelativeLayout sampSetting;
     Menu menu;
-    MenuItem load = null;
-    MenuItem delete = null;
+    //MenuItem load = null;
+    //MenuItem delete = null;
 
     // Initialize and set default value for seekBars
     long progressSamp = DEFAULT_INTERVAL;
@@ -81,6 +86,9 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private int maxSeekSampMillis;
     private SharedPreferences prefs;
 
+    // Enumerate for opening cases
+    private enum State {NEW, MODIFY_ACTIVE, MODIFY_NO_ACTIVE} //NOT USED YET
+
     // Others
     AlertDialog alertLoadList;
 
@@ -98,6 +106,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
         // Relative layout
         windowSetting = (RelativeLayout) findViewById(R.id.Conf_windowSetting);
+        sampSetting = (RelativeLayout) findViewById(R.id.Conf_samplingSetting);
 
         // Name
         confName = (EditText) findViewById(R.id.Conf_InsertName);
@@ -105,8 +114,9 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         // Radio buttons
         radioGr = (RadioGroup) findViewById(R.id.Conf_radioGroup);
 
-        // Gps switch
+        // Switchs
         gpsSwitch = (Switch) findViewById(R.id.Conf_gps);
+        streamSwitch = (Switch) findViewById(R.id.Conf_stream);
 
         // Buttons
         buttonDeactivate = (Button) findViewById(R.id.Conf_deactivate);
@@ -125,7 +135,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         break;
                     }
                     case R.id.Conf_Win_seekBar: {
-                        textWin.setText(String.valueOf(progress));
+                        textWin.setText(String.valueOf(progress+MIN_WIN));//TODO aggiungere minwin
                         progressWin = progress;
                         break;
                     }
@@ -158,6 +168,20 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 }
             }
         };
+        //Switch listener
+        Switch.OnCheckedChangeListener switchListener = new Switch.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    //Streaming selected! Hide sample time setting
+                    sampSetting.setVisibility(View.GONE);
+                    //TODO Fare alert con "This will DRAIN your BATTERY!"
+                } else {
+                    //Streaming deselected! Show sample time setting
+                    sampSetting.setVisibility(View.VISIBLE);
+                }
+            }
+        };
 
         //-----------------------EXTRAS------------------------
         intent = getIntent();
@@ -171,14 +195,17 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         try {
             activeConfigurationId = serviceComponent.getActiveConfiguration().getDbId();
         } catch (Exception e) {}
-        int relativeMinMicroS = serviceComponent.getMinDelay();
+        /*int relativeMinMicroS = serviceComponent.getMinDelay();
         if (relativeMinMicroS > 0){
             usedMinMillis = (int) Math.ceil((((double)relativeMinMicroS)/ 1000)/STEP_MILLIS)*STEP_MILLIS;
-        } else usedMinMillis = MIN_MILLIS;
+        } else */
+            usedMinMillis = MIN_MILLIS;
         maxSeekSampMillis = MAX_SEEK_MILLIS-usedMinMillis;
 
         setTitle(serviceComponent.getDysplayName());
         DEFAULT_NAME = serviceComponent.getDysplayName();
+
+        streamSwitch.setChecked(false); //default: streaming is not active.
 
         // Hide window setting for not streaming sensors
         switch (typeSensor){
@@ -188,11 +215,13 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             case Sensor.TYPE_PROXIMITY:
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 windowSetting.setVisibility(View.GONE);
+                streamSwitch.setVisibility(View.GONE);
                 break;
-            default:
-                seekWin.setMax(5000/usedMinMillis);
+            default: //Streaming sensors
+                //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN);
                 break;
         }
+
 
         //TODO aggiungere il testo dentro a window per spiegare cos'è
 
@@ -211,6 +240,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         seekSamp.setOnSeekBarChangeListener(seekListener);
         seekWin.setOnSeekBarChangeListener(seekListener);
         radioGr.setOnCheckedChangeListener(radioListener);
+        streamSwitch.setOnCheckedChangeListener(switchListener);
 
     }
 
@@ -219,7 +249,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         this.menu = menu;
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_configuration, menu);
-        // Hiding Load if necessary
+        /*// Hiding Load if necessary
         load = menu.findItem(R.id.Conf_load_conf);
         int size = serviceComponent.configurationList.size();
         if (size<1 || (size == 1 && isAModify)) {
@@ -229,7 +259,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         delete = menu.findItem(R.id.Conf_delete);
         if (isAModify){
             delete.setVisible(true);
-        } else delete.setVisible(false);
+        } else delete.setVisible(false);*/
         return true;
     }
 
@@ -242,18 +272,18 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.Conf_load_conf:
+            /*case R.id.Conf_load_conf:
                 alertLoadList();
-                return true;
+                return true;*/
             case R.id.Conf_default_values:
                 setDefaultValues();
                 return true;
-            case R.id.Conf_save_no_run:
+            /*case R.id.Conf_save_no_run:
                 alertSaveNoRun();
                 return true;
             case R.id.Conf_delete:
                 alertDelete();
-                return true;
+                return true;*/
         }
 
         return super.onOptionsItemSelected(item);
@@ -264,12 +294,13 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     public void onButtonLaunchClicked(View view) {
 
         long interval = DEFAULT_INTERVAL;
-
         int window = DEFAULT_WINDOW;
+        boolean streaming = false;
 
         try {
             interval = getMillis(seekSamp.getProgress(), radioGr.getCheckedRadioButtonId());
-            window = seekWin.getProgress();
+            window = seekWin.getProgress()+MIN_WIN;
+            streaming = streamSwitch.isChecked();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -283,10 +314,12 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         }
 
         //Set configuration values
+        if (streaming) {
+            interval = 0;
+        }
         configuration.setInterval(interval);
         configuration.setWindow(window);
         configuration.setConfigurationName(confName.getText().toString());
-        //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path?
         configuration.setAttachGPS(gpsSwitch.isChecked());
         configuration.setPath(serviceComponent.getDefaultPath());
         configuration.setDbId(dbId);
@@ -294,11 +327,11 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         //Add configuration to the list
         serviceComponent.addConfiguration(configuration);
 
-        //Deactivating old active configuration
+        //Deactivating old active configuration if this it's not the active one
         if (dbId != activeConfigurationId && activeConfigurationId != -1) {
             ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
         }
-
+        //TODO Gestire lo streaming da qui o basta settare 0 nell'intervallo?
         //Activating current configuration
         serviceComponent.setActiveConfiguration(configuration);
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
@@ -314,7 +347,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     //---------------------------DEACTIVATE---------------------------------
 
-    public void onButtonDectivateClicked(View view) {
+    public void onButtonDeactivateClicked(View view) {
         // Stop the service
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
@@ -348,11 +381,11 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 if (dbId == activeConfigurationId){ // In this case i have to show the menuitem as visible recreating the menu
                     buttonDeactivate.setVisibility(View.VISIBLE);
                 } else buttonDeactivate.setVisibility(View.GONE);
-                delete.setVisible(true);
+                /*delete.setVisible(true);
                 int size = serviceComponent.configurationList.size();
                 if (size<1 || (size == 1 && isAModify)) {
                     load.setVisible(false);
-                }
+                }*/
                 Toast.makeText(getApplicationContext(), "Loaded configuration: " +
                         configuration.getConfigurationName(), Toast.LENGTH_SHORT).show();
             }
@@ -411,7 +444,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         dbId=-1;
                         setDefaultValues();
                         buttonDeactivate.setVisibility(View.GONE);
-                        delete.setVisible(false);
+                        //delete.setVisible(false);
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -443,7 +476,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         int window = DEFAULT_WINDOW;
                         try {
                             interval = getMillis(seekSamp.getProgress(), radioGr.getCheckedRadioButtonId());
-                            window = seekWin.getProgress();
+                            window = seekWin.getProgress()+MIN_WIN;
                         } catch (Exception e) {}
 
                         if (dbId == activeConfigurationId && isAModify) {
@@ -464,7 +497,6 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         configuration.setInterval(interval);
                         configuration.setWindow(window);
                         configuration.setConfigurationName(confName.getText().toString());
-                        //configuration.setPath("test_1/v1/bm/Test"); //TODO Da aggiungere il path?
                         configuration.setAttachGPS(gpsSwitch.isChecked());
                         configuration.setPath(serviceComponent.getDefaultPath());
                         configuration.setDbId(dbId);
@@ -489,12 +521,19 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     private void setDefaultValues(){
         confName.setText(DEFAULT_NAME);
+        //Streaming switch and sampling setting
+        streamSwitch.setChecked(false);
+        sampSetting.setVisibility(View.VISIBLE);
+        //Radio button
         radioGr.check(R.id.Conf_radioSec);
+        //Sampling seekbar
         progressSamp = getProgressSeekSamp((int)DEFAULT_INTERVAL,R.id.Conf_radioSec);
         seekSamp.setMax(MAX_SEEK_SEC-1);
-        seekSamp.setProgress((int)progressSamp);
+        seekSamp.setProgress((int) progressSamp);
         textSamp.setText(String.valueOf(getTextSampValue((int) progressSamp, radioGr.getCheckedRadioButtonId())));
-        seekWin.setProgress(DEFAULT_WINDOW);
+        //Window seekbar
+        seekWin.setMax(DEFAULT_MAX_WINDOW-MIN_WIN);
+        seekWin.setProgress(DEFAULT_WINDOW-MIN_WIN);
         textWin.setText(Integer.toString(DEFAULT_WINDOW));
     }
 
@@ -507,13 +546,26 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             confName.setText(configuration.getConfigurationName());
 
             long millis = configuration.getInterval();
-            //Log.d(TAG,"L'intervallo della configurazione attiva è: "+millis+" millisecondi");
-            int rightRadio = getRightRadio(millis);
-            int sampSeekValue = getProgressSeekSamp((int) millis, rightRadio);
-            radioGr.check(rightRadio);
-            seekSamp.setProgress(sampSeekValue);
-            textSamp.setText(Long.toString(getTextSampValue(sampSeekValue, rightRadio)));
-            seekWin.setProgress(configuration.getWindow());
+            if (millis == 0) {
+                //STREAMING!!!
+                streamSwitch.setChecked(true);
+                sampSetting.setVisibility(View.GONE);
+                //Set default values for sampling setting
+                radioGr.check(R.id.Conf_radioSec);
+                progressSamp = getProgressSeekSamp((int)DEFAULT_INTERVAL,R.id.Conf_radioSec);
+                seekSamp.setMax(MAX_SEEK_SEC-1);
+                seekSamp.setProgress((int) progressSamp);
+                textSamp.setText(String.valueOf(getTextSampValue((int) progressSamp, radioGr.getCheckedRadioButtonId())));
+            } else {
+                //Not streaming
+                int rightRadio = getRightRadio(millis);
+                int sampSeekValue = getProgressSeekSamp((int) millis, rightRadio);
+                radioGr.check(rightRadio);
+                seekSamp.setProgress(sampSeekValue);
+                textSamp.setText(Long.toString(getTextSampValue(sampSeekValue, rightRadio)));
+            }
+
+            seekWin.setProgress(configuration.getWindow() - MIN_WIN);
             textWin.setText(Long.toString(configuration.getWindow()));
 
             confName.setText(configuration.getConfigurationName());
@@ -591,10 +643,9 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private void backToMain(){
         //Back to main
         Intent intent=new Intent(getApplicationContext(),MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        /*intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);*/
         startActivity(intent);
-        finish();
     }
 
     private void deactivate() {

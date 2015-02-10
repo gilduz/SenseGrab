@@ -298,7 +298,7 @@ public class MQTTService extends Service {
 
                                 client.connect(options);
                                 connState = CONNECT_STATE.CONNECTED;
-                                Toast.makeText(getApplicationContext(), "MQTT Connected", Toast.LENGTH_LONG).show();
+                                //Toast.makeText(getApplicationContext(), "MQTT Connected", Toast.LENGTH_LONG).show();
                                 Log.i(TAG, "MQTT Connected with username: " + username + " and password: " + password);
                                 timeout = MINTIMEOUT;
                             } catch (MqttException e) {

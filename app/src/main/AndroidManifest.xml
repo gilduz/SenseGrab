@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:allowBackup="true"
@@ -38,8 +38,8 @@
         <activity
             android:name=".AddDeviceActivity"
             android:label="@string/title_activity_add_device"
-            android:parentActivityName=".MainActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
@@ -53,8 +53,8 @@
         <activity
             android:name=".ConfigurationActivity"
             android:label="@string/title_activity_configuration"
-            android:parentActivityName=".AddDeviceActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:parentActivityName=".AddDeviceActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
@@ -62,8 +62,8 @@
         <activity
             android:name=".LogInActivity"
             android:label="@string/title_activity_log_in"
-            android:parentActivityName=".MainActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
@@ -71,8 +71,8 @@
         <activity
             android:name=".RegisterActivity"
             android:label="@string/title_activity_register"
-            android:parentActivityName=".MainActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.RegisterActivity" />
@@ -90,15 +90,14 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
-        <!--<activity
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
-        </activity>-->
+        </activity>
     </application>
 
 </manifest>

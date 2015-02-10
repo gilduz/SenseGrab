@@ -117,8 +117,8 @@ public class MainActivity extends Activity {
 
         else if (id == R.id.action_settings) {
            // TODO Da aggiungere una activity settings semplice
-           // Intent intent = new Intent(this, SettingsActivity.class);
-           // startActivity(intent);
+           Intent intent = new Intent(this, SettingsActivity.class);
+           startActivity(intent);
         }
 
         else if (id == R.id.action_log_in) {
