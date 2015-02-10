@@ -42,7 +42,7 @@ public class DbHelper extends SQLiteOpenHelper {
     //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
     //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
-//TODO implementare nuove voci nel dbHelper
+
     private static final String Create_Conf_Table =
             "create table "+Samp_conf_table+"("+Samp_conf_id+" integer primary key autoincrement,"+
                     Samp_conf_name+" text not null,"+Samp_conf_type+" integer not null,"+
@@ -87,7 +87,6 @@ public class DbHelper extends SQLiteOpenHelper {
     //--------------------------NEW CONFIGURATION----------------------------
     @Deprecated
     public boolean newConfiguration (String name, int type, int time, String unit, int window, boolean gps) {
-        //TODO on upper level: check if window is greater than sampling time for streaming sensors
         // check if values are correct
         if (time>0 & (unit.equals("sec") | unit.equals("min"))){
 
@@ -120,7 +119,7 @@ public class DbHelper extends SQLiteOpenHelper {
         //TODO modificare la configuration activity per impostare i massimi e minimi valori delle seekbar tramite getmindelay per ogni sensore
         // check if values are correct
         long interval = conf.getInterval();
-        if (interval>0){
+        if (interval>=0){
 
             db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
@@ -231,10 +230,9 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     private boolean updateConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive) {
-        //TODO modificare la configuration activity per impostare i massimi e minimi valori delle seekbar tramite getmindelay per ogni sensore
         // check if values are correct
         long interval = conf.getInterval();
-        if (interval>0){
+        if (interval>=0){
 
             db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();

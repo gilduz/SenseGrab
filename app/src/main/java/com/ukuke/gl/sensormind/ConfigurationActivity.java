@@ -335,10 +335,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         //Activating current configuration
         serviceComponent.setActiveConfiguration(configuration);
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
+        ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
         if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
             ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
         }
-        ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
 
         Toast.makeText(getApplicationContext(), "Service added", Toast.LENGTH_LONG).show();
 
