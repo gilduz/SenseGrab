@@ -100,7 +100,7 @@ public class SensormindAPI {
         } catch (Exception e) {
                 Log.d(TAG,"ERR!: " + e);
              }
-        //TODO: Aggiungere errore quando ritorna success false
+        //TODO: Gestire il success false
         return list;
     }
 

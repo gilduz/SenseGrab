@@ -29,6 +29,7 @@ import android.os.Message;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.services.MQTTService;
+import com.ukuke.gl.sensormind.support.DeviceInfo;
 
 public class MainActivity extends Activity {
 //    public class MainActivity extends ActionBarActivity {
@@ -36,8 +37,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 1 * 60; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 2 * 60; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_DB = 30; //[sec]
+    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 1 * 60; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
@@ -50,6 +51,7 @@ public class MainActivity extends Activity {
     private Messenger service = null;
     private final Messenger serviceHandler = new Messenger(new ServiceHandler());
     private IntentFilter intentFilter = null;
+    private DeviceInfo deviceInfo = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +60,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         // Check shared preferences
         View v = new View(this);
-
+        deviceInfo = new DeviceInfo(MainActivity.this);
         initEverything();
     }
 
@@ -73,13 +75,17 @@ public class MainActivity extends Activity {
         toggle.setChecked(prefs.getBoolean("enableGrabbing", false));
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
-        prefs.edit().commit();
+
         //createAllFeeds();
 
-
+        // WIFI AND PLUG IN
+        // TODO Togliere questi due sotto da qui e impostarli dalle preferenze
+        prefs.edit().putBoolean("syncOnlyOnWifi", true).apply();
+        prefs.edit().putBoolean("syncOnlyIfPluggedIn", true).apply();
+        prefs.edit().commit();
 
         if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
-            launchMQTTService();
+         //   launchMQTTService();
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
         }
     }
@@ -107,6 +113,8 @@ public class MainActivity extends Activity {
         }
         else if (id == R.id.action_test) {
             //API = new SensormindAPI(prefs.getString("username","test_3"),
+
+            Log.i(TAG, "WIFI: " + deviceInfo.isConnectedToWifi() + "PLUGGED IN: " + deviceInfo.isPluggedIn());
 
             createAllFeeds();
 
@@ -224,7 +232,7 @@ public class MainActivity extends Activity {
                 intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getSensorType());
                 //intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
                 intent.putExtra(AddDeviceActivity.MODIFY_CONFIGURATION, true);
-                intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID,ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getActiveConfiguration().getDbId());
+                intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getActiveConfiguration().getDbId());
                 startActivity(intent);
             }
         });
@@ -308,7 +316,7 @@ public class MainActivity extends Activity {
         ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null", MODEL_NAME + "/magnetometer/3",2);
 
         ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux", MODEL_NAME + "/light",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","bar", MODEL_NAME + "/pressure",1);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","hPa", MODEL_NAME + "/pressure",1);
         ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null", MODEL_NAME + "/proximity",1);
         ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null", MODEL_NAME + "/temperature",1);
     }

@@ -214,7 +214,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             ServiceManager.ServiceComponent component = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentActiveBySensorType(event.sensor.getType());
             conf = component.getActiveConfiguration();
             String path = conf.getPath();
-
+            //String path = component.getDefaultPath();//TODO Sistemare path configurazione... non lo trova
 
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_LIGHT:

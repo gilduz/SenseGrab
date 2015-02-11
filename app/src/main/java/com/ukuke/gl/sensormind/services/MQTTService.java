@@ -36,6 +36,7 @@ import android.widget.Toast;
 import com.ukuke.gl.sensormind.DataDbHelper;
 import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.support.DataSample;
+import com.ukuke.gl.sensormind.support.DeviceInfo;
 
 
 public class MQTTService extends Service {
@@ -64,6 +65,7 @@ public class MQTTService extends Service {
     private String password = "NULL";
     private String ipMqtt;
     private int portMqtt;
+    private DeviceInfo deviceInfo = null;
 
     private synchronized static boolean isRunning() {
 		 /*
@@ -88,7 +90,7 @@ public class MQTTService extends Service {
         portMqtt = prefs.getInt("port_MQTT", 1884);
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
-
+        deviceInfo = new DeviceInfo(MQTTService.this);
     }
 
     @Override
@@ -101,17 +103,35 @@ public class MQTTService extends Service {
             Message msg = Message.obtain(null, MQTTConnection.STOP);
             connection.makeRequest(msg);
         }
-
         boolean isLoggedIn = prefs.getBoolean("loggedIn", false);
-
         if (isLoggedIn) {
             username = prefs.getString("username", "NULL");
             password = prefs.getString("password", "NULL");
-            new uploadToSensormind_asynk().execute();
-        } else {
+            new uploadToSensormind_asynk().execute(); }
+        else {
             Log.d(TAG, "No credentials stored in shared preferences");
         }
         return START_STICKY;
+    }
+
+    public boolean isAllowedToSync() {
+        boolean ret = true;
+
+        if (prefs.getBoolean("syncOnlyOnWifi", false))  {
+            if (!deviceInfo.isConnectedToWifi()) {
+                Log.d(TAG, "Mqtt not allowed to sync, connect to wifi or change preferences in settings");
+                return false;
+            }
+        }
+
+        if (prefs.getBoolean("syncOnlyIfPluggedIn", false))  {
+            if (!deviceInfo.isPluggedIn()) {
+                Log.d(TAG, "Mqtt not allowed to sync, plug in your device or change preferences in settings");
+                return false;
+            }
+        }
+
+        return ret;
     }
 
     @Override
@@ -281,7 +301,7 @@ public class MQTTService extends Service {
                                 client.close();
                                 Log.i(TAG, "MQTT Disconnected");
 
-                                Toast.makeText(getApplicationContext(), "MQTT Disconnected", Toast.LENGTH_LONG).show();
+                                //Toast.makeText(getApplicationContext(), "MQTT Disconnected", Toast.LENGTH_LONG).show();
                             } catch (MqttException e) {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
@@ -515,7 +535,8 @@ public class MQTTService extends Service {
         public void syncWithSensormind() {
             DataDbHelper dataDbHelper;
             dataDbHelper = new DataDbHelper(getApplicationContext());
-            if (connection.connState == CONNECT_STATE.CONNECTED) {
+            // TODO Questo isAllowedToSync dovrebbe essere gestito in modo più furbo anche connettendosi o disconnettendosi dal server
+            if ((connection.connState == CONNECT_STATE.CONNECTED) && isAllowedToSync()) {
                 int numPublishedMessages = 0;
                 int numArrayPublished = 0;
 
@@ -571,7 +592,9 @@ public class MQTTService extends Service {
                         }
 
                         String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
-
+                        if (connection.connState != CONNECT_STATE.CONNECTED) {
+                            break;
+                        }
                         // TODO: Questi boolean non ritornano il valore giusto se non invia il messaggio... controllare.
                         boolean sent_1 = publishMessage(path + "/1", obj_1.toString());
                         numPublishedMessages++;
@@ -625,7 +648,9 @@ public class MQTTService extends Service {
                             data.putCharSequence(MESSAGE, message);
                             Message msg = Message.obtain(null, PUBLISH);
                             msg.setData(data);
-
+                            if (connection.connState != CONNECT_STATE.CONNECTED) {
+                                break;
+                            }
                             boolean sent = publishMessage(path, message);
                             numPublishedMessages++;
                             if (sent) { // Se riesce ad inviarlo aggiungilo alla lista di sent
