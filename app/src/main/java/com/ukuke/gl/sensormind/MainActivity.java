@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
         prefs.edit().commit();
 
         if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
-         //   launchMQTTService();
+            launchMQTTService();
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
         }
     }
@@ -168,12 +168,13 @@ public class MainActivity extends Activity {
         else {
             // STOP all schedules
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, MQTTService.class);
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.cancel(scheduledIntent);
+            //Intent intent = new Intent(this, MQTTService.class);
+            //PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            //scheduler.cancel(scheduledIntent);
+
             ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
 
-            stopMQTTService();
+            //stopMQTTService();
 
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {

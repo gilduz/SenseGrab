@@ -13,9 +13,7 @@ import android.os.BatteryManager;
 
 
 public class DeviceInfo {
-
     Context cn;
-
 
     public DeviceInfo(Context cn) {
         this.cn = cn;
