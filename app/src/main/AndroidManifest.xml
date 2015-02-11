@@ -31,6 +31,7 @@
         <activity
             android:name=".DeviceCapabilitiesActivity"
             android:label="@string/title_activity_device_capabilities"
+            android:noHistory="true"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -94,6 +95,7 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
+            android:noHistory="true"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

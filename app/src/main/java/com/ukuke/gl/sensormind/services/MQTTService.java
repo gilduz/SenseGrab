@@ -95,14 +95,14 @@ public class MQTTService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //if (prefs.getBoolean("enableGrabbing", false)) {
+        if (prefs.getBoolean("enableGrabbing", false)) {
             if (!isRunning()) {
                 connection.start();
             }
-       // } else {
-       //     Message msg = Message.obtain(null, MQTTConnection.STOP);
-       //     connection.makeRequest(msg);
-       // }
+        } else {
+            Message msg = Message.obtain(null, MQTTConnection.STOP);
+            connection.makeRequest(msg);
+        }
         boolean isLoggedIn = prefs.getBoolean("loggedIn", false);
         if (isLoggedIn) {
             username = prefs.getString("username", "NULL");
