@@ -31,6 +31,8 @@ import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.services.MQTTService;
 import com.ukuke.gl.sensormind.support.DeviceInfo;
 
+import java.util.List;
+
 public class MainActivity extends Activity {
 //    public class MainActivity extends ActionBarActivity {
 
@@ -116,7 +118,9 @@ public class MainActivity extends Activity {
 
             Log.i(TAG, "WIFI: " + deviceInfo.isConnectedToWifi() + "PLUGGED IN: " + deviceInfo.isPluggedIn());
 
-            createAllFeeds();
+            //createAllFeeds();
+            //ServiceManager.getInstance(MainActivity.this).createDeviceFeeds();
+
 
             // prefs.getString("password","test_3"));
            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();

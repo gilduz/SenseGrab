@@ -17,6 +17,8 @@ import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.support.SensormindAPI;
 
+import java.util.List;
+
 public class LogInActivity extends Activity {
 
     SensormindAPI API;
@@ -26,7 +28,7 @@ public class LogInActivity extends Activity {
     EditText editText_password;
 
     SharedPreferences prefs = null;
-    boolean validLogIn = true; //TODO: Da implementare
+    boolean validLogIn = false;
 
 
     @Override
@@ -73,21 +75,24 @@ public class LogInActivity extends Activity {
         prefs.edit().putString("password",editText_password.getText().toString()).apply();
         //prefs.edit().putBoolean("CICCIO",true).apply();
         prefs.edit().commit();
-        //new logIn_asynk().execute();
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+        new logIn_asynk().execute();
+        //ServiceManager.getInstance(LogInActivity.this).createDeviceFeeds();
+//        Intent intent = new Intent(this, MainActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        startActivity(intent);
 
     }
+
+
 
     private class logIn_asynk extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... params) {
             boolean result;
-            // result = API.registerNewAccount("Test_2_Name", "Test_2_Surname", "55", "test_2@test.com");
+            SensormindAPI API = new SensormindAPI(editText_username.getText().toString(),editText_password.getText().toString());
+            validLogIn = API.checkCredentials(editText_username.getText().toString(),editText_password.getText().toString());
             Log.d(TAG, "Request login for: " + editText_username.getText().toString());
-            //TODO: Per loggarsi come si fa? non serve... Serve un sistema per vedere se l'username esiste
             return "Executed";
         }
 
@@ -99,14 +104,17 @@ public class LogInActivity extends Activity {
 
             if (validLogIn) {
                 Log.d(TAG,"Registration succeed!");
-                Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.toString()).apply();
                 prefs.edit().putString("password",editText_password.toString()).apply();
-
-
+                Intent intent = new Intent(LogInActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
             else {
                 Log.d(TAG,"Registration failed!");
+                prefs.edit().putString("username","NULL").apply();
+                prefs.edit().putString("password","NULL").apply();
                 Toast.makeText(getApplicationContext(), "Registration failed!", Toast.LENGTH_LONG).show();
             }
             prefs.edit().commit();

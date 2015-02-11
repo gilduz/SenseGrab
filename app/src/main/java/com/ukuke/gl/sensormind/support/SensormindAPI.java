@@ -22,6 +22,8 @@ public class SensormindAPI {
 
 
     private static final String CREATE_FEED_SERVICE = "/service/v1/createfeed";
+    private static final String CHECK_CREDENTIALS_SERVICE = "/service/v1/checkcredentials";
+
     //aggiungere la registrazione
     private static final String REGISTER_NEW_ACCOUNT = "/service/v1/register";
     private static final String LIST_FEED = "/service/v1/listfeed";
@@ -98,8 +100,8 @@ public class SensormindAPI {
             }
 
         } catch (Exception e) {
-                Log.d(TAG,"ERR!: " + e);
-             }
+            Log.d(TAG,"ERR!: " + e);
+        }
         //TODO: Gestire il success false
         return list;
     }
@@ -120,6 +122,26 @@ public class SensormindAPI {
                 ret = true;
         } catch (Exception e) { Log.d("API Sensormind: ", "ERR: " + e); }
 
+        return ret;
+    }
+
+    // http://137.204.213.190:8888/service/v1/checkcredentials?username=test_13&password=test_13
+
+    public boolean checkCredentials(String user, String password)
+    {
+        //TODO fare l'encoding dei parametri altrimenti la % dell'umidit� non � %25 � scoppia tutto
+        boolean ret = false;
+        String content = "username="+user+"&password="+password;
+        HTMLResponse res = makeHTTPRequest("GET", CHECK_CREDENTIALS_SERVICE, content);
+        try
+        {
+            JsonObject jsonObject = null;
+            jsonObject = new Gson().fromJson(res.getContent(),JsonObject.class);
+            String s = jsonObject.get("success").getAsString();
+            if (s.equals("true")) {
+                ret = true;
+            }
+        } catch (Exception e) {}
         return ret;
     }
 

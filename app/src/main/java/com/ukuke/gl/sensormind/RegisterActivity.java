@@ -17,6 +17,9 @@ import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.support.SensormindAPI;
 
+import java.security.Provider;
+import java.util.List;
+
 public class RegisterActivity extends Activity {
 
     private static final String TAG = RegisterActivity.class.getSimpleName();
@@ -92,6 +95,7 @@ public class RegisterActivity extends Activity {
                 Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
+                ServiceManager.getInstance(RegisterActivity.this).createDeviceFeeds();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }

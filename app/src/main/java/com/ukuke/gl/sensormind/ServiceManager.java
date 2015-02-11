@@ -692,6 +692,49 @@ public class ServiceManager {
         new getAllFeed_asynk().execute();
     }
 
+    public void createDeviceFeeds() {
+        // Create just the services available for the device
+        List<ServiceManager.ServiceComponent> list;
+        list = getServiceComponentAvailableList();
+        for (int i=0; i<list.size(); i++) {
+            createServiceFeed(list.get(i), MainActivity.MODEL_NAME);
+        }
+    }
+
+
+    public void createServiceFeed(ServiceComponent component, String modelName) {
+
+        switch (component.getSensorType()) {
+            case (Sensor.TYPE_ACCELEROMETER):
+                createFeed("Accelerometer_x", "null", modelName + "/accelerometer/1", 2);
+                createFeed("Accelerometer_y", "null", modelName + "/accelerometer/2", 2);
+                createFeed("Accelerometer_z", "null", modelName + "/accelerometer/3", 2);
+                break;
+            case (Sensor.TYPE_GYROSCOPE_UNCALIBRATED):
+                createFeed("Gyroscope_x", "null", modelName + "/gyroscope/1", 2);
+                createFeed("Gyroscope_y", "null", modelName + "/gyroscope/2", 2);
+                createFeed("Gyroscope_z", "null", modelName + "/gyroscope/3", 2);
+                break;
+            case (Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED):
+                createFeed("Magnetometer_x", "null", modelName + "/magnetometer/1", 2);
+                createFeed("Magnetometer_y", "null", modelName + "/magnetometer/2", 2);
+                createFeed("Magnetometer_z", "null", modelName + "/magnetometer/3", 2);
+                break;
+            case (Sensor.TYPE_LIGHT):
+                createFeed("Light", "lux", modelName + "/light", 1);
+                break;
+            case (Sensor.TYPE_PRESSURE):
+                createFeed("Pressure", "hPa", modelName + "/pressure", 1);
+                break;
+            case (Sensor.TYPE_PROXIMITY):
+                createFeed("Proximity", "null", modelName + "/proximity", 1);
+                break;
+            case (Sensor.TYPE_AMBIENT_TEMPERATURE):
+                createFeed("Temperature", "null", modelName + "/temperature", 1);
+                break;
+        }
+    }
+
     public void createFeed(String label, String measureUnit, String path, int type) {
 
         String fullPath = "/" + prefs.getString("username", "NULL") + "/v1/bm/" + path;
@@ -793,5 +836,7 @@ public class ServiceManager {
         protected void onProgressUpdate(Void... values) {
         }
     }
+
+
 
 }
