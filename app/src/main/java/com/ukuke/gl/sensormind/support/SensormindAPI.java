@@ -23,10 +23,8 @@ public class SensormindAPI {
 
     private static final String CREATE_FEED_SERVICE = "/service/v1/createfeed";
     private static final String CHECK_CREDENTIALS_SERVICE = "/service/v1/checkcredentials";
-
-    //aggiungere la registrazione
-    private static final String REGISTER_NEW_ACCOUNT = "/service/v1/register";
-    private static final String LIST_FEED = "/service/v1/listfeed";
+    private static final String REGISTER_NEW_ACCOUNT_SERVICE = "/service/v1/register";
+    private static final String LIST_FEED_SERVICE = "/service/v1/listfeed";
 
     private static final String url = "http://137.204.213.190";
     private static final int port = 8888;
@@ -55,7 +53,7 @@ public class SensormindAPI {
         HTMLResponse res = null;
         try
         {
-            res = makeHTTPRequest("GET", LIST_FEED, content);
+            res = makeHTTPRequest("GET", LIST_FEED_SERVICE, content);
             JsonObject jsonObject = null;
             JSONArray array = null;
 
@@ -114,7 +112,7 @@ public class SensormindAPI {
         HTMLResponse res = null;
         try
         {
-            res = makeHTTPRequest("GET", REGISTER_NEW_ACCOUNT, content);
+            res = makeHTTPRequest("GET", REGISTER_NEW_ACCOUNT_SERVICE, content);
             JsonObject jsonObject = null;
             jsonObject = new Gson().fromJson(res.getContent(),JsonObject.class);
             String s = jsonObject.get("success").getAsString();
@@ -124,8 +122,6 @@ public class SensormindAPI {
 
         return ret;
     }
-
-    // http://137.204.213.190:8888/service/v1/checkcredentials?username=test_13&password=test_13
 
     public boolean checkCredentials(String user, String password)
     {

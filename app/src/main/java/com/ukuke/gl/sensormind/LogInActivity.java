@@ -73,7 +73,6 @@ public class LogInActivity extends Activity {
         prefs.edit().putBoolean("loggedIn",validLogIn).apply();
         prefs.edit().putString("username",editText_username.getText().toString()).apply();//editText_username.getText().toString());
         prefs.edit().putString("password",editText_password.getText().toString()).apply();
-        //prefs.edit().putBoolean("CICCIO",true).apply();
         prefs.edit().commit();
         new logIn_asynk().execute();
         //ServiceManager.getInstance(LogInActivity.this).createDeviceFeeds();
@@ -98,8 +97,6 @@ public class LogInActivity extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            //TODO: Controllare il result della connessione e impostare logged o no
-
             prefs.edit().putBoolean("loggedIn", validLogIn).apply();
 
             if (validLogIn) {
@@ -107,6 +104,7 @@ public class LogInActivity extends Activity {
                 Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.toString()).apply();
                 prefs.edit().putString("password",editText_password.toString()).apply();
+                ServiceManager.getInstance(LogInActivity.this).createDeviceFeeds();
                 Intent intent = new Intent(LogInActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
