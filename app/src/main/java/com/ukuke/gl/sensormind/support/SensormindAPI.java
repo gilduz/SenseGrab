@@ -40,11 +40,6 @@ public class SensormindAPI {
         this.password = password;
     }
 
-    // esempio:
-    // createFeed("sensore-temperature",true,"C","telefono42/sensori/temperatura",1);
-
-    //http://137.204.213.190:8888/service/v1/listfeed?username=<USERNAME>&password=<PASSWORD>
-
     public List<FeedJSON> getAllFeed()
     {
         List<FeedJSON> list = new ArrayList<>();
@@ -125,7 +120,6 @@ public class SensormindAPI {
 
     public boolean checkCredentials(String user, String password)
     {
-        //TODO fare l'encoding dei parametri altrimenti la % dell'umidit� non � %25 � scoppia tutto
         boolean ret = false;
         String content = "username="+user+"&password="+password;
         HTMLResponse res = makeHTTPRequest("GET", CHECK_CREDENTIALS_SERVICE, content);

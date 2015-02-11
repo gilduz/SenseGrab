@@ -29,6 +29,7 @@ public class RegisterActivity extends Activity {
     EditText editText_firstname;
     EditText editText_lastname;
     EditText editText_email;
+    EditText editText_password_bis;
 
     String username;
 
@@ -68,11 +69,17 @@ public class RegisterActivity extends Activity {
     public void onClickedRegisterButton(View view) {
         editText_username = (EditText) findViewById(R.id.editText_username);
         editText_password = (EditText) findViewById(R.id.editText_password);
+        editText_password_bis = (EditText) findViewById(R.id.editText_password_bis);
         editText_firstname = (EditText) findViewById(R.id.editText_firstName);
         editText_lastname = (EditText) findViewById(R.id.editText_lastName);
         editText_email = (EditText) findViewById(R.id.editText_email);
 
-        new logIn_asynk().execute();
+        if (editText_password.getText().toString().compareTo(editText_password_bis.getText().toString()) == 0) {
+            new logIn_asynk().execute();
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Please check the password", Toast.LENGTH_LONG).show();
+        }
     }
 
     private class logIn_asynk extends AsyncTask<String, Void, String> {
