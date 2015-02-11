@@ -165,7 +165,7 @@ public class ServiceManager {
             switch (dysplayName) {
                 case "Magnetic Field":
                     componentImageID = R.drawable.ic_language_grey600_48dp;
-                    sensorType = Sensor.TYPE_MAGNETIC_FIELD;
+                    sensorType = Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED;
                     defaultPath = MainActivity.MODEL_NAME + "/magnetometer";
                     break;
                 case "Accelerometer":
@@ -180,7 +180,7 @@ public class ServiceManager {
                     break;
                 case "Gyroscope":
                     componentImageID = R.drawable.ic_autorenew_grey600_48dp;
-                    sensorType = Sensor.TYPE_GYROSCOPE;
+                    sensorType = Sensor.TYPE_GYROSCOPE_UNCALIBRATED;
                     defaultPath = MainActivity.MODEL_NAME + "/gyroscope";
                     break;
                 case "Light Sensor":
@@ -482,11 +482,11 @@ public class ServiceManager {
 
         serviceComponentList.clear();
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED) != null) {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
-            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD);
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).getMinDelay());
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED).getMinDelay());
             }
             numAvailableServices++;
         } else {
@@ -516,11 +516,11 @@ public class ServiceManager {
         }
 
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED) != null) {
             serviceComponentList.add(new ServiceComponent("Gyroscope", true));
-            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE);
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE_UNCALIBRATED);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE).getMinDelay());
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED).getMinDelay());
             }
             numAvailableServices++;
         } else {
