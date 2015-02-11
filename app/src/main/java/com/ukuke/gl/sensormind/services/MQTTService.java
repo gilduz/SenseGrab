@@ -99,11 +99,13 @@ public class MQTTService extends Service {
             if (!isRunning()) {
                 connection.start();
             }
-        } else {
-            Message msg = Message.obtain(null, MQTTConnection.STOP);
-            connection.makeRequest(msg);
         }
+//        else {
+//            Message msg = Message.obtain(null, MQTTConnection.STOP);
+//            connection.makeRequest(msg);
+//        }
         boolean isLoggedIn = prefs.getBoolean("loggedIn", false);
+
         if (isLoggedIn) {
             username = prefs.getString("username", "NULL");
             password = prefs.getString("password", "NULL");
@@ -322,7 +324,7 @@ public class MQTTService extends Service {
                                 Log.i(TAG, "MQTT Connected with username: " + username + " and password: " + password);
                                 timeout = MINTIMEOUT;
                             } catch (MqttException e) {
-                                Log.d(TAG, "Connection attempt failed with reason code = " + e.getReasonCode() + e.getCause());
+                                Log.d(TAG, "Connection for " + username + " attempt failed with reason code = " + e.getReasonCode() + e.getCause());
                                 if (timeout < MAXTIMEOUT) {
                                     timeout *= 2;
                                 }

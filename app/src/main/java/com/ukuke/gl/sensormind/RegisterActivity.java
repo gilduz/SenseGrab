@@ -1,6 +1,9 @@
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -14,6 +17,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.R;
+import com.ukuke.gl.sensormind.services.MQTTService;
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.support.SensormindAPI;
 
@@ -98,16 +102,18 @@ public class RegisterActivity extends Activity {
             prefs.edit().putBoolean("loggedIn", validRegistration).apply();
 
             if (validRegistration) {
-                Log.d(TAG,"Registration succeed!");
+                Log.d(TAG,"Registration successful");
                 Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
+                prefs.edit().commit();
                 ServiceManager.getInstance(RegisterActivity.this).createDeviceFeeds();
+                launchMQTTService();
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }
             else {
-                Log.d(TAG,"Registration failed!");
+                Log.d(TAG,"Registration failed");
                 Toast.makeText(getApplicationContext(), "Registration failed!", Toast.LENGTH_LONG).show();
             }
             prefs.edit().commit();
@@ -118,5 +124,18 @@ public class RegisterActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(Void... values) {}
+    }
+    private void launchMQTTService() {
+        if (prefs.getBoolean("loggedIn",false)) {
+            Log.d(TAG, "Activate Mqtt service");
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, MQTTService.class);
+
+            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), MainActivity.INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
+        }
+        else {
+            Log.d(TAG,"You need to login or register before send data via MQTT");
+        }
     }
 }

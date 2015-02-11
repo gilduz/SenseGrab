@@ -337,7 +337,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         serviceComponent.setActiveConfiguration(configuration);
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
-        if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
+        if (prefs.getBoolean("enableGrabbing",false)) {
             ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
         }
 

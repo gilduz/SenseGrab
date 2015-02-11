@@ -86,10 +86,11 @@ public class MainActivity extends Activity {
         prefs.edit().putBoolean("syncOnlyIfPluggedIn", false).apply();
         prefs.edit().commit();
 
-        if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
+        if (prefs.getBoolean("loggedIn",false)) {
             launchMQTTService();
-            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
         }
+        ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
+
     }
 
 
@@ -123,15 +124,15 @@ public class MainActivity extends Activity {
 
 
             // prefs.getString("password","test_3"));
-           // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
+            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
             Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
             //AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         }
 
         else if (id == R.id.action_settings) {
-           // TODO Da aggiungere una activity settings semplice
-           Intent intent = new Intent(this, SettingsActivity.class);
-           startActivity(intent);
+            // TODO Da aggiungere una activity settings semplice
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
 
         else if (id == R.id.action_log_in) {
@@ -155,7 +156,7 @@ public class MainActivity extends Activity {
 
         if (toggleButton.isChecked()) {
 
-            launchMQTTService();
+            //launchMQTTService();
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
 
 
@@ -327,23 +328,23 @@ public class MainActivity extends Activity {
     }
 
     private void launchMQTTService() {
-            if (prefs.getBoolean("loggedIn",false)) {
-                Log.d(TAG, "Activate Mqtt service");
-                AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                Intent intent = new Intent(this, MQTTService.class);
+        if (prefs.getBoolean("loggedIn",false)) {
+            Log.d(TAG, "Activate Mqtt service");
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, MQTTService.class);
 
-                PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
-            }
+            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
+        }
         else {
-                Log.d(TAG,"You need to login or register before send data via MQTT");
-            }
+            Log.d(TAG,"You need to login or register before send data via MQTT");
+        }
     }
 
     private void stopMQTTService() {
         //if (prefs.getBoolean("loggedIn",false)) {
-            //Log.d(TAG, "Deactivate Mqtt service");
-            stopService(new Intent(this, MQTTService.class));
+        //Log.d(TAG, "Deactivate Mqtt service");
+        stopService(new Intent(this, MQTTService.class));
         //}
     }
 

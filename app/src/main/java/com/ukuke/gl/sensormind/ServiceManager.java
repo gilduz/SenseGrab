@@ -585,7 +585,7 @@ public class ServiceManager {
         ServiceComponent.Configuration configuration;
         configuration = component.getActiveConfiguration();
 
-        if (prefs.getBoolean("enableGrabbing", true)) {
+        if (prefs.getBoolean("enableGrabbing", false)) {
 
             AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(cn, SensorBackgroundService.class);
