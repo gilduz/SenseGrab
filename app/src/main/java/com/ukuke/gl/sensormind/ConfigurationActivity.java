@@ -30,7 +30,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     //Editable
     private static final long DEFAULT_INTERVAL = 1000;
     private static final int DEFAULT_WINDOW = 2;
-    private static final int DEFAULT_MAX_WINDOW = 100;
+    private static final int DEFAULT_MAX_WINDOW = 200;
     private static final int STEP_MILLIS = 50;
     private static final int MIN_MILLIS = 500;
     private static final int MIN_WIN = 2;
@@ -135,7 +135,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         break;
                     }
                     case R.id.Conf_Win_seekBar: {
-                        textWin.setText(String.valueOf(progress+MIN_WIN));//TODO aggiungere minwin
+                        textWin.setText(String.valueOf(progress+MIN_WIN));
                         progressWin = progress;
                         break;
                     }
@@ -175,7 +175,9 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 if (isChecked) {
                     //Streaming selected! Hide sample time setting
                     sampSetting.setVisibility(View.GONE);
-                    //TODO Fare alert con "This will DRAIN your BATTERY!"
+                    //TODO Fare alert con "This will DRAIN your BATTERY!" ?
+                    // For streaming is better to set the greater window
+                    seekWin.setProgress(DEFAULT_MAX_WINDOW-MIN_WIN);
                 } else {
                     //Streaming deselected! Show sample time setting
                     sampSetting.setVisibility(View.VISIBLE);
@@ -331,7 +333,6 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         if (dbId != activeConfigurationId && activeConfigurationId != -1) {
             ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
         }
-        //TODO Gestire lo streaming da qui o basta settare 0 nell'intervallo?
         //Activating current configuration
         serviceComponent.setActiveConfiguration(configuration);
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
@@ -350,14 +351,19 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     public void onButtonDeactivateClicked(View view) {
         // Stop the service
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
+        ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         serviceComponent.setActiveConfiguration(null);
         Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
 
-        // Hide button deactivate or return to main, it depends on your policy
-        //buttonDeactivate.setVisibility(View.GONE);
-        backToMain();
+        if (MainActivity.MANAGE_MULTIPLE_CONFIGURATION) {
+            // Hide button deactivate or return to main, it depends on your policy
+            buttonDeactivate.setVisibility(View.GONE);
+        } else {
+            // Remove configuration from db and return to main activity
+            ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(configuration);
+            backToMain();
+        }
     }
 
     //-------------------------LOAD------------------------------
@@ -565,6 +571,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 textSamp.setText(Long.toString(getTextSampValue(sampSeekValue, rightRadio)));
             }
 
+            seekWin.setMax(DEFAULT_MAX_WINDOW-MIN_WIN);
             seekWin.setProgress(configuration.getWindow() - MIN_WIN);
             textWin.setText(Long.toString(configuration.getWindow()));
 
@@ -643,8 +650,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private void backToMain(){
         //Back to main
         Intent intent=new Intent(getApplicationContext(),MainActivity.class);
-        /*intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);*/
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         startActivity(intent);
     }
 

@@ -512,14 +512,13 @@ public class MQTTService extends Service {
             return res;
         }
 
-        private void syncWithSensormind() {
+        public void syncWithSensormind() {
+            DataDbHelper dataDbHelper;
+            dataDbHelper = new DataDbHelper(getApplicationContext());
             if (connection.connState == CONNECT_STATE.CONNECTED) {
                 int numPublishedMessages = 0;
                 int numArrayPublished = 0;
 
-                // POI SPOSTALI DA QUI!!!
-                DataDbHelper dataDbHelper;
-                dataDbHelper = new DataDbHelper(getApplicationContext());
                 List<DataSample> listData;
 
                 // Multi sample send

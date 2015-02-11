@@ -97,7 +97,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 if (args.getBoolean(KEY_PERFORM_DATABASE_TRANSFER)) {
                     new saveListSampleOnDb().execute();
                 }
-                ;
             }
             if (args.containsKey(KEY_FLUENT_SAMPLING)) {
                 fluentSampling = args.getBoolean(KEY_FLUENT_SAMPLING);

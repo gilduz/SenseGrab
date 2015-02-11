@@ -577,6 +577,7 @@ public class ServiceManager {
 
             AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(cn, SensorBackgroundService.class);
+            long interval = 1000; //default value
 
             Bundle args = new Bundle();
 
@@ -599,7 +600,8 @@ public class ServiceManager {
 
             try {
                 boolean value;
-                if (configuration.getInterval() == 0) {
+                interval = configuration.getInterval();
+                if (interval == 0) {
                     value = true;
                     args.putBoolean(SensorBackgroundService.KEY_FLUENT_SAMPLING, value);
                 }
@@ -612,19 +614,36 @@ public class ServiceManager {
             // Start the service
 
             PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), configuration.getInterval(), scheduledIntent);
+            // This doesn't manage streaming wake up after a crash
+            /*if (interval == 0) {
+                // If streaming is true i need to start the service until stop occurs
+                scheduler.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),scheduledIntent);
+            } else {
+                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), configuration.getInterval(), scheduledIntent);
+            }*/
+            // This manages streaming wake up after a crash
+            if (interval == 0) {
+                // If streaming: set wake up after a crash, ten minutes
+                interval = 10*60*1000;
+            }
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+
         }
     }
 
-    public void stopScheduleService(ServiceComponent component) {
+    public void stopScheduleService(ServiceComponent component) { //TODO finire con fluent
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
+        intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
         PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (component.getActiveConfiguration().getInterval()==0) {
+            cn.startService(intent);
+        }
         scheduler.cancel(scheduledIntent);
     }
 
     public void stopFluentSampling() {
-        // Stop fluent sampling in service
+        // Stop fluent sampling for all
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
         //PendingIntent scheduledIntent = PendingIntent.getService(cn, 321, intent, PendingIntent.FLAG_UPDATE_CURRENT);

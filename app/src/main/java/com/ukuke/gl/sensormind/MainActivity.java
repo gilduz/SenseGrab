@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
+    public static final boolean MANAGE_MULTIPLE_CONFIGURATION = false;//TODO finire di implemetare l'utilizzo di questa variabile per differenziare la gestione a singola configurazione o configurazioni multiple dentro a configuration activity
     private static long back_pressed;
     String username;
     String password;
@@ -331,6 +332,15 @@ public class MainActivity extends Activity {
             //Log.d(TAG, "Deactivate Mqtt service");
             stopService(new Intent(this, MQTTService.class));
         //}
+    }
+
+    private void descheduleMQTTService () {
+        Log.d(TAG, "Deschedule Mqtt service");
+        AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, MQTTService.class);
+        //TODO finire qua
+        PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
     }
 
     public class MyReceiver extends BroadcastReceiver {
