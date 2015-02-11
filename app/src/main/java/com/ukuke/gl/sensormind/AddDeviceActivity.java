@@ -54,15 +54,14 @@ public class AddDeviceActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onBackPressed(){
-        //Your code here
-        /*Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivity(intent);*/
-        finish();
-    }
+//    @Override
+//    public void onBackPressed(){
+//        //Back to main
+//        Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+//        startActivity(intent);
+//    }
 
     private void registerClickCallback() {
         ListView list = (ListView) findViewById(R.id.listViewAddDevice);
@@ -70,7 +69,7 @@ public class AddDeviceActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
-                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position);
+                ServiceManager.ServiceComponent clickedServiceComponent = ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentUnusedList().get(position);
                 // Add service component to active services component
                 //ServiceManager.getInstance(AddDeviceActivity.this).addServiceComponentActive(clickedServiceComponent);
                 // Come back to Main Activity
@@ -78,7 +77,7 @@ public class AddDeviceActivity extends Activity {
                 //intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position).getSensorType());
 
                 Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
-                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList().get(position).getSensorType());
+                intent.putExtra(TYPE_SENSOR, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentUnusedList().get(position).getSensorType());
                 //intent.putExtra(MODIFY_CONFIGURATION,false);
                 //intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID,-1);
                 startActivity(intent);
@@ -95,7 +94,7 @@ public class AddDeviceActivity extends Activity {
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentAvailableList());
+            super(AddDeviceActivity.this, R.layout.item_view, ServiceManager.getInstance(AddDeviceActivity.this).getServiceComponentUnusedList());
         }
 
         @Override
@@ -105,7 +104,7 @@ public class AddDeviceActivity extends Activity {
                 itemView = getLayoutInflater().inflate(R.layout.item_view/*_check*/, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getServiceComponentAvailableList().get(position);
+            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(this.getContext()).getServiceComponentUnusedList().get(position);
 
             ImageView imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
             imageView.setImageResource(currentServiceComponent.getComponentImageID());

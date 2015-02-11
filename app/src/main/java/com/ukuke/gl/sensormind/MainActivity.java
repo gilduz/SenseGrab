@@ -80,12 +80,12 @@ public class MainActivity extends Activity {
 
         // WIFI AND PLUG IN
         // TODO Togliere questi due sotto da qui e impostarli dalle preferenze
-        prefs.edit().putBoolean("syncOnlyOnWifi", true).apply();
-        prefs.edit().putBoolean("syncOnlyIfPluggedIn", true).apply();
+        prefs.edit().putBoolean("syncOnlyOnWifi", false).apply();
+        prefs.edit().putBoolean("syncOnlyIfPluggedIn", false).apply();
         prefs.edit().commit();
 
         if (prefs.getBoolean("enableGrabbing",false) && prefs.getBoolean("loggedIn",false)) {
-         //   launchMQTTService();
+            launchMQTTService();
             ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
         }
     }
@@ -168,12 +168,13 @@ public class MainActivity extends Activity {
         else {
             // STOP all schedules
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(this, MQTTService.class);
-            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.cancel(scheduledIntent);
+            //Intent intent = new Intent(this, MQTTService.class);
+            //PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            //scheduler.cancel(scheduledIntent);
+
             ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
 
-            stopMQTTService();
+            //stopMQTTService();
 
             ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
             for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
@@ -303,7 +304,6 @@ public class MainActivity extends Activity {
     }
 
     private void createAllFeeds() {
-        //TODO creare questi dentro ai sensori stessi
         ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null", MODEL_NAME + "/accelerometer/1",2);
         ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null", MODEL_NAME + "/accelerometer/2",2);
         ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null", MODEL_NAME + "/accelerometer/3",2);

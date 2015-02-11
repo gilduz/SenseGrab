@@ -388,7 +388,7 @@ public class ServiceManager {
 
     public void addServiceComponentActive(ServiceComponent serviceComponent) {
         boolean alreadyExists;
-        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType).getDysplayName() == "NULL") {
+        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType) == null) {//.getDysplayName() == "NULL") {
             serviceComponentActiveList.add(serviceComponent);
         }
     }
@@ -421,8 +421,9 @@ public class ServiceManager {
                 return service;
             }
         }
-        ServiceComponent service_NULL = new ServiceComponent("NULL", false);
-        return service_NULL;
+        //ServiceComponent service_NULL = new ServiceComponent("NULL", false);
+        //return service_NULL;
+        return null;
     }
 
     public ServiceComponent getServiceComponentAvailableBySensorType(int serviceType) {
@@ -444,6 +445,17 @@ public class ServiceManager {
 
         for (int i = 0; i < serviceComponentList.size(); i++) {
             if (serviceComponentList.get(i).exists) {
+                mList.add(serviceComponentList.get(i));
+            }
+        }
+        return mList;
+    }
+
+    public List<ServiceComponent> getServiceComponentUnusedList() {
+        List<ServiceComponent> mList = new ArrayList<>();
+
+        for (int i = 0; i < serviceComponentList.size(); i++) {
+            if ((serviceComponentList.get(i).exists) && (getServiceComponentActiveBySensorType(serviceComponentList.get(i).getSensorType()) == null)) {
                 mList.add(serviceComponentList.get(i));
             }
         }
