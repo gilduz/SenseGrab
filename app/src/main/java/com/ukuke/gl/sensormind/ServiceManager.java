@@ -41,6 +41,8 @@ public class ServiceManager {
     SensorManager sensorManager;
     private boolean scanDone = false;
 
+    int OFFSET_INTENT = 199;
+
 
     private boolean USE_DB = false;
     DbHelper dbHelper;
@@ -165,7 +167,7 @@ public class ServiceManager {
             switch (dysplayName) {
                 case "Magnetic Field":
                     componentImageID = R.drawable.ic_language_grey600_48dp;
-                    sensorType = Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED;
+                    sensorType = Sensor.TYPE_MAGNETIC_FIELD;
                     defaultPath = MainActivity.MODEL_NAME + "/magnetometer";
                     break;
                 case "Accelerometer":
@@ -180,7 +182,7 @@ public class ServiceManager {
                     break;
                 case "Gyroscope":
                     componentImageID = R.drawable.ic_autorenew_grey600_48dp;
-                    sensorType = Sensor.TYPE_GYROSCOPE_UNCALIBRATED;
+                    sensorType = Sensor.TYPE_GYROSCOPE;
                     defaultPath = MainActivity.MODEL_NAME + "/gyroscope";
                     break;
                 case "Light Sensor":
@@ -379,7 +381,7 @@ public class ServiceManager {
         for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
             if (getServiceComponentAvailableList().get(i).getActiveConfiguration() != null) {
                 addServiceComponentActive(getServiceComponentAvailableList().get(i));
-                startScheduleService(getServiceComponentAvailableList().get(i));
+                //startScheduleService(getServiceComponentAvailableList().get(i));
             }
         }
 
@@ -482,11 +484,11 @@ public class ServiceManager {
 
         serviceComponentList.clear();
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED) != null) {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
-            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED);
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED).getMinDelay());
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).getMinDelay());
             }
             numAvailableServices++;
         } else {
@@ -516,11 +518,11 @@ public class ServiceManager {
         }
 
 
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED) != null) {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             serviceComponentList.add(new ServiceComponent("Gyroscope", true));
-            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE_UNCALIBRATED);
+            index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED).getMinDelay());
+                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE).getMinDelay());
             }
             numAvailableServices++;
         } else {
@@ -582,6 +584,8 @@ public class ServiceManager {
     }
 
     public void startScheduleService(ServiceComponent component) {
+
+
         ServiceComponent.Configuration configuration;
         configuration = component.getActiveConfiguration();
 
@@ -625,7 +629,7 @@ public class ServiceManager {
 
             // Start the service
 
-            PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType() + OFFSET_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             // This doesn't manage streaming wake up after a crash
             /*if (interval == 0) {
                 // If streaming is true i need to start the service until stop occurs
@@ -647,7 +651,7 @@ public class ServiceManager {
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType() + OFFSET_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (component.getActiveConfiguration().getInterval()==0) {
             cn.startService(intent);
         }
@@ -710,12 +714,12 @@ public class ServiceManager {
                 createFeed("Accelerometer_y", "null", modelName + "/accelerometer/2", 2);
                 createFeed("Accelerometer_z", "null", modelName + "/accelerometer/3", 2);
                 break;
-            case (Sensor.TYPE_GYROSCOPE_UNCALIBRATED):
+            case (Sensor.TYPE_GYROSCOPE):
                 createFeed("Gyroscope_x", "null", modelName + "/gyroscope/1", 2);
                 createFeed("Gyroscope_y", "null", modelName + "/gyroscope/2", 2);
                 createFeed("Gyroscope_z", "null", modelName + "/gyroscope/3", 2);
                 break;
-            case (Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED):
+            case (Sensor.TYPE_MAGNETIC_FIELD):
                 createFeed("Magnetometer_x", "null", modelName + "/magnetometer/1", 2);
                 createFeed("Magnetometer_y", "null", modelName + "/magnetometer/2", 2);
                 createFeed("Magnetometer_z", "null", modelName + "/magnetometer/3", 2);

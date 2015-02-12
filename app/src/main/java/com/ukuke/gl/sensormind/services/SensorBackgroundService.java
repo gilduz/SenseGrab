@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -68,7 +69,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         Bundle args = null;
 
-        int sensorType = Sensor.TYPE_LIGHT;
+        int sensorType = -1;// = Sensor.TYPE_LIGHT;
 
         try {
             args = intent.getExtras();
@@ -127,11 +128,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     windowAccelerometer = window;
                     fluentSamplingAccelerometer = fluentSampling;
                     break;
-                case Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
+                case Sensor.TYPE_GYROSCOPE:
                     windowGyroscope = window;
                     fluentSamplingGyroscope = fluentSampling;
                     break;
-                case Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
+                case Sensor.TYPE_MAGNETIC_FIELD:
                     //Log.d(TAG, "Scusi dovrei loggare il magnetometro");
                     windowMagnetometer = window;
                     fluentSamplingMagnetometer = fluentSampling;
@@ -173,7 +174,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     mSensorManager.unregisterListener(this, event.sensor);
                 }
                 break;
-            case Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
+            case Sensor.TYPE_GYROSCOPE:
                 counterGyroscope++;
                 if (counterGyroscope >= windowGyroscope) {
                     counterGyroscope = 0;
@@ -182,7 +183,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     mSensorManager.unregisterListener(this, event.sensor);
                 }
                 break;
-            case Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
+            case Sensor.TYPE_MAGNETIC_FIELD:
                 counterMagnetometer++;
                 if (counterMagnetometer >= windowMagnetometer) {
                     counterMagnetometer = 0;
@@ -247,13 +248,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
                     listDataSample.add(dataSample);
                     break;
-                case Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
+                case Sensor.TYPE_GYROSCOPE:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                     dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), lastLatitude, lastLongitude);
                     listDataSample.add(dataSample);
                     break;
-                case Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
+                case Sensor.TYPE_MAGNETIC_FIELD:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                     dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
@@ -267,7 +268,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     @Override
     public void onDestroy() {
-
+        mSensorManager.unregisterListener(this);
+        new saveListSampleOnDb().execute();
+        //Toast.makeText(this, "SensorBackgroundService Destroyed", Toast.LENGTH_SHORT).show();
+        Log.d(TAG,"SensorBackgroundService Destroyed... all data is on Db");
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -301,7 +305,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        //TODO: Se la connessione fallisce....che si fa?
+        //TODO: Se la connessione ai servizi google fallisce....che si fa?
     }
 
 
