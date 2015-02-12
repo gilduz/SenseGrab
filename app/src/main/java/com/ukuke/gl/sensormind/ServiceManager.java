@@ -662,7 +662,14 @@ public class ServiceManager {
         // Stop fluent sampling for all
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
-        //PendingIntent scheduledIntent = PendingIntent.getService(cn, 321, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        cn.startService(intent);
+    }
+
+    public void stopFluentSampling(ServiceComponent component) {
+        // Stop fluent sampling for a specified sensor
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+        intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
+        intent.putExtra(SensorBackgroundService.KEY_SENSOR_TYPE, component.getSensorType());
         cn.startService(intent);
     }
 

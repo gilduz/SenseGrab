@@ -103,7 +103,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 fluentSampling = args.getBoolean(KEY_FLUENT_SAMPLING);
                 if (!fluentSampling) {
                     // Deregistro tutti i sensori (soprattutto per acc magn e gyro)
-                    mSensorManager.unregisterListener(this);
+                    mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sensorType));
                 }
             }
 
