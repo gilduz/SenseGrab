@@ -40,7 +40,8 @@ public class MainActivity extends Activity {
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     public static final int INTERVAL_TRANSFER_TO_DB = 30; //[sec]
-    public static final int INTERVAL_TRANSFER_TO_SENSORMIND = 1 * 60; //[sec]
+    public int INTERVAL_DELETE_SENT_DATA;
+    public int INTERVAL_TRANSFER_TO_SENSORMIND; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
@@ -57,7 +58,6 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO: Carica le impostazioni da database impostazioni
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // Check shared preferences
@@ -72,6 +72,9 @@ public class MainActivity extends Activity {
         // Get credentials if stored on shared preferences
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
+        INTERVAL_DELETE_SENT_DATA = Integer.parseInt(prefs.getString("dbFrequency", "300"));
+        INTERVAL_TRANSFER_TO_SENSORMIND = Integer.parseInt(prefs.getString("syncFrequency", "1800"));
+
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
         toggle.setChecked(prefs.getBoolean("enableGrabbing", false));
@@ -81,10 +84,9 @@ public class MainActivity extends Activity {
         //createAllFeeds();
 
         // WIFI AND PLUG IN
-        // TODO Togliere questi due sotto da qui e impostarli dalle preferenze
-        prefs.edit().putBoolean("syncOnlyOnWifi", false).apply();
+        /*prefs.edit().putBoolean("syncOnlyOnWifi", false).apply();
         prefs.edit().putBoolean("syncOnlyIfPluggedIn", false).apply();
-        prefs.edit().commit();
+        prefs.edit().commit();*/
 
         if (prefs.getBoolean("loggedIn",false)) {
             launchMQTTService();
@@ -134,7 +136,6 @@ public class MainActivity extends Activity {
         }
 
         else if (id == R.id.action_settings) {
-            // TODO Da aggiungere una activity settings semplice
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         }
@@ -156,7 +157,7 @@ public class MainActivity extends Activity {
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
 
         prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
-        prefs.edit().commit();
+        //prefs.edit().commit();
 
         if (toggleButton.isChecked()) {
             startScheduleAllActiveServices();

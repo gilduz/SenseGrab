@@ -396,6 +396,160 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return list;
     }
 
+    //---------------POPULATE METHODS--------------------
+
+    public void populateAllUnsentDataSamples(List<DataSample> list) {
+        db = this.getReadableDatabase();
+        Cursor res = this.getAllUnsentCursor();
+        DataSample data;
+        String feed;
+        Float value1, value2, value3;
+        Double longitude, latitude;
+        Long timestamp;
+        int arrayCount, id;
+
+        res.moveToFirst();
+        while (!res.isAfterLast()) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
+
+            data = new DataSample(feed, value1, value2, value3, arrayCount, timestamp, longitude, latitude);
+            data.setDbId(id);
+            list.add(data);
+            res.moveToNext();
+        }
+        res.close();
+        closeDb();
+    }
+
+    public void populateFirstNUnsentDataSamples(int N, List<DataSample> list) {
+        db = this.getReadableDatabase();
+        Cursor res = this.getAllUnsentCursor();
+        DataSample data;
+        String feed;
+        Float value1, value2, value3;
+        Double longitude, latitude;
+        Long timestamp;
+        int arrayCount, id;
+
+        res.moveToFirst();
+        for (int i = 0; i < N; i++) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
+
+            data = new DataSample(feed, value1, value2, value3, arrayCount, timestamp, longitude, latitude);
+            data.setDbId(id);
+            list.add(data);
+            res.moveToNext();
+        }
+        res.close();
+        closeDb();
+    }
+
+    public void populateAllUnsentSingleDataSamples(List<DataSample> list) {
+        db = this.getReadableDatabase();
+        Cursor res = this.getAllUnsentSingleDataCursor();
+        DataSample data;
+        String feed;
+        Float value1, value2, value3;
+        Double longitude, latitude;
+        Long timestamp;
+        int arrayCount, id;
+
+        res.moveToFirst();
+        while (!res.isAfterLast()) {
+            feed = res.getString(res.getColumnIndex(Data_idFeed));
+            value1 = res.getFloat(res.getColumnIndex(Data_value1));
+            value2 = res.getFloat(res.getColumnIndex(Data_value2));
+            value3 = res.getFloat(res.getColumnIndex(Data_value3));
+            arrayCount = res.getInt(res.getColumnIndex(Data_arrayCount));
+            timestamp = res.getLong(res.getColumnIndex(Data_timestamp));
+            longitude = res.getDouble(res.getColumnIndex(Data_long));
+            latitude = res.getDouble(res.getColumnIndex(Data_lat));
+            id = res.getInt(res.getColumnIndex(Data_id));
+
+            data = new DataSample(feed, value1, value2, value3, arrayCount, timestamp, longitude, latitude);
+            data.setDbId(id);
+            list.add(data);
+            res.moveToNext();
+        }
+        res.close();
+        closeDb();
+    }
+
+    public void populateFirstUnsentArrayDataSamples(List<DataSample> list) {
+        db = this.getReadableDatabase();
+        Cursor unsentArrayFirstElDb = this.getAllUnsentArrayFirstElementCursor();
+        DataSample data;
+        String feed;
+        Float value1, value2, value3;
+        Double longitude, latitude;
+        Long timestamp;
+        int arrayCount, id;
+        int numArrays = unsentArrayFirstElDb.getCount();
+
+        //Log.d(TAG,"unsentArrayFirstElDb ha " + unsentArrayFirstElDb.getCount()+ " elementi");
+
+        unsentArrayFirstElDb.moveToFirst();
+        //eseguo il ciclo for alla ricerca del primo array completo
+        for (int i = 0; i < (numArrays - 1); i++) {
+            //Imposto il feed per il quale cerco un array completo
+            //Log.d("DataDbHelper","Sono dentro al primo for");
+            feed = unsentArrayFirstElDb.getString(unsentArrayFirstElDb.getColumnIndex(Data_idFeed));
+            //Controllo se esiste un array completo
+            if (numberOfCompleteUnsentArraysOnFeed(feed) > 0) {
+                //Log.d("DataDbHelper","Per il feed corrente c'è almeno un array completo");
+                //esiste un array completo, ciclo fino a che non arrivo alla fine (NON devo avere diverse robe nello stesso feed)
+                Cursor currentArrayCursor = getAllPossibleElementsOfAnArray(unsentArrayFirstElDb);
+                currentArrayCursor.moveToFirst();
+                //eseguo il ciclo almeno la prima volta, e dopo faccio il check dell'arrayCount
+                //alla fine del primo ciclo nella condizione mi ritrovo 1>0
+                //il ciclo finisce quando arrivo al primo elemento dell'array successivo
+                do {
+                    //Log.d("DataDbHelper","Sono dentro al ciclo do while");
+
+                    value1 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value1));
+                    value2 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value2));
+                    value3 = currentArrayCursor.getFloat(currentArrayCursor.getColumnIndex(Data_value3));
+                    arrayCount = currentArrayCursor.getInt(currentArrayCursor.getColumnIndex(Data_arrayCount));
+                    timestamp = currentArrayCursor.getLong(currentArrayCursor.getColumnIndex(Data_timestamp));
+                    longitude = currentArrayCursor.getDouble(currentArrayCursor.getColumnIndex(Data_long));
+                    latitude = currentArrayCursor.getDouble(currentArrayCursor.getColumnIndex(Data_lat));
+                    id = currentArrayCursor.getInt(currentArrayCursor.getColumnIndex(Data_id));
+
+                    data = new DataSample(feed, value1, value2, value3, arrayCount, timestamp, longitude, latitude);
+                    data.setDbId(id);
+                    list.add(data);
+                    currentArrayCursor.moveToNext();
+                }
+                while (currentArrayCursor.getInt(currentArrayCursor.getColumnIndex(Data_arrayCount)) > 0);
+                //Ho finito di completare la lista e la restituisco
+                currentArrayCursor.close();
+                unsentArrayFirstElDb.close();
+                closeDb();
+            } else {//Non esiste un array completo per questo feed, guardo il successivo
+                unsentArrayFirstElDb.moveToNext();
+            }
+        }
+
+        unsentArrayFirstElDb.close();
+        closeDb();
+    }
+
     //---------------DELETE METHODS----------------------
 
     public int deleteAllDataSamples() {

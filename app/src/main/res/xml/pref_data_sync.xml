@@ -6,12 +6,25 @@
     <PreferenceCategory
         android:title="@string/pref_header_data_sync" >
         <ListPreference
-          android:key="sync_frequency"
+          android:key="syncFrequency"
             android:title="@string/pref_title_sync_frequency"
             android:entries="@array/pref_sync_frequency_titles"
             android:entryValues="@array/pref_sync_frequency_values"
-            android:defaultValue="300"
+            android:defaultValue="1800"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
+
+        <CheckBoxPreference
+            android:key="syncOnlyOnWifi"
+            android:title="@string/pref_title_sync_wifi"
+            android:summary="@string/pref_sync_wifi"
+            android:defaultValue="false" />
+
+        <CheckBoxPreference
+            android:key="syncOnlyIfPluggedIn"
+            android:title="@string/pref_title_sync_plugged_in"
+            android:summary="@string/pref_sync_plugged_in"
+            android:defaultValue="false" />
+
     </PreferenceCategory>
 </PreferenceScreen>

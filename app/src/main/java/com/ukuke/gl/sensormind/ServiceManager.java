@@ -583,6 +583,16 @@ public class ServiceManager {
         scheduler.cancel(scheduledIntent);
     }
 
+    public void setDeleteOldDataInterval(int sec) {
+        AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(cn, SensorBackgroundService.class);
+        Bundle args = new Bundle();
+        args.putBoolean(SensorBackgroundService.KEY_DELETE_OLD_DATA, true);
+        intent.putExtras(args);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
+    }
+
     public void startScheduleService(ServiceComponent component) {
 
 

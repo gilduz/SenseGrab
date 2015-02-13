@@ -3,6 +3,7 @@ package com.ukuke.gl.sensormind.services;
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -36,6 +37,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_ATTACH_GPS = "attach_gps";
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
     public static final String KEY_FLUENT_SAMPLING = "fluent_sampling";
+    public static final String KEY_DELETE_OLD_DATA = "delete_old_data";
     public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     GoogleApiClient mGoogleApiClient;
@@ -58,6 +60,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private Double lastLatitude;
     private Double lastLongitude;
     private boolean attachGPS = true;
+    private SharedPreferences prefs;
     private LocationRequest mLocationRequest; // Se si vuole implementare....
 
 
@@ -66,6 +69,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         // get sensor manager on starting the service
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
 
         Bundle args = null;
 
@@ -106,7 +111,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sensorType));
                 }
             }
-
+            if (args.containsKey(KEY_DELETE_OLD_DATA)) {
+                if (args.getBoolean(KEY_DELETE_OLD_DATA)) {
+                    new deleteOldDataFromDb().execute();
+                }
+            }
 
         }
 
@@ -319,6 +328,32 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 Log.d(TAG, "Transferred data to DB. Now db has " + dataDbHelper.numberOfEntries() + " entries with " + dataDbHelper.numberOfUnsentEntries() + " unsent samples");
             }
 
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            //Log.i(TAG, "Sensormind Sync completed");
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+        }
+    }
+
+    private class deleteOldDataFromDb extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            // Call delete old data from db
+            //todo completare
+            Long time = System.currentTimeMillis() -
+                    (Integer.parseInt(prefs.getString("dbFrequecy","1800")) * 1000); //timestamp in millis
+            int deleted = dataDbHelper.deleteSentDataSamplesBeforeTimestamp(time);
+            Log.d(TAG, "Deleted from db " + deleted + " sent samples");
             return null;
         }
 

@@ -138,7 +138,7 @@ public class LogInActivity extends Activity {
             Intent intent = new Intent(this, MQTTService.class);
 
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), MainActivity.INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Integer.parseInt(prefs.getString("syncFrequency","1800")) * 1000, scheduledIntent);
         }
         else {
             Log.d(TAG,"You need to login or register before send data via MQTT");

@@ -1,7 +1,11 @@
 package com.ukuke.gl.sensormind;
 
 import android.annotation.TargetApi;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -16,10 +20,12 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
 import com.ukuke.gl.sensormind.R;
+import com.ukuke.gl.sensormind.services.MQTTService;
 
 import java.util.List;
 
@@ -34,7 +40,7 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -42,6 +48,7 @@ public class SettingsActivity extends PreferenceActivity {
      * shown on tablets.
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = true;
+    private static final String TAG = SettingsActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,8 +131,8 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference("example_list"));
         bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));*/
 
-        bindPreferenceSummaryToValue(findPreference("db_frequency"));
-        bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+        bindPreferenceSummaryToValue(findPreference("dbFrequency"));
+        bindPreferenceSummaryToValue(findPreference("syncFrequency"));
     }
 
     /**
@@ -218,6 +225,56 @@ public class SettingsActivity extends PreferenceActivity {
                 PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Set up a listener whenever a key changes
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Unregister the listener whenever a key changes
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        //Log.d(TAG,key);
+        switch (key) {
+            case "syncFrequecy":
+                //Log.d(TAG,"New value: "+key+" "+sharedPreferences.getString(key,"300"));
+                launchMQTTService(sharedPreferences);
+                break;
+            case "dbFrequency" :
+                //Log.d(TAG,"New value: "+key+" "+sharedPreferences.getString(key,"1800"));
+                //TODO NON VA, perché???? aggiungerlo anche nel main
+                ServiceManager.getInstance(this)
+                        .setDeleteOldDataInterval(Integer.parseInt(sharedPreferences.getString(key,"1800")));
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    private void launchMQTTService(SharedPreferences prefs) {
+        if (prefs.getBoolean("loggedIn",false)) {
+            Log.d(TAG, "Activate Mqtt service");
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, MQTTService.class);
+
+            PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Integer.parseInt(prefs.getString("syncFrequency","1800")) * 1000, scheduledIntent);
+        }
+        else {
+            Log.d(TAG,"You need to login or register before send data via MQTT");
+        }
     }
 
     /**

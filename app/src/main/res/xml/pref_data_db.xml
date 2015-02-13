@@ -6,11 +6,11 @@
     <PreferenceCategory
         android:title="@string/pref_header_data_db" >
         <ListPreference
-            android:key="db_frequency"
+            android:key="dbFrequency"
             android:title="@string/pref_title_db_frequency"
             android:entries="@array/pref_db_frequency_titles"
             android:entryValues="@array/pref_db_frequency_values"
-            android:defaultValue="43200"
+            android:defaultValue="300"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
 
