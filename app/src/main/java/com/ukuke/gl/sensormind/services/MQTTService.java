@@ -164,7 +164,6 @@ public class MQTTService extends Service {
             try {
                 responseMessenger.send(reply);
             } catch (RemoteException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -284,7 +283,6 @@ public class MQTTService extends Service {
                     client.setCallback(this);
 
                 } catch (MqttException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
             }
@@ -305,7 +303,6 @@ public class MQTTService extends Service {
 
                                 //Toast.makeText(getApplicationContext(), "MQTT Disconnected", Toast.LENGTH_LONG).show();
                             } catch (MqttException e) {
-                                // TODO Auto-generated catch block
                                 e.printStackTrace();
                             }
                         }
@@ -597,7 +594,6 @@ public class MQTTService extends Service {
                         if (connection.connState != CONNECT_STATE.CONNECTED) {
                             break;
                         }
-                        // TODO: Questi boolean non ritornano il valore giusto se non invia il messaggio... controllare.
                         boolean sent_1 = publishMessage(path + "/1", obj_1.toString());
                         numPublishedMessages++;
                         boolean sent_2 = publishMessage(path + "/2", obj_2.toString());

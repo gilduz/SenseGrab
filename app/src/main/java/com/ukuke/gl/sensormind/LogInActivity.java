@@ -78,12 +78,8 @@ public class LogInActivity extends Activity {
         prefs.edit().putString("username",editText_username.getText().toString()).apply();//editText_username.getText().toString());
         prefs.edit().putString("password",editText_password.getText().toString()).apply();
         prefs.edit().commit();
-        new logIn_asynk().execute();
-        //ServiceManager.getInstance(LogInActivity.this).createDeviceFeeds();
-//        Intent intent = new Intent(this, MainActivity.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//        startActivity(intent);
 
+        new logIn_asynk().execute();
     }
 
 
@@ -105,7 +101,7 @@ public class LogInActivity extends Activity {
 
             if (validLogIn) {
                 Log.d(TAG,"Registration succeed!");
-                Toast.makeText(getApplicationContext(), "Registration successful!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
                 prefs.edit().commit();
@@ -119,7 +115,7 @@ public class LogInActivity extends Activity {
                 Log.d(TAG,"Login failed");
                 prefs.edit().putString("username","NULL").apply();
                 prefs.edit().putString("password","NULL").apply();
-                Toast.makeText(getApplicationContext(), "Registration failed!", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Login failed!", Toast.LENGTH_LONG).show();
             }
             prefs.edit().commit();
         }

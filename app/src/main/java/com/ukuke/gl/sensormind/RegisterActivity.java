@@ -13,7 +13,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.R;
@@ -22,9 +25,11 @@ import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.support.SensormindAPI;
 
 import java.security.Provider;
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
-public class RegisterActivity extends Activity {
+public class RegisterActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
     private static final String TAG = RegisterActivity.class.getSimpleName();
     SensormindAPI API;
@@ -36,15 +41,27 @@ public class RegisterActivity extends Activity {
     EditText editText_password_bis;
 
     String username;
+    String timezone = "55";
 
     SharedPreferences prefs = null;
     boolean validRegistration = false;
+    Spinner spinner;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+
+        // Timezone
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.timezone_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner = (Spinner) findViewById(R.id.spinner);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(this);
+
     }
 
 
@@ -86,13 +103,24 @@ public class RegisterActivity extends Activity {
         }
     }
 
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        timezone = Integer.toString(pos+1);
+        if (prefs.getBoolean("HEAVY_LOG",false)) {
+            Log.d(TAG, "Timezone selected: " + timezone);
+        }
+    }
+
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Do nothing
+    }
+
     private class logIn_asynk extends AsyncTask<String, Void, String> {
 
         @Override
         //TODO Aggiungere il timezone
         protected String doInBackground(String... params) {
             SensormindAPI API = new SensormindAPI(editText_username.getText().toString(),editText_password.getText().toString());
-            validRegistration = API.registerNewAccount(editText_firstname.getText().toString(), editText_lastname.getText().toString(), "55", editText_email.getText().toString());
+            validRegistration = API.registerNewAccount(editText_firstname.getText().toString(), editText_lastname.getText().toString(), timezone, editText_email.getText().toString());
             Log.d(TAG, "Request Registration for: " + editText_username.getText().toString());
             return "Executed";
         }

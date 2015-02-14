@@ -47,6 +47,9 @@ public class MainActivity extends Activity {
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
     public static final boolean MANAGE_MULTIPLE_CONFIGURATION = false;//TODO finire di implemetare l'utilizzo di questa variabile per differenziare la gestione a singola configurazione o configurazioni multiple dentro a configuration activity
     private static long back_pressed;
+    public static final boolean HEAVY_LOG = false;
+
+
     String username;
     String password;
 
@@ -80,6 +83,8 @@ public class MainActivity extends Activity {
         toggle.setChecked(prefs.getBoolean("enableGrabbing", false));
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
+        prefs.edit().putBoolean("HEAVY_LOG", HEAVY_LOG).apply();
+
 
         //createAllFeeds();
 
@@ -182,7 +187,7 @@ public class MainActivity extends Activity {
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
             }
             if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
-                Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
             }
             stopService(new Intent(this, SensorBackgroundService.class));
         }
@@ -197,7 +202,7 @@ public class MainActivity extends Activity {
             ServiceManager.getInstance(MainActivity.this).startScheduleService(service);
         }
         if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
-            Toast.makeText(this, "Acquisition started", Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "Acquisition started", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -370,4 +375,5 @@ public class MainActivity extends Activity {
             initEverything();
         }
     }
+
 }

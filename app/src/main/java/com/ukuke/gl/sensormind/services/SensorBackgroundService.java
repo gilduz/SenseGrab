@@ -38,7 +38,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
     public static final String KEY_FLUENT_SAMPLING = "fluent_sampling";
     public static final String KEY_DELETE_OLD_DATA = "delete_old_data";
-    public static final long INTERVAL_UPDATE_LOCATION_MS = 60 * 1000; //[ms]
+    public static final long INTERVAL_UPDATE_LOCATION_MS = 120 * 1000; //[ms]
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
@@ -121,12 +121,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
 
 
-        //TODO: Bisognerebbe aggiornare la posizione in background con asynktask
         // Se voglio aggiungere la posizione ed è passato l'intervallo minimo per l'aggiornamento
         if ((attachGPS) && (System.currentTimeMillis() > (timeOfLastLocationUpdateMs + INTERVAL_UPDATE_LOCATION_MS))) {
             updateLocation();
             timeOfLastLocationUpdateMs = System.currentTimeMillis();
-            flush(); // TODO è un test.... se funziona cambia il timer
         }
         ;
 
@@ -303,7 +301,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         if (mLastLocation != null) {
             lastLatitude = mLastLocation.getLatitude() + TRUCCA_COORDINATE;
             lastLongitude = mLastLocation.getLongitude() + TRUCCA_COORDINATE * 1.1;
-            Log.d(TAG, "New location requested: LAT: " + lastLatitude + " LONG: " + lastLongitude);
+            if (prefs.getBoolean("HEAVY_LOG",false)) {
+                Log.d(TAG, "New location requested: LAT: " + lastLatitude + " LONG: " + lastLongitude);
+            }
         }
     }
 

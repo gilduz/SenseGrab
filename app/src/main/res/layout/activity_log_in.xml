@@ -58,8 +58,13 @@
         android:layout_alignRight="@+id/editText_password"
         android:layout_alignEnd="@+id/editText_password"
         android:onClick="onClickedLogInButton"
-        android:background="@drawable/color_green_dark"
-        android:clickable="true" />
+        android:background="@drawable/btn_animation"
+        android:clickable="true"
+        android:enabled="true"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:singleLine="false"
+        android:translationZ="1dp" />
 
     <TextView
         android:layout_width="wrap_content"
