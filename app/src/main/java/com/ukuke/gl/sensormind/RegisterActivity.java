@@ -39,8 +39,6 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     EditText editText_lastname;
     EditText editText_email;
     EditText editText_password_bis;
-
-    String username;
     String timezone = "55";
 
     SharedPreferences prefs = null;
