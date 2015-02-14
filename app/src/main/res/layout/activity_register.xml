@@ -137,7 +137,7 @@
                 android:layout_alignRight="@+id/editText_email"
                 android:layout_alignEnd="@+id/editText_email"
                 android:onClick="onClickedRegisterButton"
-                android:background="@drawable/color_green_dark"
+                android:background="@drawable/btn_animation"
                 android:clickable="true" />
         </RelativeLayout>
     </ScrollView>
