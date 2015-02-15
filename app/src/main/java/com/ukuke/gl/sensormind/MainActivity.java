@@ -134,20 +134,20 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
             startActivity(intent);
         }
-        else if (id == R.id.action_test) {
-            //API = new SensormindAPI(prefs.getString("username","test_3"),
-
-            Log.i(TAG, "WIFI: " + deviceInfo.isConnectedToWifi() + "PLUGGED IN: " + deviceInfo.isPluggedIn());
-
-            //createAllFeeds();
-            //ServiceManager.getInstance(MainActivity.this).createDeviceFeeds();
-
-
-            // prefs.getString("password","test_3"));
-            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
-            Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
-            //AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        }
+//        else if (id == R.id.action_test) {
+//            //API = new SensormindAPI(prefs.getString("username","test_3"),
+//
+//            Log.i(TAG, "WIFI: " + deviceInfo.isConnectedToWifi() + "PLUGGED IN: " + deviceInfo.isPluggedIn());
+//
+//            //createAllFeeds();
+//            //ServiceManager.getInstance(MainActivity.this).createDeviceFeeds();
+//
+//
+//            // prefs.getString("password","test_3"));
+//            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
+//            Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
+//            //AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//        }
 
         else if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
