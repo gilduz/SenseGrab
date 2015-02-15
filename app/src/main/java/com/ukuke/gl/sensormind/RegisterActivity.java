@@ -1,3 +1,5 @@
+// TODO LEO! Nel xml mi sistemi il fatto che l'immagine sale con la tastiera invece di rimanere ancorata al fondo?! thanks
+
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;

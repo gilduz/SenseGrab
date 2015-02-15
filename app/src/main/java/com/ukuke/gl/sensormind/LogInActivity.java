@@ -6,23 +6,20 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.services.MQTTService;
-import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.support.SensormindAPI;
-
-import java.util.List;
 
 public class LogInActivity extends Activity {
 
@@ -34,6 +31,7 @@ public class LogInActivity extends Activity {
 
     SharedPreferences prefs = null;
     boolean validLogIn = false;
+    //private ImageView image;
 
 
     @Override
@@ -41,6 +39,8 @@ public class LogInActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        //image = (ImageView) findViewById(R.id.imageView);
+        //image.setImageResource(R.drawable.sensormind_logo);
     }
 
 
@@ -64,6 +64,11 @@ public class LogInActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onClickedImage(View view) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.URL_BROWSER_SENSORMIND));
+        startActivity(browserIntent);
     }
 
     public void onClickedRegisterButton(View view) {

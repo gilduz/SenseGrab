@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Messenger;
 import android.provider.Settings;
@@ -32,36 +33,28 @@ import android.os.Message;
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.services.MQTTService;
 import com.ukuke.gl.sensormind.services.SyncInternetService;
+import com.ukuke.gl.sensormind.support.AboutActivity;
 import com.ukuke.gl.sensormind.support.DeviceInfo;
 
 import java.util.List;
 
 public class MainActivity extends Activity {
-//    public class MainActivity extends ActionBarActivity {
 
     SharedPreferences prefs = null;
-    boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     public int INTERVAL_TRANSFER_TO_DB; //[sec]
     public int INTERVAL_DELETE_SENT_DATA; //[sec]
     public int INTERVAL_TRANSFER_TO_SENSORMIND; //[sec]
+    public static final String URL_BROWSER_SENSORMIND = "http://137.204.213.190/it";
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
     public static final boolean MANAGE_MULTIPLE_CONFIGURATION = false;//TODO finire di implemetare l'utilizzo di questa variabile per differenziare la gestione a singola configurazione o configurazioni multiple dentro a configuration activity
     private static long back_pressed;
     public static final boolean HEAVY_LOG = false;
-
-
     public long LAST_SCHEDULE_DELETE;
     String username;
     String password;
-
-    // MQTT
-    private Messenger service = null;
-    private final Messenger serviceHandler = new Messenger(new ServiceHandler());
-    private IntentFilter intentFilter = null;
-    private DeviceInfo deviceInfo = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +62,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         // Check shared preferences
         View v = new View(this);
-        deviceInfo = new DeviceInfo(MainActivity.this);
         initEverything();
     }
 
@@ -102,15 +94,6 @@ public class MainActivity extends Activity {
                     .setDeleteOldDataInterval(INTERVAL_DELETE_SENT_DATA);
             prefs.edit().putLong("last_delete",System.currentTimeMillis()).apply();
         }
-
-
-
-        //createAllFeeds();
-
-        // WIFI AND PLUG IN
-        /*prefs.edit().putBoolean("syncOnlyOnWifi", false).apply();
-        prefs.edit().putBoolean("syncOnlyIfPluggedIn", false).apply();
-        prefs.edit().commit();*/
 
         if (prefs.getBoolean("loggedIn",false)) {
             launchMQTTService();
@@ -149,38 +132,26 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_device_capabilities) {
+
             Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
             startActivity(intent);
         }
-//        else if (id == R.id.action_test) {
-//            //API = new SensormindAPI(prefs.getString("username","test_3"),
-//
-//            Log.i(TAG, "WIFI: " + deviceInfo.isConnectedToWifi() + "PLUGGED IN: " + deviceInfo.isPluggedIn());
-//
-//            //createAllFeeds();
-//            //ServiceManager.getInstance(MainActivity.this).createDeviceFeeds();
-//
-//
-//            // prefs.getString("password","test_3"));
-//            // ServiceManager.getInstance(MainActivity.this).syncAllFeedList();
-//            Toast.makeText(getApplicationContext(), "THIS WAS A TEST", Toast.LENGTH_LONG).show();
-//            //AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//        }
-
         else if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         }
-
         else if (id == R.id.action_log_in) {
             Intent intent = new Intent(this, LogInActivity.class);
             startActivity(intent);
         }
-
         else if (id == R.id.action_logout) {
             prefs.edit().putBoolean("loggedIn", false).apply();
             prefs.edit().commit();
             stopMQTTService();
+        }
+        else if (id == R.id.action_about) {
+            Intent intent = new Intent(this, AboutActivity.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -190,7 +161,6 @@ public class MainActivity extends Activity {
         toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
 
         prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
-        //prefs.edit().commit();
 
         if (toggleButton.isChecked()) {
             startScheduleAllActiveServices();
@@ -249,7 +219,7 @@ public class MainActivity extends Activity {
         if (prefs.getBoolean("firstrun", true)) {
             Log.i("MainActivity","This is a first run. Set up everything!");
             prefs.edit().putBoolean("firstrun", false).apply();
-            Intent intent = new Intent(this, LogInActivity.class);
+            Intent intent = new Intent(this, DisclaimerActivity.class);
             startActivity(intent);
         }
         else {
@@ -347,17 +317,17 @@ public class MainActivity extends Activity {
     }
 
     private void createAllFeeds() {
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null", MODEL_NAME + "/accelerometer/1",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null", MODEL_NAME + "/accelerometer/2",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null", MODEL_NAME + "/accelerometer/3",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null", MODEL_NAME + "/accelerometer/x",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null", MODEL_NAME + "/accelerometer/y",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null", MODEL_NAME + "/accelerometer/z",2);
 
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null", MODEL_NAME + "/gyroscope/1",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null", MODEL_NAME + "/gyroscope/2",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null", MODEL_NAME + "/gyroscope/3",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null", MODEL_NAME + "/gyroscope/x",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null", MODEL_NAME + "/gyroscope/y",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null", MODEL_NAME + "/gyroscope/z",2);
 
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null", MODEL_NAME + "/magnetometer/1",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null", MODEL_NAME + "/magnetometer/2",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null", MODEL_NAME + "/magnetometer/3",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null", MODEL_NAME + "/magnetometer/x",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null", MODEL_NAME + "/magnetometer/y",2);
+        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null", MODEL_NAME + "/magnetometer/z",2);
 
         ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux", MODEL_NAME + "/light",1);
         ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","hPa", MODEL_NAME + "/pressure",1);

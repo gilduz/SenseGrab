@@ -7,6 +7,8 @@
         android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_device_capabilities" android:title="@string/action_device_capabilities"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_about" android:title="@string/action_about"
+        android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
     <!--<item android:id="@+id/action_test" android:title="@string/action_test"-->

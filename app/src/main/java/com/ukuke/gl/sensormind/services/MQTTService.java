@@ -595,11 +595,11 @@ public class MQTTService extends Service {
                         if (connection.connState != CONNECT_STATE.CONNECTED) {
                             break;
                         }
-                        boolean sent_1 = publishMessage(path + "/1", obj_1.toString());
+                        boolean sent_1 = publishMessage(path + "/x", obj_1.toString());
                         numPublishedMessages++;
-                        boolean sent_2 = publishMessage(path + "/2", obj_2.toString());
+                        boolean sent_2 = publishMessage(path + "/y", obj_2.toString());
                         numPublishedMessages++;
-                        boolean sent_3 = publishMessage(path + "/3", obj_3.toString());
+                        boolean sent_3 = publishMessage(path + "/z", obj_3.toString());
                         numPublishedMessages++;
 
                         if (sent_1 && sent_2 && sent_3) {

@@ -727,19 +727,19 @@ public class ServiceManager {
 
         switch (component.getSensorType()) {
             case (Sensor.TYPE_ACCELEROMETER):
-                createFeed("Accelerometer_x", "null", modelName + "/accelerometer/1", 2);
-                createFeed("Accelerometer_y", "null", modelName + "/accelerometer/2", 2);
-                createFeed("Accelerometer_z", "null", modelName + "/accelerometer/3", 2);
+                createFeed("Accelerometer_x", "", modelName + "/accelerometer/x", 2);
+                createFeed("Accelerometer_y", "", modelName + "/accelerometer/y", 2);
+                createFeed("Accelerometer_z", "", modelName + "/accelerometer/z", 2);
                 break;
             case (Sensor.TYPE_GYROSCOPE):
-                createFeed("Gyroscope_x", "null", modelName + "/gyroscope/1", 2);
-                createFeed("Gyroscope_y", "null", modelName + "/gyroscope/2", 2);
-                createFeed("Gyroscope_z", "null", modelName + "/gyroscope/3", 2);
+                createFeed("Gyroscope_x", "", modelName + "/gyroscope/x", 2);
+                createFeed("Gyroscope_y", "", modelName + "/gyroscope/y", 2);
+                createFeed("Gyroscope_z", "", modelName + "/gyroscope/z", 2);
                 break;
             case (Sensor.TYPE_MAGNETIC_FIELD):
-                createFeed("Magnetometer_x", "null", modelName + "/magnetometer/1", 2);
-                createFeed("Magnetometer_y", "null", modelName + "/magnetometer/2", 2);
-                createFeed("Magnetometer_z", "null", modelName + "/magnetometer/3", 2);
+                createFeed("Magnetometer_x", "", modelName + "/magnetometer/x", 2);
+                createFeed("Magnetometer_y", "", modelName + "/magnetometer/y", 2);
+                createFeed("Magnetometer_z", "", modelName + "/magnetometer/z", 2);
                 break;
             case (Sensor.TYPE_LIGHT):
                 createFeed("Light", "lux", modelName + "/light", 1);
@@ -748,10 +748,10 @@ public class ServiceManager {
                 createFeed("Pressure", "hPa", modelName + "/pressure", 1);
                 break;
             case (Sensor.TYPE_PROXIMITY):
-                createFeed("Proximity", "null", modelName + "/proximity", 1);
+                createFeed("Proximity", "", modelName + "/proximity", 1);
                 break;
             case (Sensor.TYPE_AMBIENT_TEMPERATURE):
-                createFeed("Temperature", "null", modelName + "/temperature", 1);
+                createFeed("Temperature", "", modelName + "/temperature", 1);
                 break;
         }
     }

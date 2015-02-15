@@ -84,14 +84,14 @@
         </service>
 
         <!-- Declaring broadcast receiver for BOOT_COMPLETED event -->
-        <!--<receiver-->
-            <!--android:name=".MainActivity$MyReceiver"-->
-            <!--android:enabled="true"-->
-            <!--android:exported="false" >-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
+        <!-- <receiver -->
+        <!-- android:name=".MainActivity$MyReceiver" -->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="false" > -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.BOOT_COMPLETED" /> -->
+        <!-- </intent-filter> -->
+        <!-- </receiver> -->
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
@@ -100,6 +100,20 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
+        </activity>
+        <activity
+            android:name=".WebviewActivity"
+            android:label="@string/title_activity_webview" >
+        </activity>
+        <activity
+            android:name=".support.AboutActivity"
+            android:label="@string/title_activity_about" >
+        </activity>
+        <activity
+            android:name=".DisclaimerActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_disclaimer"
+            android:theme="@style/FullscreenTheme" >
         </activity>
     </application>
 

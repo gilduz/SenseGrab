@@ -139,8 +139,20 @@
                 android:onClick="onClickedRegisterButton"
                 android:background="@drawable/btn_animation"
                 android:clickable="true" />
+
         </RelativeLayout>
     </ScrollView>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:id="@+id/imageView2"
+        android:src="@drawable/sensormind_logo"
+        android:onClick="onClickedImage"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:isScrollContainer="false"/>
 
 
 </RelativeLayout>

@@ -1,0 +1,22 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.ukuke.gl.sensormind.support.AboutActivity">
+
+    <TextView android:text="Sensormind ti consente di salvare i tuoi dati sensoristici su un database cloud, offrendoti la possibilità di elaborarli real-time, recuperarli, graficarli, condividerli, esportarli e molto altro. La struttura del sistema è elastica e adattabile ad ogni tipologia di informazione e mette a disposizione dell&apos;utente una serie di semplici intefaccie per accedere alle informazioni memorizzate.  La piattaforma è aperta a qualsiasi sorgente di dato in grado di supportare il protocollo MQTT e offre per ogni utente storage illimitato su database mongoDB e una speciale istanza node-RED dedicata." android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:id="@+id/imageView"
+        android:src="@drawable/sensormind_logo"
+        android:onClick="onClickedImage"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
