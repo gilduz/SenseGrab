@@ -104,12 +104,21 @@ public class MainActivity extends Activity {
 
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item_login = menu.findItem(R.id.action_log_in);
+        MenuItem item_logout = menu.findItem(R.id.action_logout);
 
+        Log.d(TAG,"DEGUUFUSD: " + prefs.getBoolean("loggedIn",false));
+        item_login.setVisible(!prefs.getBoolean("loggedIn",false));
+        item_logout.setVisible(prefs.getBoolean("loggedIn", false));
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        // Inflate the menu; this adds items to the action bar if it is present.
         return true;
     }
 
@@ -151,7 +160,8 @@ public class MainActivity extends Activity {
         }
 
         else if (id == R.id.action_logout) {
-            prefs.edit().putBoolean("loggedIn",false);
+            prefs.edit().putBoolean("loggedIn", false).apply();
+            prefs.edit().commit();
             stopMQTTService();
         }
         return super.onOptionsItemSelected(item);
