@@ -108,8 +108,8 @@ public class SensormindAPI {
         try
         {
             res = makeHTTPRequest("GET", REGISTER_NEW_ACCOUNT_SERVICE, content);
-            JsonObject jsonObject = null;
-            jsonObject = new Gson().fromJson(res.getContent(), JsonObject.class);
+            //JsonObject jsonObject = null;
+            JsonObject jsonObject = new Gson().fromJson(res.getContent(), JsonObject.class);
             String s = jsonObject.get("success").getAsString();
             if (s.equals("true"))
                 ret = true;

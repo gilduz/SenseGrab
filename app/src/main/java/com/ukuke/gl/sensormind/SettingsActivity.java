@@ -247,15 +247,22 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         //Log.d(TAG,key);
         switch (key) {
-            case "syncFrequecy":
+            case "syncFrequency":
                 //Log.d(TAG,"New value: "+key+" "+sharedPreferences.getString(key,"300"));
                 launchMQTTService(sharedPreferences);
+                int syncFreq = Integer.parseInt(sharedPreferences.getString("syncFrequency","300"));
+                int dbTranf = 300;
+                if (syncFreq <= 300) {
+                    dbTranf = syncFreq - 2; //set the interval as a bit less of the other interval
+                }
+                ServiceManager.getInstance(this).setTransferToDbInterval(dbTranf);
                 break;
             case "dbFrequency" :
                 //Log.d(TAG,"New value: "+key+" "+sharedPreferences.getString(key,"1800"));
-                //TODO NON VA, perché???? aggiungerlo anche nel main
                 ServiceManager.getInstance(this)
                         .setDeleteOldDataInterval(Integer.parseInt(sharedPreferences.getString(key,"1800")));
+                sharedPreferences.edit().putLong("last_delete",System.currentTimeMillis()).apply();
+                //Log.d(TAG,"New value: "+key+" "+Integer.parseInt(sharedPreferences.getString(key,"1800")));
                 break;
             default:
                 break;
@@ -268,9 +275,9 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             Log.d(TAG, "Activate Mqtt service");
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(this, MQTTService.class);
-
+            //Log.d(TAG,"New value: syncFrequency "+Integer.parseInt(prefs.getString("syncFrequency","300")));
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Integer.parseInt(prefs.getString("syncFrequency","1800")) * 1000, scheduledIntent);
+            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Integer.parseInt(prefs.getString("syncFrequency","300")) * 1000, scheduledIntent);
         }
         else {
             Log.d(TAG,"You need to login or register before send data via MQTT");

@@ -30,6 +30,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -85,7 +86,7 @@ public class MQTTService extends Service {
         connection = new MQTTConnection();
 
         // Get shared preferences
-        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ipMqtt = prefs.getString("ip_MQTT", "137.204.213.190");
         portMqtt = prefs.getInt("port_MQTT", 1884);
         username = prefs.getString("username", "NULL");

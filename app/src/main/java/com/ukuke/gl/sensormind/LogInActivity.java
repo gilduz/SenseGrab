@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,7 +40,7 @@ public class LogInActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
-        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
 
@@ -100,7 +101,7 @@ public class LogInActivity extends Activity {
             prefs.edit().putBoolean("loggedIn", validLogIn).apply();
 
             if (validLogIn) {
-                Log.d(TAG,"Registration succeed!");
+                Log.d(TAG,"Log in succeed!");
                 Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();

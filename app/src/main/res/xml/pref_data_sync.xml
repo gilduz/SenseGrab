@@ -10,7 +10,7 @@
             android:title="@string/pref_title_sync_frequency"
             android:entries="@array/pref_sync_frequency_titles"
             android:entryValues="@array/pref_sync_frequency_values"
-            android:defaultValue="1800"
+            android:defaultValue="300"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null" />
 

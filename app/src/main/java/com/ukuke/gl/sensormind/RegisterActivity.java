@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,7 +52,14 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        editText_username = (EditText) findViewById(R.id.editText_username);
+        editText_password = (EditText) findViewById(R.id.editText_password);
+        editText_password_bis = (EditText) findViewById(R.id.editText_password_bis);
+        editText_firstname = (EditText) findViewById(R.id.editText_firstName);
+        editText_lastname = (EditText) findViewById(R.id.editText_lastName);
+        editText_email = (EditText) findViewById(R.id.editText_email);
 
         // Timezone
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.timezone_array, android.R.layout.simple_spinner_item);
@@ -86,13 +94,6 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     }
 
     public void onClickedRegisterButton(View view) {
-        editText_username = (EditText) findViewById(R.id.editText_username);
-        editText_password = (EditText) findViewById(R.id.editText_password);
-        editText_password_bis = (EditText) findViewById(R.id.editText_password_bis);
-        editText_firstname = (EditText) findViewById(R.id.editText_firstName);
-        editText_lastname = (EditText) findViewById(R.id.editText_lastName);
-        editText_email = (EditText) findViewById(R.id.editText_email);
-
         if (editText_password.getText().toString().compareTo(editText_password_bis.getText().toString()) == 0) {
             new logIn_asynk().execute();
         }
@@ -115,7 +116,6 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     private class logIn_asynk extends AsyncTask<String, Void, String> {
 
         @Override
-        //TODO Aggiungere il timezone
         protected String doInBackground(String... params) {
             SensormindAPI API = new SensormindAPI(editText_username.getText().toString(),editText_password.getText().toString());
             validRegistration = API.registerNewAccount(editText_firstname.getText().toString(), editText_lastname.getText().toString(), timezone, editText_email.getText().toString());

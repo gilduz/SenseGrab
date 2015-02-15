@@ -12,6 +12,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -70,7 +71,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         // get sensor manager on starting the service
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         Bundle args = null;
 
@@ -349,11 +350,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         @Override
         protected String doInBackground(String... params) {
             // Call delete old data from db
-            //todo completare
             Long time = System.currentTimeMillis() -
-                    (Integer.parseInt(prefs.getString("dbFrequecy","1800")) * 1000); //timestamp in millis
+                    (Integer.parseInt(prefs.getString("dbFrequency","1800")) * 1000); //timestamp in millis
             int deleted = dataDbHelper.deleteSentDataSamplesBeforeTimestamp(time);
-            Log.d(TAG, "Deleted from db " + deleted + " sent samples");
+            //Log.d(TAG,"Current: "+System.currentTimeMillis()+" - "+prefs.getString("dbFrequency","1800"));
+            Log.d(TAG, "Deleted from db " + deleted + " sent samples before "+time);
             return null;
         }
 

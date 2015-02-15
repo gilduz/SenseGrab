@@ -6,13 +6,15 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Messenger;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +31,7 @@ import android.os.Message;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.services.MQTTService;
+import com.ukuke.gl.sensormind.services.SyncInternetService;
 import com.ukuke.gl.sensormind.support.DeviceInfo;
 
 import java.util.List;
@@ -39,8 +42,8 @@ public class MainActivity extends Activity {
     SharedPreferences prefs = null;
     boolean toggleGrabbingEnabled = true;
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
-    public static final int INTERVAL_TRANSFER_TO_DB = 30; //[sec]
-    public int INTERVAL_DELETE_SENT_DATA;
+    public int INTERVAL_TRANSFER_TO_DB; //[sec]
+    public int INTERVAL_DELETE_SENT_DATA; //[sec]
     public int INTERVAL_TRANSFER_TO_SENSORMIND; //[sec]
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
@@ -50,6 +53,7 @@ public class MainActivity extends Activity {
     public static final boolean HEAVY_LOG = false;
 
 
+    public long LAST_SCHEDULE_DELETE;
     String username;
     String password;
 
@@ -70,13 +74,18 @@ public class MainActivity extends Activity {
     }
 
     private void initEverything() {
-        prefs = getSharedPreferences("com.ukuke.gl.sensormind", MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ServiceManager.getInstance(MainActivity.this).initializeFromDB();
         // Get credentials if stored on shared preferences
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
-        INTERVAL_DELETE_SENT_DATA = Integer.parseInt(prefs.getString("dbFrequency", "300"));
-        INTERVAL_TRANSFER_TO_SENSORMIND = Integer.parseInt(prefs.getString("syncFrequency", "1800"));
+        INTERVAL_DELETE_SENT_DATA = Integer.parseInt(prefs.getString("dbFrequency", "1800"));
+        INTERVAL_TRANSFER_TO_SENSORMIND = Integer.parseInt(prefs.getString("syncFrequency", "300"));
+        if (INTERVAL_TRANSFER_TO_SENSORMIND <= 300) {
+            INTERVAL_TRANSFER_TO_DB = INTERVAL_TRANSFER_TO_SENSORMIND - 2; //set the interval as a bit less of the other interval
+        } else {
+            INTERVAL_TRANSFER_TO_DB = 300;
+        }
 
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
@@ -84,6 +93,16 @@ public class MainActivity extends Activity {
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
         prefs.edit().putBoolean("HEAVY_LOG", HEAVY_LOG).apply();
+
+        LAST_SCHEDULE_DELETE = prefs.getLong("last_delete",-1);
+        if (LAST_SCHEDULE_DELETE == -1 || (System.currentTimeMillis()-LAST_SCHEDULE_DELETE)>(INTERVAL_DELETE_SENT_DATA*1000)) {
+            // Delete non yet scheduled or current - last is greater than interval
+            // Schedule it now
+            ServiceManager.getInstance(this)
+                    .setDeleteOldDataInterval(INTERVAL_DELETE_SENT_DATA);
+            prefs.edit().putLong("last_delete",System.currentTimeMillis()).apply();
+        }
+
 
 
         //createAllFeeds();
@@ -196,7 +215,7 @@ public class MainActivity extends Activity {
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
             }
             if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
-                //Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
             }
             stopService(new Intent(this, SensorBackgroundService.class));
         }
@@ -367,7 +386,7 @@ public class MainActivity extends Activity {
         //}
     }
 
-    private void descheduleMQTTService () {
+    /*private void descheduleMQTTService () {
         Log.d(TAG, "Deschedule Mqtt service");
         AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, MQTTService.class);
@@ -375,7 +394,7 @@ public class MainActivity extends Activity {
         PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
     }
-
+*/
     public class MyReceiver extends BroadcastReceiver {
         //TODO Istanziare all'avvio del telefono
         @Override
@@ -384,5 +403,4 @@ public class MainActivity extends Activity {
             initEverything();
         }
     }
-
 }

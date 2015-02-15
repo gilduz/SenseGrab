@@ -10,6 +10,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
@@ -49,7 +50,7 @@ public class ServiceManager {
 
     ServiceManager(Context cn) {
         this.cn = cn;
-        prefs = cn.getSharedPreferences("com.ukuke.gl.sensormind", cn.MODE_PRIVATE);
+        prefs = PreferenceManager.getDefaultSharedPreferences(cn);
         populateServiceComponentList();
         initializeFromDB();
     }
@@ -62,7 +63,6 @@ public class ServiceManager {
     }
 
 
-    //TODO Gildo, ho dovuto rimuovere static perchè ho inserito qua il calcolo di minDelay, una alternativa potrebbe essere di usare il setMinDelay da fuori, ma era lunga e non avevo voglia....
     public static class ServiceComponent {
         // Object to describe a component
         private String dysplayName;
@@ -589,7 +589,7 @@ public class ServiceManager {
         Bundle args = new Bundle();
         args.putBoolean(SensorBackgroundService.KEY_DELETE_OLD_DATA, true);
         intent.putExtras(args);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 234, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
     }
 
