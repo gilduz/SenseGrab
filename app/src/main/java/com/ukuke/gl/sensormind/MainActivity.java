@@ -109,7 +109,6 @@ public class MainActivity extends Activity {
         MenuItem item_login = menu.findItem(R.id.action_log_in);
         MenuItem item_logout = menu.findItem(R.id.action_logout);
 
-        Log.d(TAG,"DEGUUFUSD: " + prefs.getBoolean("loggedIn",false));
         item_login.setVisible(!prefs.getBoolean("loggedIn",false));
         item_logout.setVisible(prefs.getBoolean("loggedIn", false));
         return super.onPrepareOptionsMenu(menu);
