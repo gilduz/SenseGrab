@@ -572,14 +572,14 @@ public class ServiceManager {
         Bundle args = new Bundle();
         args.putBoolean(SensorBackgroundService.KEY_PERFORM_DATABASE_TRANSFER, true);
         intent.putExtras(args);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 145, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
     }
 
     public void stopTransferToDb() {
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 145, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.cancel(scheduledIntent);
     }
 
@@ -589,7 +589,7 @@ public class ServiceManager {
         Bundle args = new Bundle();
         args.putBoolean(SensorBackgroundService.KEY_DELETE_OLD_DATA, true);
         intent.putExtras(args);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 234, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 134, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
     }
 

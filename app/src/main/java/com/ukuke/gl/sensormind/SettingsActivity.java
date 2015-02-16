@@ -251,11 +251,11 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
                 //Log.d(TAG,"New value: "+key+" "+sharedPreferences.getString(key,"300"));
                 launchMQTTService(sharedPreferences);
                 int syncFreq = Integer.parseInt(sharedPreferences.getString("syncFrequency","300"));
-                int dbTranf = 300;
+                int dbTransf = 300;
                 if (syncFreq <= 300) {
-                    dbTranf = syncFreq - 2; //set the interval as a bit less of the other interval
+                    dbTransf = syncFreq - 2; //set the interval as a bit less of the other interval
                 }
-                ServiceManager.getInstance(this).setTransferToDbInterval(dbTranf);
+                ServiceManager.getInstance(this).setTransferToDbInterval(dbTransf);
                 break;
             case "dbFrequency" :
                 //Log.d(TAG,"New value: "+key+" "+sharedPreferences.getString(key,"1800"));
@@ -277,7 +277,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             Intent intent = new Intent(this, MQTTService.class);
             //Log.d(TAG,"New value: syncFrequency "+Integer.parseInt(prefs.getString("syncFrequency","300")));
             PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Integer.parseInt(prefs.getString("syncFrequency","300")) * 1000, scheduledIntent);
+            scheduler.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), Integer.parseInt(prefs.getString("syncFrequency","300")) * 1000, scheduledIntent);
         }
         else {
             Log.d(TAG,"You need to login or register before send data via MQTT");
