@@ -10,5 +10,6 @@
     <style name="MyActionBar"
         parent="@android:style/Widget.Holo.Light.ActionBar.Solid.Inverse">
         <item name="android:background">@drawable/color_green</item>
+        <item name="android:icon">@drawable/ic_group_work_white_48dp</item>
     </style>
 </resources>

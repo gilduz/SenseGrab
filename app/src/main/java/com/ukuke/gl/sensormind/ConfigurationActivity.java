@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -59,6 +60,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     SeekBar seekWin; //sampling window
     TextView textSamp;
     TextView textWin;
+    TextView winDesc;
+    TextView topic;
     RadioGroup radioGr;
     Switch gpsSwitch;
     Switch streamSwitch;
@@ -119,6 +122,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         gpsSwitch = (Switch) findViewById(R.id.Conf_gps);
         streamSwitch = (Switch) findViewById(R.id.Conf_stream);
 
+        // Texts
+        winDesc = (TextView) findViewById(R.id.Conf_windowDescription);
+        topic = (TextView) findViewById(R.id.Conf_feed_path);
+
         // Buttons
         buttonDeactivate = (Button) findViewById(R.id.Conf_deactivate);
         buttonSave = (Button) findViewById(R.id.Conf_save);
@@ -137,6 +144,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                     }
                     case R.id.Conf_Win_seekBar: {
                         textWin.setText(String.valueOf(progress+MIN_WIN));
+                        winDesc.setText("Add timestamp every "+textWin.getText()+" samples.");
                         progressWin = progress;
                         break;
                     }
@@ -210,6 +218,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
         streamSwitch.setChecked(false); //default: streaming is not active.
 
+        topic.setText("MQTT Topic: "+serviceComponent.getDefaultPath());
+
         // Hide window setting for not streaming sensors
         switch (typeSensor){
             // Not streaming sensors
@@ -225,9 +235,6 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 break;
         }
 
-
-        //TODO aggiungere il testo dentro a window per spiegare cos'è
-
         if (!isAModify) {
             //NEW CONFIGURATION
             buttonDeactivate.setVisibility(View.GONE);
@@ -235,6 +242,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             setDefaultValues();
         } else {
             //MODIFYING OLD CONFIGURATION
+            buttonSave.setText("Update");
             setValuesFromConfigurationById(dbId);
             if (dbId==activeConfigurationId) buttonDeactivate.setVisibility(View.VISIBLE);
         }
@@ -342,7 +350,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
         }
 
-        Toast.makeText(getApplicationContext(), "Service added", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Acquisition started on "+serviceComponent.getDefaultPath(), Toast.LENGTH_LONG).show();
 
         backToMain();
     }
@@ -526,6 +534,19 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         d.show();
     }
 
+    public void onClickedImage(View view) {
+        String username = prefs.getString("username", null);
+        //TODO da controllare
+        if (username != null) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse(MainActivity.URL_BROWSER_SENSORMIND+"/feed/"+
+                    username+"/"+serviceComponent.getDefaultPath()));
+            startActivity(browserIntent);
+        } else {
+            Toast.makeText(getApplicationContext(), "Login first!", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void setDefaultValues(){
         confName.setText(DEFAULT_NAME);
         //Streaming switch and sampling setting
@@ -542,6 +563,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         seekWin.setMax(DEFAULT_MAX_WINDOW-MIN_WIN);
         seekWin.setProgress(DEFAULT_WINDOW-MIN_WIN);
         textWin.setText(Integer.toString(DEFAULT_WINDOW));
+        winDesc.setText("Add timestamp every "+textWin.getText()+" samples.");
     }
 
     private void setValuesFromConfigurationById (int DbId){
@@ -575,6 +597,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             seekWin.setMax(DEFAULT_MAX_WINDOW-MIN_WIN);
             seekWin.setProgress(configuration.getWindow() - MIN_WIN);
             textWin.setText(Long.toString(configuration.getWindow()));
+            winDesc.setText("Add timestamp every "+textWin.getText()+" samples.");
 
             confName.setText(configuration.getConfigurationName());
             gpsSwitch.setChecked(configuration.getAttachGPS());

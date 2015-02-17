@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -102,6 +103,11 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
         else {
             Toast.makeText(getApplicationContext(), "Please check the password", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void onClickedImage(View view) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.URL_BROWSER_SENSORMIND));
+        startActivity(browserIntent);
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {

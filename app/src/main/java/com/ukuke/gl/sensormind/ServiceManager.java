@@ -241,7 +241,6 @@ public class ServiceManager {
         }
 
         public static class Configuration {
-            //TODO inserito dbID, gestirlo in dbHelper
 
             private long interval = 1000;
             private int window = 2;
@@ -336,9 +335,9 @@ public class ServiceManager {
                 cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
                 cursor.moveToFirst();
 
-                int sensorType = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_type));
-                int interval = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_time));
-                int window = cursor.getInt(cursor.getColumnIndex(dbHelper.Samp_conf_window));
+                int sensorType = cursor.getInt(cursor.getColumnIndex(DbHelper.Samp_conf_type));
+                int interval = cursor.getInt(cursor.getColumnIndex(DbHelper.Samp_conf_time));
+                int window = cursor.getInt(cursor.getColumnIndex(DbHelper.Samp_conf_window));
 
                 if (!cursor.isClosed()) {
                     cursor.close();
@@ -369,8 +368,6 @@ public class ServiceManager {
     }
 
     public int initializeFromDB() {
-        // TODO: Da implementare
-        // TODO: recuperare la feed list da database e salvarla nelle shared preferencies per gli id  (perché nella tabella dei dati invece che utilizzare una stringa per individuare il feed si usa un intero per ridurre la mole di dati)
         USE_DB = true;
         dbHelper = new DbHelper(cn);
 

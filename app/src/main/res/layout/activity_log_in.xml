@@ -70,7 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="I dont have an account, register me!"
+        android:text="@string/register"
         android:id="@+id/textView_register"
         android:layout_below="@+id/button_log_in"
         android:layout_centerHorizontal="true"

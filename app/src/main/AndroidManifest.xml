@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ukuke.gl.sensormind" >
 
@@ -11,7 +11,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_group_work_white_48dp"
+        android:icon="@drawable/ic_launcher_logo"
         android:label="@string/app_name"
         android:theme="@style/CustomActionBarTheme" >
 
@@ -101,10 +101,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
         </activity>
-        <activity
+        <!--<activity
             android:name=".WebviewActivity"
             android:label="@string/title_activity_webview" >
-        </activity>
+        </activity>-->
         <activity
             android:name=".support.AboutActivity"
             android:label="@string/title_activity_about" >

@@ -50,10 +50,16 @@
     <string name="conf_save_no_run">Save</string>
     <string name="add_device_text">Item checked are already sampling</string>
     <string name="conf_stream">Streaming</string>
+    <string name="conf_window_description">Add timestamp every 2 samples.</string>
+
     <string name="title_activity_webview">WebviewActivity</string>
     <string name="title_activity_about">AboutActivity</string>
 
     <string name="title_activity_disclaimer">DisclaimerActivity</string>
     <string name="dummy_content">Questo è il \n disclaimer!</string>
+    <string name="register"><u>I dont have an account, register me!</u></string>
+    <string name="conf_feed">Feed</string>
+    <string name="conf_mqtt_topic">MQTT Topic:</string>
+
 
 </resources>
