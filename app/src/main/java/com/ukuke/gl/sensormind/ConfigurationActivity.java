@@ -9,6 +9,7 @@ import android.hardware.Sensor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -95,6 +96,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     // Others
     AlertDialog alertLoadList;
+    String feedUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -229,9 +231,11 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 windowSetting.setVisibility(View.GONE);
                 streamSwitch.setVisibility(View.GONE);
+                feedUri = serviceComponent.getDefaultPath();
                 break;
             default: //Streaming sensors
                 //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN);
+                feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
         }
 
@@ -536,11 +540,12 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     public void onClickedImage(View view) {
         String username = prefs.getString("username", null);
-        //TODO da controllare
+        String uri = MainActivity.URL_BROWSER_SENSORMIND+"/feed/"+
+                username+"/"+feedUri;
+        //Log.i(TAG,uri);
         if (username != null) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse(MainActivity.URL_BROWSER_SENSORMIND+"/feed/"+
-                    username+"/"+serviceComponent.getDefaultPath()));
+                    Uri.parse(uri));
             startActivity(browserIntent);
         } else {
             Toast.makeText(getApplicationContext(), "Login first!", Toast.LENGTH_LONG).show();
