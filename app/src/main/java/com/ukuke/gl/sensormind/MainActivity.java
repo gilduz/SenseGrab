@@ -53,6 +53,8 @@ public class MainActivity extends Activity {
     private static long back_pressed;
     public static final boolean HEAVY_LOG = false;
     public long LAST_SCHEDULE_DELETE;
+
+
     String username;
     String password;
 
@@ -98,7 +100,10 @@ public class MainActivity extends Activity {
         if (prefs.getBoolean("loggedIn",false)) {
             launchMQTTService();
         }
+
         ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
+        Log.d(TAG,"I have set interval transfer to db to [sec]: "+ INTERVAL_TRANSFER_TO_DB);
+        Log.d(TAG,"I have set interval transfer to sensormind to [sec]: "+ INTERVAL_TRANSFER_TO_SENSORMIND);
 
         if ((prefs.getBoolean("loggedIn",false)) && (prefs.getBoolean("enableGrabbing",false))) {
             startScheduleAllActiveServices();
@@ -184,8 +189,10 @@ public class MainActivity extends Activity {
                 service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
                 ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
             }
-            if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
-                Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+            if (prefs.getBoolean("HEAVY_LOG",false)) {
+                if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+                    Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+                }
             }
             stopService(new Intent(this, SensorBackgroundService.class));
         }

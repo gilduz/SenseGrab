@@ -34,6 +34,20 @@ public class ServiceManager {
     private List<ServiceComponent> serviceComponentList = new ArrayList<>();
     private List<ServiceComponent> serviceComponentActiveList = new ArrayList<>();
 
+    public static final String PATH_ACTIVITY_IN_VEHICLE = "/activity/in_vehicle";
+    public static final String PATH_ACTIVITY_ON_BICYCLE = "/activity/on_bicycle";
+    public static final String PATH_ACTIVITY_ON_FOOT = "/activity/on_foot";
+    public static final String PATH_ACTIVITY_RUNNING = "/activity/running";
+    public static final String PATH_ACTIVITY_STILL = "/activity/still";
+    public static final String PATH_ACTIVITY_TILTING = "/activity/tilting";
+    public static final String PATH_ACTIVITY_UNKNOWN = "/activity/unknown";
+    public static final String PATH_ACTIVITY_WALKING = "/activity/walking";
+    public static final String PATH_MOST_PROBABLE_ACTIVITY ="/activity/most_probable_activity";
+    public static final String PATH_ACTIVITY ="/activity";
+
+
+    public static final int SENSOR_TYPE_ACTIVITY = 100;
+
     public List<FeedJSON> allFeedList = new ArrayList<>();
 
     SensormindAPI API = null;
@@ -165,6 +179,11 @@ public class ServiceManager {
             }
 
             switch (dysplayName) {
+                case "Activity":
+                    componentImageID = R.drawable.ic_directions_walk_grey600_48dp;
+                    sensorType = ServiceManager.SENSOR_TYPE_ACTIVITY;
+                    defaultPath = MainActivity.MODEL_NAME + PATH_ACTIVITY;
+                    break;
                 case "Magnetic Field":
                     componentImageID = R.drawable.ic_language_grey600_48dp;
                     sensorType = Sensor.TYPE_MAGNETIC_FIELD;
@@ -473,13 +492,17 @@ public class ServiceManager {
     }
 
     public int populateServiceComponentList() {
-        // Discovery Components
+        serviceComponentList.clear();
         int numAvailableServices = 0;
+
+        // Add activity for all
+        serviceComponentList.add(new ServiceComponent("Activity", true));
+        numAvailableServices++;
+
+        // Discovery Components
         int index = -1;
 
         sensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
-
-        serviceComponentList.clear();
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
@@ -569,14 +592,14 @@ public class ServiceManager {
         Bundle args = new Bundle();
         args.putBoolean(SensorBackgroundService.KEY_PERFORM_DATABASE_TRANSFER, true);
         intent.putExtras(args);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 145, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        scheduler.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
     }
 
     public void stopTransferToDb() {
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 145, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 12345, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.cancel(scheduledIntent);
     }
 
@@ -586,7 +609,7 @@ public class ServiceManager {
         Bundle args = new Bundle();
         args.putBoolean(SensorBackgroundService.KEY_DELETE_OLD_DATA, true);
         intent.putExtras(args);
-        PendingIntent scheduledIntent = PendingIntent.getService(cn, 134, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent scheduledIntent = PendingIntent.getService(cn, 234, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * sec, scheduledIntent);
     }
 
@@ -719,6 +742,17 @@ public class ServiceManager {
         }
     }
 
+    public void createActivitiesFeed(String modelName) {
+        createFeed("In_vehicle", "", modelName + PATH_ACTIVITY_IN_VEHICLE, 1);
+        createFeed("On_bibycle", "", modelName + PATH_ACTIVITY_ON_BICYCLE, 1);
+        createFeed("On_foot", "", modelName + PATH_ACTIVITY_ON_FOOT, 1);
+        createFeed("Running", "", modelName + PATH_ACTIVITY_RUNNING, 1);
+        createFeed("Still", "", modelName + PATH_ACTIVITY_STILL, 1);
+        createFeed("Tilting", "", modelName + PATH_ACTIVITY_TILTING, 1);
+        createFeed("Unknown", "", modelName + PATH_ACTIVITY_UNKNOWN, 1);
+        createFeed("Walking", "", modelName + PATH_ACTIVITY_WALKING, 1);
+        createFeed("Most_probable_activity", "", modelName + PATH_MOST_PROBABLE_ACTIVITY, 1);
+    }
 
     public void createServiceFeed(ServiceComponent component, String modelName) {
 

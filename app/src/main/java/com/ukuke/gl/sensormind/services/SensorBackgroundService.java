@@ -1,8 +1,12 @@
 package com.ukuke.gl.sensormind.services;
 
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -12,16 +16,25 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
+
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.ActivityRecognitionResult;
+import com.google.android.gms.location.ActivityRecognitionApi;
+import com.google.android.gms.location.ActivityRecognitionResultCreator;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.ukuke.gl.sensormind.DataDbHelper;
+import com.ukuke.gl.sensormind.MainActivity;
 import com.ukuke.gl.sensormind.ServiceManager;
 import com.ukuke.gl.sensormind.support.DataSample;
 
@@ -39,6 +52,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public static final String KEY_PERFORM_DATABASE_TRANSFER = "perform_database_transfer";
     public static final String KEY_FLUENT_SAMPLING = "fluent_sampling";
     public static final String KEY_DELETE_OLD_DATA = "delete_old_data";
+
     public static final long INTERVAL_UPDATE_LOCATION_MS = 120 * 1000; //[ms]
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     GoogleApiClient mGoogleApiClient;
@@ -60,9 +74,19 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private double TRUCCA_COORDINATE = 0.9123456;
     private Double lastLatitude;
     private Double lastLongitude;
-    private boolean attachGPS = true;
+    private boolean attachGPS_acc = false;
+    private boolean attachGPS_gyro = false;
+    private boolean attachGPS_magn = false;
+    private boolean attachGPS_light = false;
+    private boolean attachGPS_proximity = false;
+    private boolean attachGPS_pressure = false;
+    private boolean attachGPS_temperature = false;
     private SharedPreferences prefs;
     private LocationRequest mLocationRequest; // Se si vuole implementare....
+    private MyResultReceiver resultReceiver;
+    private long lastTimeActivity = System.currentTimeMillis();
+    private long intervalActivity = 30 * 1000;
+    private boolean enableActivity = false;
 
 
     @Override
@@ -84,6 +108,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         boolean launchSensorAcquisition = false;
         int window = 1;
         boolean fluentSampling = false;
+        boolean attachGPS = false;
+
 
         // get some properties from the intent
         if (args != null) {
@@ -120,8 +146,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         }
 
-
-
         // Se voglio aggiungere la posizione ed è passato l'intervallo minimo per l'aggiornamento
         if ((attachGPS) && (System.currentTimeMillis() > (timeOfLastLocationUpdateMs + INTERVAL_UPDATE_LOCATION_MS))) {
             updateLocation();
@@ -132,23 +156,50 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         // Se negli extra c'è il tipo di sensore lancia acquisizione sensore
         if (launchSensorAcquisition) {
             switch (sensorType) {
+                case ServiceManager.SENSOR_TYPE_ACTIVITY:
+                    intervalActivity = window;
+                    if (window == 0) {
+                        enableActivity = false;
+                        deActivateActivityRecognition();
+                    }
+                    else {
+                        enableActivity = true;
+                        activateActivityRecognition(window); // TODO e se non sono ancora connesso!??!?!
+                    }
+                    break;
                 case Sensor.TYPE_ACCELEROMETER:
+                    attachGPS_acc = attachGPS;
                     windowAccelerometer = window;
                     fluentSamplingAccelerometer = fluentSampling;
                     break;
                 case Sensor.TYPE_GYROSCOPE:
+                    attachGPS_gyro = attachGPS;
                     windowGyroscope = window;
                     fluentSamplingGyroscope = fluentSampling;
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
-                    //Log.d(TAG, "Scusi dovrei loggare il magnetometro");
+                    attachGPS_magn = attachGPS;
                     windowMagnetometer = window;
                     fluentSamplingMagnetometer = fluentSampling;
+                    break;
+                case Sensor.TYPE_LIGHT:
+                    attachGPS_light = attachGPS;
+                    break;
+                case Sensor.TYPE_PRESSURE:
+                    attachGPS_pressure = attachGPS;
+                    break;
+                case Sensor.TYPE_AMBIENT_TEMPERATURE:
+                    attachGPS_temperature = attachGPS;
+                    break;
+                case Sensor.TYPE_PROXIMITY:
+                    attachGPS_proximity = attachGPS;
                     break;
             }
             Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
             mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
         }
+
+
         return START_STICKY;
     }
 
@@ -214,6 +265,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         updateLocation();
         dataDbHelper = new DataDbHelper(this);
         mGoogleApiClient.connect();
+
+        IntentFilter filter = new IntentFilter(ActivityRecognitionIntentService.KEY_BROADCAST_RESULT);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        resultReceiver = new MyResultReceiver();
+        registerReceiver(resultReceiver, filter);
     }
 
     public synchronized void addDataSampleToList(SensorEvent event) {
@@ -229,43 +285,63 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 case Sensor.TYPE_LIGHT:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR LIGHT: \t\t\t" + event.values[0]);
-                    dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_light)
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    else
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR PROXIMITY: \t" + event.values[0]);
-                    dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_proximity)
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    else
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
                 case Sensor.TYPE_AMBIENT_TEMPERATURE:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR TEMPERATURE: \t" + event.values[0]);
-                    dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_temperature)
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    else
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
                 case Sensor.TYPE_PRESSURE:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR PRESSURE: \t\t" + event.values[0]);
-                    dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_pressure)
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    else
+                        dataSample = new DataSample(path, event.values[0], null, null, -1, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
                 case Sensor.TYPE_ACCELEROMETER:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR ACCELEROMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                    dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_acc)
+                        dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    else
+                        dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterAccelerometer, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
                 case Sensor.TYPE_GYROSCOPE:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR GYROSCOPE: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                    dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_gyro)
+                        dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    else
+                        dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterGyroscope, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
                 case Sensor.TYPE_MAGNETIC_FIELD:
                     if (logging)
                         Log.v(TAG, listDataSample.size() + ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
-                    dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    if (attachGPS_magn)
+                        dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
+                    dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
             }
@@ -278,6 +354,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public void onDestroy() {
         mSensorManager.unregisterListener(this);
         new saveListSampleOnDb().execute();
+
         //Toast.makeText(this, "SensorBackgroundService Destroyed", Toast.LENGTH_SHORT).show();
         Log.d(TAG,"SensorBackgroundService Destroyed... all data is on Db");
     }
@@ -287,13 +364,28 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
-                //.addApi(ActivityRecognition.API)
+                .addApi(ActivityRecognition.API)
                 .build();
     }
 
     @Override
     public void onConnected(Bundle connectionHint) {
         updateLocation();
+        if (enableActivity) {
+            activateActivityRecognition(30000);
+        }
+    }
+
+    private void activateActivityRecognition(long interval) {
+        Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
+        PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, interval, mActivityRecognitionPendingIntent);
+    }
+
+    private void deActivateActivityRecognition() {
+        Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
+        PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, mActivityRecognitionPendingIntent);
     }
 
     public void updateLocation() {
@@ -317,7 +409,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public void onConnectionFailed(ConnectionResult connectionResult) {
         //TODO: Se la connessione ai servizi google fallisce....che si fa?
     }
-
 
     private class saveListSampleOnDb extends AsyncTask<String, Void, String> {
         @Override
@@ -369,6 +460,61 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         @Override
         protected void onProgressUpdate(Void... values) {
+        }
+    }
+
+    public class MyResultReceiver extends BroadcastReceiver {
+
+
+        // RECEIVER TO MANAGE ACTIVITY RECOGNITION
+        public static final String KEY_BROADCAST_RESULT = "com.ukuke.gl.sensormind.intent.action.PROCESS_RESPONSE";
+
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if ((System.currentTimeMillis() - lastTimeActivity) < intervalActivity) {
+                return;
+            }
+
+            Bundle args = intent.getExtras();
+
+            //if (args.containsKey(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY)) {
+            //String supp = args.getString(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY);
+            int supp = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_IN_VEHICLE);
+
+            int activity_in_vehicle = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_IN_VEHICLE);
+            int activity_on_bicycle = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_ON_BICYCLE);
+            int activity_on_foot = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_ON_FOOT);
+            int activity_running = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_RUNNING);
+            int activity_still = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_STILL);
+            int activity_tilting = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_TILTING);
+            int activity_unknown = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_UNKNOWN);
+            int activity_walking = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_WALKING);
+            int most_probable_activity = args.getInt(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY);
+
+
+            DataSample dataSample;
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, System.currentTimeMillis(), null, null);
+            listDataSample.add(dataSample);
+
+            Log.v(TAG,"Acquired activity: " + supp);
         }
     }
 }

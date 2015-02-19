@@ -506,8 +506,8 @@ public class MQTTService extends Service {
                 mess.setPayload(message.getBytes());
                 myC.publish(path, mess);
                 res = true;
-                Log.d(TAG, "Published topic: " + path);// + " : " + message);
-                //Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
+                //Log.d(TAG, "Published topic: " + path);// + " : " + message);
+                Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
             } catch (Exception e) {
                 Log.d(TAG, "Errore in publishMessage: " + e);
             }

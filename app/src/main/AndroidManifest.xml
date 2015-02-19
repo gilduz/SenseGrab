@@ -101,10 +101,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.ukuke.gl.sensormind.MainActivity" />
         </activity>
-        <!--<activity
+        <!--
+        <activity
             android:name=".WebviewActivity"
             android:label="@string/title_activity_webview" >
-        </activity>-->
+        </activity>
+        -->
         <activity
             android:name=".support.AboutActivity"
             android:label="@string/title_activity_about" >
@@ -115,6 +117,11 @@
             android:label="@string/title_activity_disclaimer"
             android:theme="@style/FullscreenTheme" >
         </activity>
+
+        <service
+            android:name=".services.ActivityRecognitionIntentService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>
