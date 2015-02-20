@@ -35,7 +35,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.ukuke.gl.sensormind.DataDbHelper;
+import com.ukuke.gl.sensormind.MainActivity;
 import com.ukuke.gl.sensormind.R;
+import com.ukuke.gl.sensormind.ServiceManager;
 import com.ukuke.gl.sensormind.support.DataSample;
 import com.ukuke.gl.sensormind.support.DeviceInfo;
 
@@ -506,8 +508,8 @@ public class MQTTService extends Service {
                 mess.setPayload(message.getBytes());
                 myC.publish(path, mess);
                 res = true;
-                //Log.d(TAG, "Published topic: " + path);// + " : " + message);
-                Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
+                Log.d(TAG, "Published topic: " + path);// + " : " + message);
+                //Log.d(TAG, "PUBBLICATO: " + path + " : " + message);
             } catch (Exception e) {
                 Log.d(TAG, "Errore in publishMessage: " + e);
             }
@@ -626,6 +628,8 @@ public class MQTTService extends Service {
 
                             obj.put("d", sample.getValue_1());
 
+
+
                             if ((sample.getLatitude() != 0) && (sample.getLongitude() != 0)) {
                                 JSONArray array = new JSONArray();
                                 array.put(sample.getLongitude());
@@ -655,6 +659,38 @@ public class MQTTService extends Service {
                             if (sent) { // Se riesce ad inviarlo aggiungilo alla lista di sent
                                 listDataSent.add(sample);
                             }
+
+                            //Log.d(TAG, "MIAPATH:" + sample.getFeedPath());
+
+                            if (sample.getFeedPath().compareTo(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY) == 0 ) {
+                                // Send also the associated string
+                                String stringValue = null;
+                                switch (Math.round(sample.getValue_1())) {
+                                    case 0: stringValue = "In vehicle"; break;
+                                    case 1: stringValue = "On bicycle"; break;
+                                    case 2: stringValue = "On foot"; break;
+                                    case 3: stringValue = "Still"; break;
+                                    case 4: stringValue = "Unknown"; break;
+                                    case 5: stringValue = "Tilting"; break;
+                                    case 7: stringValue = "Walking"; break;
+                                    case 8: stringValue = "Running"; break;
+                                }
+                                obj.remove("d");
+                                obj.put("d", stringValue);
+
+                                message = obj.toString();
+
+                                path = "/" + username + "/v1/bm/" + sample.getFeedPath() + "_string";
+                                data.putCharSequence(TOPIC, path);
+                                data.putCharSequence(MESSAGE, message);
+                                msg = Message.obtain(null, PUBLISH);
+                                msg.setData(data);
+                                if (connection.connState != CONNECT_STATE.CONNECTED) {
+                                    break;
+                                }
+                                publishMessage(path, message);
+                            }
+
                         }
                         if (listDataSent.size() > 0) {
                             Log.i(TAG, "Sent to Mqtt " + listDataSent.size() + " single samples");

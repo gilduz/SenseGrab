@@ -768,6 +768,8 @@ public class ServiceManager {
         createFeed("Unknown", "", modelName + PATH_ACTIVITY_UNKNOWN, 1);
         createFeed("Walking", "", modelName + PATH_ACTIVITY_WALKING, 1);
         createFeed("Most_probable_activity", "", modelName + PATH_MOST_PROBABLE_ACTIVITY, 1);
+        createFeed("Most_probable_activity_string", "", modelName + PATH_MOST_PROBABLE_ACTIVITY + "_string", 3);
+
     }
 
     public void createServiceFeed(ServiceComponent component, String modelName) {

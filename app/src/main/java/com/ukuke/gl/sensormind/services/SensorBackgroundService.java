@@ -498,7 +498,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
             //if (args.containsKey(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY)) {
             //String supp = args.getString(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY);
-            int supp = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_IN_VEHICLE);
+            //int supp = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_IN_VEHICLE);
 
             int activity_in_vehicle = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_IN_VEHICLE);
             int activity_on_bicycle = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_ON_BICYCLE);
@@ -540,7 +540,19 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
 
-            Log.v(TAG,"Acquired activity: " + supp);
+            String stringValue = "";
+
+            switch (Math.round(most_probable_activity)) {
+                case 0: stringValue = "In vehicle"; break;
+                case 1: stringValue = "On bicycle"; break;
+                case 2: stringValue = "On foot"; break;
+                case 3: stringValue = "Still"; break;
+                case 4: stringValue = "Unknown"; break;
+                case 5: stringValue = "Tilting"; break;
+                case 7: stringValue = "Walking"; break;
+                case 8: stringValue = "Running"; break;
+            }
+            Log.v(TAG,"Acquired activity: " + stringValue);
 
             lastTimeActivity=System.currentTimeMillis();
         }
