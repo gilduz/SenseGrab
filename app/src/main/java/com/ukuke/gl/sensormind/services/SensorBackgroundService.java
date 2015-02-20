@@ -86,7 +86,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private LocationRequest mLocationRequest; // Se si vuole implementare....
     private MyResultReceiver resultReceiver;
     private long lastTimeActivity = System.currentTimeMillis();
-    private long intervalActivity = 30 * 1000;
+    private long intervalActivity = 0;
     private boolean enableActivity = false;
     private boolean isActivitySamplingRunning = false;
 
@@ -365,7 +365,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         new saveListSampleOnDb().execute();
         if (isActivitySamplingRunning) {
             myUnregisterReceiver();
-            isActivitySamplingRunning = false;
+            deActivateActivityRecognition();
+            //isActivitySamplingRunning = false;
         }
         Log.d(TAG,"SensorBackgroundService Destroyed... all data is on Db");
     }

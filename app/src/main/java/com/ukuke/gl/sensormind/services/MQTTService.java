@@ -576,9 +576,9 @@ public class MQTTService extends Service {
                         obj_3.put("d", array_3);
 
                         JSONArray arrayCoord = new JSONArray();
-                        if ((listData.get(0).getLatitude() != null) && (listData.get(0).getLongitude() != null)) {
-                            arrayCoord.put(listData.get(0).getLatitude());
+                        if ((listData.get(0).getLatitude() != 0) && (listData.get(0).getLongitude() != 0)) {
                             arrayCoord.put(listData.get(0).getLongitude());
+                            arrayCoord.put(listData.get(0).getLatitude());
                             arrayCoord.put(0);
                             obj_1.put("l", arrayCoord);
                             obj_2.put("l", arrayCoord);
@@ -626,10 +626,10 @@ public class MQTTService extends Service {
 
                             obj.put("d", sample.getValue_1());
 
-                            if ((sample.getLatitude() != null) && (sample.getLongitude() != null)) {
+                            if ((sample.getLatitude() != 0) && (sample.getLongitude() != 0)) {
                                 JSONArray array = new JSONArray();
-                                array.put(sample.getLatitude());
                                 array.put(sample.getLongitude());
+                                array.put(sample.getLatitude());
                                 array.put(0);
                                 obj.put("l", array);
                             }

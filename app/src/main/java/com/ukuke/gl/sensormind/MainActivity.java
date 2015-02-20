@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
         }
 
         ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
-        Log.d(TAG,"I have set interval transfer to db to [sec]: "+ INTERVAL_TRANSFER_TO_DB);
+        //Log.d(TAG,"I have set interval transfer to db to [sec]: "+ INTERVAL_TRANSFER_TO_DB);
 
         if ((prefs.getBoolean("loggedIn",false)) && (prefs.getBoolean("enableGrabbing",false))) {
             startScheduleAllActiveServices();

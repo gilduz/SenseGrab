@@ -220,30 +220,29 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
         streamSwitch.setChecked(false); //default: streaming is not active.
 
-        topic.setText("MQTT Topic: "+serviceComponent.getDefaultPath());
+        topic.setText("MQTT Topic: " + "/" + prefs.getString("username","USER") + "/v1/bm/" +serviceComponent.getDefaultPath());
 
         // Hide window setting for not streaming sensors
         switch (typeSensor){
             // Not streaming sensors
-            case ServiceManager.SENSOR_TYPE_ACTIVITY:
-                windowSetting.setVisibility(View.GONE);
-                streamSwitch.setVisibility(View.GONE);
-                break;
             case Sensor.TYPE_LIGHT:
             case Sensor.TYPE_PRESSURE:
             case Sensor.TYPE_PROXIMITY:
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 windowSetting.setVisibility(View.GONE);
                 streamSwitch.setVisibility(View.GONE);
+                //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath();
                 feedUri = serviceComponent.getDefaultPath();
                 break;
             case ServiceManager.SENSOR_TYPE_ACTIVITY:
                 windowSetting.setVisibility(View.GONE);
                 streamSwitch.setVisibility(View.GONE);
+                //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath()+"/";
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
             default: //Streaming sensors
                 //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN);
+                //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath()+"/";
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
         }
@@ -564,8 +563,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     public void onClickedImage(View view) {
         String username = prefs.getString("username", null);
-        String uri = MainActivity.URL_BROWSER_SENSORMIND+"/feed/"+
-                username+"/"+feedUri;
+        String uri = MainActivity.URL_BROWSER_SENSORMIND + "/feed/" + username + "/" + feedUri + "?username=" + prefs.getString("username","USERNAME")+ "&password=" + prefs.getString("password","PASSWORD");
+        Log.d(TAG, "Request webpage: "+ uri);
+        //String uri = MainActivity.URL_BROWSER_SENSORMIND + feedUri+"?username=" + prefs.getString("username","USERNAME")+ "&password=" + prefs.getString("password","PASSWORD");
+        //String uri = MainActivity.URL_BROWSER_SENSORMIND + feedUri;
         //Log.i(TAG,uri);
         if (username != null) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW,
