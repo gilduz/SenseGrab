@@ -32,7 +32,6 @@ import android.os.Message;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.services.MQTTService;
-import com.ukuke.gl.sensormind.services.SyncInternetService;
 import com.ukuke.gl.sensormind.support.AboutActivity;
 import com.ukuke.gl.sensormind.support.DeviceInfo;
 
@@ -103,7 +102,6 @@ public class MainActivity extends Activity {
 
         ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
         Log.d(TAG,"I have set interval transfer to db to [sec]: "+ INTERVAL_TRANSFER_TO_DB);
-        Log.d(TAG,"I have set interval transfer to sensormind to [sec]: "+ INTERVAL_TRANSFER_TO_SENSORMIND);
 
         if ((prefs.getBoolean("loggedIn",false)) && (prefs.getBoolean("enableGrabbing",false))) {
             startScheduleAllActiveServices();
@@ -194,7 +192,7 @@ public class MainActivity extends Activity {
                     Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
                 }
             }
-            stopService(new Intent(this, SensorBackgroundService.class));
+            //stopService(new Intent(this, SensorBackgroundService.class));
         }
 
 

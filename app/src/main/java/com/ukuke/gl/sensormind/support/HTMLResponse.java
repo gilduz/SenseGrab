@@ -11,13 +11,12 @@ public class HTMLResponse {
 	private String content;
 	private HashMap<String, String> HTMLHeader;
 	
-
-	
 	public HTMLResponse() {
 		HTMLStatusCode = -1;
 		content = "";
 		HTMLHeader = new HashMap<String, String>();
 	}
+
 	public int getHTMLStatusCode() {
 		return HTMLStatusCode;
 	}

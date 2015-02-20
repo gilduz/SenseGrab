@@ -225,6 +225,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         // Hide window setting for not streaming sensors
         switch (typeSensor){
             // Not streaming sensors
+            case ServiceManager.SENSOR_TYPE_ACTIVITY:
+                windowSetting.setVisibility(View.GONE);
+                streamSwitch.setVisibility(View.GONE);
+                break;
             case Sensor.TYPE_LIGHT:
             case Sensor.TYPE_PRESSURE:
             case Sensor.TYPE_PROXIMITY:

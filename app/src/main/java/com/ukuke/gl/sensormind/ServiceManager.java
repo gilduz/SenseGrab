@@ -45,7 +45,6 @@ public class ServiceManager {
     public static final String PATH_MOST_PROBABLE_ACTIVITY ="/activity/most_probable_activity";
     public static final String PATH_ACTIVITY ="/activity";
 
-
     public static final int SENSOR_TYPE_ACTIVITY = 100;
 
     public List<FeedJSON> allFeedList = new ArrayList<>();
@@ -637,6 +636,9 @@ public class ServiceManager {
             }
             try {
                 args.putInt(SensorBackgroundService.KEY_WINDOW, configuration.getWindow());
+                if (component.getSensorType() == SENSOR_TYPE_ACTIVITY) {
+                    args.putInt(SensorBackgroundService.KEY_WINDOW, (int) configuration.getInterval()); // Se richhiedo una attivirà passo nella varibile window il sampling time
+                }
             } catch (Exception e) {
             }
             try {
@@ -647,7 +649,7 @@ public class ServiceManager {
             try {
                 boolean value;
                 interval = configuration.getInterval();
-                if (interval == 0) {
+                if (interval == 0) { // Interval == 0 per i sensori con streaming attiva lo streaming
                     value = true;
                     args.putBoolean(SensorBackgroundService.KEY_FLUENT_SAMPLING, value);
                 }
@@ -658,7 +660,6 @@ public class ServiceManager {
             intent.putExtras(args);
 
             // Start the service
-
             PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType() + OFFSET_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             // This doesn't manage streaming wake up after a crash
             /*if (interval == 0) {
@@ -672,7 +673,13 @@ public class ServiceManager {
                 // If streaming: set wake up after a crash, ten minutes
                 interval = 10*60*1000;
             }
-            scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+
+
+            if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
+                scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
+            }else {
+                cn.startService(intent);
+            }
 
         }
     }
@@ -680,12 +687,21 @@ public class ServiceManager {
     public void stopScheduleService(ServiceComponent component) { //TODO finire con fluent
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
-        intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
+        if (component.getSensorType() == SENSOR_TYPE_ACTIVITY) {
+            intent.putExtra(SensorBackgroundService.KEY_SENSOR_TYPE, SENSOR_TYPE_ACTIVITY);
+            intent.putExtra(SensorBackgroundService.KEY_WINDOW, 0); // per stoppare l'acquisizione attività
+        }
+        else {
+            intent.putExtra(SensorBackgroundService.KEY_FLUENT_SAMPLING, false);
+        }
         PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType() + OFFSET_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        if (component.getActiveConfiguration().getInterval()==0) {
+
+        if ((component.getActiveConfiguration().getInterval()==0) || (component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
             cn.startService(intent);
         }
-        scheduler.cancel(scheduledIntent);
+        if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
+            scheduler.cancel(scheduledIntent);
+        }
     }
 
     public void stopFluentSampling() {

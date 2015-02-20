@@ -12,6 +12,7 @@ import android.os.BatteryManager;
  */
 
 
+// Get info about your device state
 public class DeviceInfo {
 
     Context cn;

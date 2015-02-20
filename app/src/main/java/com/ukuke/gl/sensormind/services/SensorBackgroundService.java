@@ -57,15 +57,15 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private static final String TAG = SensorBackgroundService.class.getSimpleName();
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    int counterAccelerometer = 0;
-    int counterGyroscope = 0;
-    int counterMagnetometer = 0;
-    int windowAccelerometer = 1;
-    int windowGyroscope = 1;
-    int windowMagnetometer = 1;
-    boolean fluentSamplingAccelerometer = false;
-    boolean fluentSamplingGyroscope = false;
-    boolean fluentSamplingMagnetometer = false;
+    private int counterAccelerometer = 0;
+    private int counterGyroscope = 0;
+    private int counterMagnetometer = 0;
+    private int windowAccelerometer = 1;
+    private int windowGyroscope = 1;
+    private int windowMagnetometer = 1;
+    private boolean fluentSamplingAccelerometer = false;
+    private boolean fluentSamplingGyroscope = false;
+    private boolean fluentSamplingMagnetometer = false;
     private SensorManager mSensorManager = null;
     private boolean logging = false;
     private long timeOfLastLocationUpdateMs = 0;
@@ -82,13 +82,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private boolean attachGPS_pressure = false;
     private boolean attachGPS_temperature = false;
     private boolean attachGPS_activity = false;
-
     private SharedPreferences prefs;
     private LocationRequest mLocationRequest; // Se si vuole implementare....
     private MyResultReceiver resultReceiver;
     private long lastTimeActivity = System.currentTimeMillis();
     private long intervalActivity = 30 * 1000;
     private boolean enableActivity = false;
+    private boolean isActivitySamplingRunning = false;
 
 
     @Override
@@ -111,7 +111,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         int window = 1;
         boolean fluentSampling = false;
         boolean attachGPS = false;
-
 
         // get some properties from the intent
         if (args != null) {
@@ -160,14 +159,12 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             switch (sensorType) {
                 case ServiceManager.SENSOR_TYPE_ACTIVITY:
                     intervalActivity = window;
-                    if (window == 0) { // TODO ma usare interval e creare un altro metodo da chiamare apposta per stoppare no?
-                        enableActivity = false;
+                    if (window == 0 ) {
                         deActivateActivityRecognition();
                     }
-                    else {
-                        enableActivity = true;
+                    else{
                         // Usa window come intervallo di acquisizione
-                        activateActivityRecognition(window); // TODO e se non sono ancora connesso ai servizi google!??!?!
+                        activateActivityRecognition(window);
                         attachGPS_activity = attachGPS;
                     }
                     break;
@@ -199,8 +196,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     attachGPS_proximity = attachGPS;
                     break;
             }
-            Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
-            mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+            if (sensorType != ServiceManager.SENSOR_TYPE_ACTIVITY) {
+                Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
+                mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+            }
         }
 
 
@@ -226,7 +225,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onSensorChanged(SensorEvent event) {
         addDataSampleToList(event);
-
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 counterAccelerometer++;
@@ -269,11 +267,18 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         updateLocation();
         dataDbHelper = new DataDbHelper(this);
         mGoogleApiClient.connect();
+    }
 
+    private void myRegisterReceiver() {
         IntentFilter filter = new IntentFilter(ActivityRecognitionIntentService.KEY_BROADCAST_RESULT);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
+        // Receivere per le activity detection
         resultReceiver = new MyResultReceiver();
         registerReceiver(resultReceiver, filter);
+    }
+
+    private void myUnregisterReceiver() {
+        unregisterReceiver(resultReceiver);
     }
 
     public synchronized void addDataSampleToList(SensorEvent event) {
@@ -358,8 +363,10 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     public void onDestroy() {
         mSensorManager.unregisterListener(this);
         new saveListSampleOnDb().execute();
-
-        //Toast.makeText(this, "SensorBackgroundService Destroyed", Toast.LENGTH_SHORT).show();
+        if (isActivitySamplingRunning) {
+            myUnregisterReceiver();
+            isActivitySamplingRunning = false;
+        }
         Log.d(TAG,"SensorBackgroundService Destroyed... all data is on Db");
     }
 
@@ -375,25 +382,32 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onConnected(Bundle connectionHint) {
         updateLocation();
-        if (enableActivity) {
-            activateActivityRecognition(30000);
-        }
+        activateActivityRecognition(intervalActivity);
     }
 
     private void activateActivityRecognition(long interval) {
-        Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
-        PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, interval, mActivityRecognitionPendingIntent);
+        if (mGoogleApiClient.isConnected() && (!isActivitySamplingRunning)) {
+            myRegisterReceiver();
+            Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
+            PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, ServiceManager.SENSOR_TYPE_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            //ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, interval, mActivityRecognitionPendingIntent);
+            ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 0, mActivityRecognitionPendingIntent);
+            isActivitySamplingRunning = true;
+        }
     }
 
     private void deActivateActivityRecognition() {
-        Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
-        PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, mActivityRecognitionPendingIntent);
+        if (isActivitySamplingRunning) {
+            myUnregisterReceiver();
+            Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
+            PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, mActivityRecognitionPendingIntent);
+            //unregisterReceiver(resultReceiver);
+            isActivitySamplingRunning = false;
+        }
     }
 
     public void updateLocation() {
-
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             lastLatitude = mLastLocation.getLatitude() + TRUCCA_COORDINATE;
@@ -468,8 +482,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     }
 
     public class MyResultReceiver extends BroadcastReceiver {
-
-
         // RECEIVER TO MANAGE ACTIVITY RECOGNITION
         public static final String KEY_BROADCAST_RESULT = "com.ukuke.gl.sensormind.intent.action.PROCESS_RESPONSE";
 
@@ -499,7 +511,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
             Double latitude = null;
             Double longitude = null;
-            long time = System.currentTimeMillis();
 
             if (attachGPS_activity) {
                 latitude = lastLatitude;
@@ -509,26 +520,28 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             //TODO Aggiungere i timestamp effettivi dell'acquisizione e non del momento in cui si salva
 
             DataSample dataSample;
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, time, latitude, longitude);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
 
             Log.v(TAG,"Acquired activity: " + supp);
+
+            lastTimeActivity=System.currentTimeMillis();
         }
     }
 }
