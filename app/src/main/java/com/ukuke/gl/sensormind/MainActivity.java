@@ -35,6 +35,9 @@ import com.ukuke.gl.sensormind.services.MQTTService;
 import com.ukuke.gl.sensormind.support.AboutActivity;
 import com.ukuke.gl.sensormind.support.DeviceInfo;
 
+import android.provider.Settings.Secure;
+
+
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -47,12 +50,13 @@ public class MainActivity extends Activity {
     public static final String URL_BROWSER_SENSORMIND = "http://137.204.213.190/it";
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
-    public static final String MODEL_NAME = android.os.Build.MODEL.replaceAll("\\s","");
+    public static String MODEL = android.os.Build.MODEL.replaceAll("\\s","");
+    public static String MODEL_NAME;
     public static final boolean MANAGE_MULTIPLE_CONFIGURATION = false;//TODO finire di implemetare l'utilizzo di questa variabile per differenziare la gestione a singola configurazione o configurazioni multiple dentro a configuration activity
     private static long back_pressed;
     public static final boolean HEAVY_LOG = false;
     public long LAST_SCHEDULE_DELETE;
-
+    public static String ANDROID_ID;
 
     String username;
     String password;
@@ -64,6 +68,9 @@ public class MainActivity extends Activity {
         // Check shared preferences
         View v = new View(this);
         initEverything();
+        ANDROID_ID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+        MODEL_NAME = MODEL + "_" + ANDROID_ID;
+        Log.d(TAG, "Device identifier: " + MODEL_NAME);
     }
 
     private void initEverything() {
