@@ -81,6 +81,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private boolean attachGPS_proximity = false;
     private boolean attachGPS_pressure = false;
     private boolean attachGPS_temperature = false;
+    private boolean attachGPS_activity = false;
+
     private SharedPreferences prefs;
     private LocationRequest mLocationRequest; // Se si vuole implementare....
     private MyResultReceiver resultReceiver;
@@ -164,7 +166,9 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     }
                     else {
                         enableActivity = true;
-                        activateActivityRecognition(window); // TODO e se non sono ancora connesso!??!?!
+                        // Usa window come intervallo di acquisizione
+                        activateActivityRecognition(window); // TODO e se non sono ancora connesso ai servizi google!??!?!
+                        attachGPS_activity = attachGPS;
                     }
                     break;
                 case Sensor.TYPE_ACCELEROMETER:
@@ -493,26 +497,35 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             int activity_walking = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_WALKING);
             int most_probable_activity = args.getInt(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY);
 
+            Double latitude = null;
+            Double longitude = null;
             long time = System.currentTimeMillis();
 
+            if (attachGPS_activity) {
+                latitude = lastLatitude;
+                longitude = lastLongitude;
+            }
+
+            //TODO Aggiungere i timestamp effettivi dell'acquisizione e non del momento in cui si salva
+
             DataSample dataSample;
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, time, null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, time, latitude, longitude);
             listDataSample.add(dataSample);
 
             Log.v(TAG,"Acquired activity: " + supp);
