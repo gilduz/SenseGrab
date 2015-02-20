@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -64,6 +65,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     TextView winDesc;
     TextView topic;
     RadioGroup radioGr;
+    RadioButton radioMillis;
     Switch gpsSwitch;
     Switch streamSwitch;
     Button buttonDeactivate;
@@ -119,6 +121,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
         // Radio buttons
         radioGr = (RadioGroup) findViewById(R.id.Conf_radioGroup);
+        radioMillis = (RadioButton) findViewById(R.id.Conf_radioMill);
 
         // Switchs
         gpsSwitch = (Switch) findViewById(R.id.Conf_gps);
@@ -237,6 +240,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             case ServiceManager.SENSOR_TYPE_ACTIVITY:
                 windowSetting.setVisibility(View.GONE);
                 streamSwitch.setVisibility(View.GONE);
+                radioMillis.setVisibility(View.GONE);
                 //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath()+"/";
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;

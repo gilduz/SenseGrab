@@ -13,6 +13,33 @@ import com.google.android.gms.location.ActivityRecognitionApi;
 import com.google.android.gms.location.ActivityRecognitionResultCreator;
 import com.google.android.gms.location.DetectedActivity;
 
+//public static final int IN_VEHICLE
+//        The device is in a vehicle, such as a car.
+//        Constant Value: 0 (0x00000000)
+//public static final int ON_BICYCLE
+//        The device is on a bicycle.
+//        Constant Value: 1 (0x00000001)
+//public static final int ON_FOOT
+//        The device is on a user who is walking or running.
+//        Constant Value: 2 (0x00000002)
+//public static final int RUNNING
+//        The device is on a user who is running. This is a sub-activity of ON_FOOT.
+//        Constant Value: 8 (0x00000008)
+//public static final int STILL
+//        The device is still (not moving).
+//        Constant Value: 3 (0x00000003)
+//public static final int TILTING
+//        The device angle relative to gravity changed significantly. This often occurs when a device is picked up from a desk or a user who is sitting stands up.
+//        Constant Value: 5 (0x00000005)
+//public static final int UNKNOWN
+//        Unable to detect the current activity.
+//        Constant Value: 4 (0x00000004)
+//public static final int WALKING
+//        The device is on a user who is walking. This is a sub-activity of ON_FOOT.
+//        Constant Value: 7 (0x00000007)
+
+
+
 public class ActivityRecognitionIntentService extends IntentService {
 
 
