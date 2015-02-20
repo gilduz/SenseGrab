@@ -37,8 +37,8 @@
     <string name="conf_window">Window amplitude</string> <!-- TODO trovare nome migliore -->
     <string name="conf_gps">Attach location</string>
     <string name="defaultNum5">5</string>
-    <string name="conf_saveButton">Start</string>
-    <string name="conf_deactivateButton">Stop</string>
+    <string name="conf_saveButton">Save</string>
+    <string name="conf_deactivateButton">Delete</string>
     <string name="conf_sec">sec</string>
     <string name="conf_min">min</string>
 

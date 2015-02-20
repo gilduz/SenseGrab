@@ -72,6 +72,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     Button buttonSave;
     RelativeLayout windowSetting;
     RelativeLayout sampSetting;
+    RelativeLayout nameLayout;
     Menu menu;
     //MenuItem load = null;
     //MenuItem delete = null;
@@ -115,6 +116,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         // Relative layout
         windowSetting = (RelativeLayout) findViewById(R.id.Conf_windowSetting);
         sampSetting = (RelativeLayout) findViewById(R.id.Conf_samplingSetting);
+        nameLayout = (RelativeLayout) findViewById(R.id.Conf_nameLayout);
 
         // Name
         confName = (EditText) findViewById(R.id.Conf_InsertName);
@@ -123,7 +125,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         radioGr = (RadioGroup) findViewById(R.id.Conf_radioGroup);
         radioMillis = (RadioButton) findViewById(R.id.Conf_radioMill);
 
-        // Switchs
+        // Switches
         gpsSwitch = (Switch) findViewById(R.id.Conf_gps);
         streamSwitch = (Switch) findViewById(R.id.Conf_stream);
 
@@ -161,7 +163,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         };
-        //Radiogroup listener
+        //RadioGroup listener
         RadioGroup.OnCheckedChangeListener radioListener = new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -210,7 +212,12 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         serviceComponent = ServiceManager.getInstance(ConfigurationActivity.this).getServiceComponentAvailableBySensorType(typeSensor);
         try {
             activeConfigurationId = serviceComponent.getActiveConfiguration().getDbId();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            activeConfigurationId = -1;
+        }
+
+        // Uncomment to get down to te min delay
+        // ATTENTION, for short delay it's better to use streaming
         /*int relativeMinMicroS = serviceComponent.getMinDelay();
         if (relativeMinMicroS > 0){
             usedMinMillis = (int) Math.ceil((((double)relativeMinMicroS)/ 1000)/STEP_MILLIS)*STEP_MILLIS;
@@ -218,14 +225,18 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             usedMinMillis = MIN_MILLIS;
         maxSeekSampMillis = MAX_SEEK_MILLIS-usedMinMillis;
 
+        //------------SET SOME VALUES-----------------
+
         setTitle(serviceComponent.getDysplayName());
         DEFAULT_NAME = serviceComponent.getDysplayName();
+
+        nameLayout.setVisibility(View.GONE); // for actual policy there are only one configuration per service, so the name is unnecessary
 
         streamSwitch.setChecked(false); //default: streaming is not active.
 
         topic.setText("MQTT Topic: " + "/" + prefs.getString("username","USER") + "/v1/bm/" +serviceComponent.getDefaultPath());
 
-        // Hide window setting for not streaming sensors
+        // Hide different settings for different sensors
         switch (typeSensor){
             // Not streaming sensors
             case Sensor.TYPE_LIGHT:
@@ -245,7 +256,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
             default: //Streaming sensors
-                //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN);
+                //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN); // for the max value depending on min delay and number of samples in 5 seconds
                 //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath()+"/";
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
@@ -316,6 +327,12 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        backToMain();
+        //super.onBackPressed();
+    }
+
     //---------------------------SAVE---------------------------------
 
     public void onButtonLaunchClicked(View view) {
@@ -363,38 +380,61 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         //Add configuration to the list
         serviceComponent.addConfiguration(configuration);
 
-        //Deactivating old active configuration if this it's not the active one
+        // USE THIS CODE IF YOU WANT TO SAVE WITHOUT MODIFYING IT'S ACTIVE STATE
+        if (dbId == activeConfigurationId && isAModify){
+            //I'm updating the active configuration
+            serviceComponent.setActiveConfiguration(configuration);
+            ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
+            ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
+            if (prefs.getBoolean("enableGrabbing",false)) {
+                ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
+            }
+        } else {
+            ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, false);
+        }
+
+        // USE THIS CODE IF YOU WANT TO SAVE AND SET ACTIVE,
+        // IF YOU WANT TO SAVE WITHOUT MODIFYING IT'S ACTIVE STATE DON'T USE THIS CODE
+        /*//Deactivating old active configuration if this it's not the active one
         if (dbId != activeConfigurationId && activeConfigurationId != -1) {
             ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
         }
-        //Activating current configuration
+        // Activating current configuration ------>> (NOT USED)
         serviceComponent.setActiveConfiguration(configuration);
         ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
         if (prefs.getBoolean("enableGrabbing",false)) {
             ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
-        }
+        }*/
 
-        Toast.makeText(getApplicationContext(), "Acquisition started on "+serviceComponent.getDefaultPath(), Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Saved for feed "+serviceComponent.getDefaultPath(), Toast.LENGTH_LONG).show();
 
         backToMain();
     }
 
-    //---------------------------DEACTIVATE---------------------------------
+    //---------------------------DELETE---------------------------------
 
     public void onButtonDeactivateClicked(View view) {
+        if (dbId == activeConfigurationId && isAModify){
+            //I'm deleting the active configuration, so stop the service
+            ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
+            ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+            serviceComponent.setActiveConfiguration(null);
+            Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
+        }
+        //Removing from the list and from Db
+        serviceComponent.removeConfigurationByDbId(dbId);
+        ServiceManager.getInstance(ConfigurationActivity.this).removeConfigurationServiceToDB(configuration);
+        backToMain();
+    }
+
+    public void OLD_onButtonDeactivateClicked(View view) {
         // Stop the service
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
         ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         serviceComponent.setActiveConfiguration(null);
         Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
-
-        // TODO Gildo, ho capito come hai strutturato la questione dell'activity recognition
-        // TODO tuttavia se io setto qua la window a zero, poi cancello subito la configurazione
-        // TODO chi cavolo lo legge window = 0? Non sarebbe meglio utilizzare qua interval e
-        // TODO rendere pubblico il metodo deActivateActivityRecognition? oppure copiarne qua il contenuto
-        // TODO se così fosse io da qua posso disattivare, poi eliminare la configurazione, poi eliminare da db
 
         if (MainActivity.MANAGE_MULTIPLE_CONFIGURATION) {
             // Hide button deactivate or return to main, it depends on your policy
@@ -464,7 +504,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         }
     }
 
-    //----------------------DELETE--------------------------
+    //----------------------DELETE WITH ALERT--------------------------
 
     private void alertDelete(){
         //Alert for confirmation
