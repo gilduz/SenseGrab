@@ -233,6 +233,11 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                 streamSwitch.setVisibility(View.GONE);
                 feedUri = serviceComponent.getDefaultPath();
                 break;
+            case ServiceManager.SENSOR_TYPE_ACTIVITY:
+                windowSetting.setVisibility(View.GONE);
+                streamSwitch.setVisibility(View.GONE);
+                feedUri = serviceComponent.getDefaultPath()+"/";
+                break;
             default: //Streaming sensors
                 //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN);
                 feedUri = serviceComponent.getDefaultPath()+"/";
@@ -329,11 +334,20 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         }
 
         //Set configuration values
+
+        // If streaming interval is set to zero
         if (streaming) {
             interval = 0;
         }
         configuration.setInterval(interval);
-        configuration.setWindow(window);
+
+        // If Activity recognition set the window with the interval value
+        if (typeSensor == ServiceManager.SENSOR_TYPE_ACTIVITY) {
+            configuration.setWindow((int)interval);
+        } else {
+            configuration.setWindow(window);
+        }
+
         configuration.setConfigurationName(confName.getText().toString());
         configuration.setAttachGPS(gpsSwitch.isChecked());
         configuration.setPath(serviceComponent.getDefaultPath());
@@ -368,6 +382,12 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         serviceComponent.setActiveConfiguration(null);
         Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
+
+        // TODO Gildo, ho capito come hai strutturato la questione dell'activity recognition
+        // TODO tuttavia se io setto qua la window a zero, poi cancello subito la configurazione
+        // TODO chi cavolo lo legge window = 0? Non sarebbe meglio utilizzare qua interval e
+        // TODO rendere pubblico il metodo deActivateActivityRecognition? oppure copiarne qua il contenuto
+        // TODO se così fosse io da qua posso disattivare, poi eliminare la configurazione, poi eliminare da db
 
         if (MainActivity.MANAGE_MULTIPLE_CONFIGURATION) {
             // Hide button deactivate or return to main, it depends on your policy

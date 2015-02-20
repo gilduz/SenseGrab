@@ -158,7 +158,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             switch (sensorType) {
                 case ServiceManager.SENSOR_TYPE_ACTIVITY:
                     intervalActivity = window;
-                    if (window == 0) {
+                    if (window == 0) { // TODO ma usare interval e creare un altro metodo da chiamare apposta per stoppare no?
                         enableActivity = false;
                         deActivateActivityRecognition();
                     }
@@ -493,25 +493,26 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             int activity_walking = args.getInt(ActivityRecognitionIntentService.KEY_ACTIVITY_WALKING);
             int most_probable_activity = args.getInt(ActivityRecognitionIntentService.KEY_MOST_PROBABLE_ACTIVITY);
 
+            long time = System.currentTimeMillis();
 
             DataSample dataSample;
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, System.currentTimeMillis(), null, null);
+            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, time, null, null);
             listDataSample.add(dataSample);
 
             Log.v(TAG,"Acquired activity: " + supp);
