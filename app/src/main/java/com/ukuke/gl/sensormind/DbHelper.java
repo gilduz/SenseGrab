@@ -116,7 +116,6 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     private boolean newConfiguration (ServiceManager.ServiceComponent.Configuration conf, ServiceManager.ServiceComponent comp, boolean isActive) {
-        //TODO modificare la configuration activity per impostare i massimi e minimi valori delle seekbar tramite getmindelay per ogni sensore
         // check if values are correct
         long interval = conf.getInterval();
         if (interval>=0){
@@ -124,7 +123,7 @@ public class DbHelper extends SQLiteOpenHelper {
             db = this.getWritableDatabase(); //open database
             ContentValues values = new ContentValues();
 
-            //Structure         : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
+            //Structure               : ||_id|| name || type ||service|| feed ||time||window||gps||active||created||
             //Data types on dbHelper  : ||int||String||String||String ||String||int || int  ||int|| int  || date  ||
 
             values.put(Samp_conf_name, conf.getConfigurationName());

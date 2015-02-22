@@ -187,6 +187,8 @@ public class SensormindAPI {
             //urlConnection.setRequestProperty("Connection","close");
             //urlConnection.setRequestProperty("Cache-Control","max-age=0");
 
+            urlConnection.setConnectTimeout(5000); //Set Timeout to 5 seconds
+
             InputStream ins = null;
             if (method.equals("POST"))
             {
@@ -222,6 +224,12 @@ public class SensormindAPI {
                 res.setContent(resString);
             }
 
+        } catch (java.net.SocketTimeoutException e) {
+            Log.d(TAG, "Connection timeout");
+            e.printStackTrace();
+        } catch (java.io.IOException e) {
+            Log.d(TAG, "Error in I/O communication");
+            e.printStackTrace();
         } catch (Exception e) {
             Log.d(TAG, "Error in Make HttpRequest");
             e.printStackTrace();

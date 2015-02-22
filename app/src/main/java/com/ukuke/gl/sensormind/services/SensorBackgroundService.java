@@ -437,7 +437,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private class saveListSampleOnDb extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-            // Call saveListFeedOnDB somethimes to transfer data on database
+            // Call saveListFeedOnDB sometimes to transfer data on database
             if (listDataSample.size() > 0) {
                 dataDbHelper.insertListOfData(listDataSample);
                 listDataSample.clear();
@@ -525,24 +525,26 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
             //TODO Aggiungere i timestamp effettivi dell'acquisizione e non del momento in cui si salva
 
+            String modelName = prefs.getString(MainActivity.MODEL_NAME,"NULL");
+
             DataSample dataSample;
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_IN_VEHICLE, (float)activity_in_vehicle, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_ON_BICYCLE, (float)activity_on_bicycle, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_ON_FOOT, (float)activity_on_foot, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_RUNNING, (float)activity_running, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_STILL, (float)activity_still, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_TILTING, (float)activity_tilting, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_UNKNOWN, (float)activity_unknown, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_ACTIVITY_WALKING, (float)activity_walking, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
-            dataSample = new DataSample(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, System.currentTimeMillis(), latitude, longitude);
+            dataSample = new DataSample(modelName + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY, (float)most_probable_activity, null, null, -1, System.currentTimeMillis(), latitude, longitude);
             listDataSample.add(dataSample);
 
             String stringValue = "";

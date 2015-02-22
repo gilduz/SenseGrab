@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
@@ -22,11 +21,12 @@ import java.util.List;
 
 /**
  * Created by gildoandreoni on 20/01/15.
+ *
  */
 
 public class ServiceManager {
     // Singleton Class
-    SharedPreferences prefs = null;
+    private SharedPreferences prefs = null;
 
     private static final String TAG = SensormindAPI.class.getSimpleName();
 
@@ -86,6 +86,7 @@ public class ServiceManager {
         private int sensorType;
         private int minDelay;
         private String defaultPath;
+        private static String modelName;
         boolean logging = false;
 
         private Configuration activeConfiguration = null;
@@ -169,8 +170,9 @@ public class ServiceManager {
             return -1;
         }
 
-        ServiceComponent(String dysplayName, boolean exists) {
+        ServiceComponent(String dysplayName, String ModelName, boolean exists) {
             this.dysplayName = dysplayName;
+            this.modelName = ModelName;
             this.exists = exists;
             if (this.exists) {
                 availableImageID = R.drawable.ic_check_grey600_36dp;
@@ -182,42 +184,42 @@ public class ServiceManager {
                 case "Activity":
                     componentImageID = R.drawable.ic_directions_walk_grey600_48dp;
                     sensorType = ServiceManager.SENSOR_TYPE_ACTIVITY;
-                    defaultPath = MainActivity.MODEL_NAME + PATH_ACTIVITY;
+                    defaultPath = modelName + PATH_ACTIVITY;
                     break;
                 case "Magnetic Field":
                     componentImageID = R.drawable.ic_language_grey600_48dp;
                     sensorType = Sensor.TYPE_MAGNETIC_FIELD;
-                    defaultPath = MainActivity.MODEL_NAME + "/magnetometer";
+                    defaultPath = modelName + "/magnetometer";
                     break;
                 case "Accelerometer":
                     componentImageID = R.drawable.ic_vibration_grey600_48dp;
                     sensorType = Sensor.TYPE_ACCELEROMETER;
-                    defaultPath = MainActivity.MODEL_NAME + "/accelerometer";
+                    defaultPath = modelName + "/accelerometer";
                     break;
                 case "Temperature":
                     componentImageID = R.drawable.ic_whatshot_grey600_48dp;
                     sensorType = Sensor.TYPE_AMBIENT_TEMPERATURE;
-                    defaultPath = MainActivity.MODEL_NAME + "/temperature";
+                    defaultPath = modelName + "/temperature";
                     break;
                 case "Gyroscope":
                     componentImageID = R.drawable.ic_autorenew_grey600_48dp;
                     sensorType = Sensor.TYPE_GYROSCOPE;
-                    defaultPath = MainActivity.MODEL_NAME + "/gyroscope";
+                    defaultPath = modelName + "/gyroscope";
                     break;
                 case "Light Sensor":
                     componentImageID = R.drawable.ic_flare_grey600_48dp;
                     sensorType = Sensor.TYPE_LIGHT;
-                    defaultPath = MainActivity.MODEL_NAME + "/light";
+                    defaultPath = modelName + "/light";
                     break;
                 case "Proximity Sensor":
                     componentImageID = R.drawable.ic_filter_list_grey600_48dp;
                     sensorType = Sensor.TYPE_PROXIMITY;
-                    defaultPath = MainActivity.MODEL_NAME + "/proximity";
+                    defaultPath = modelName + "/proximity";
                     break;
                 case "Pressure Sensor":
                     componentImageID = R.drawable.ic_filter_hdr_grey600_48dp;
                     sensorType = Sensor.TYPE_PRESSURE;
-                    defaultPath = MainActivity.MODEL_NAME + "/pressure";
+                    defaultPath = modelName + "/pressure";
                     break;
                 default:
                     componentImageID = R.drawable.ic_close_grey600_48dp;
@@ -280,8 +282,6 @@ public class ServiceManager {
                 this.path = path;
             }
 
-
-
             public String getPath() {
                 return path;
             }
@@ -338,8 +338,6 @@ public class ServiceManager {
 //
 //    @Deprecated
 //    public int initializeFromDB_old() {
-//        // TODO: Da implementare
-//        // TODO: recuperare la feed list da database?
 //        USE_DB = true;
 //        dbHelper = new DbHelper(cn);
 //        int numConf = dbHelper.numberOfConfigurations();
@@ -459,7 +457,7 @@ public class ServiceManager {
     }
 
     public ServiceComponent getServiceComponentAvailableBySensorType(int serviceType) {
-        ServiceComponent service = new ServiceComponent("NULL", false);
+        ServiceComponent service = new ServiceComponent("NULL", "NULL", false);
         for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
             service = getServiceComponentAvailableList().get(i);
             if (service.getSensorType() == serviceType) {
@@ -514,8 +512,10 @@ public class ServiceManager {
         serviceComponentList.clear();
         int numAvailableServices = 0;
 
+        String MODELNAME = prefs.getString(MainActivity.MODEL_NAME, "NULL");
+
         // Add activity for all
-        serviceComponentList.add(new ServiceComponent("Activity", true));
+        serviceComponentList.add(new ServiceComponent("Activity", MODELNAME, true));
         numAvailableServices++;
 
         // Discovery Components
@@ -524,81 +524,88 @@ public class ServiceManager {
         sensorManager = (SensorManager) cn.getSystemService(Context.SENSOR_SERVICE);
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
-            serviceComponentList.add(new ServiceComponent("Magnetic Field", true));
+            serviceComponentList.add(new ServiceComponent("Magnetic Field", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Magnetic Field", false));
+            serviceComponentList.add(new ServiceComponent("Magnetic Field", MODELNAME, false));
         }
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
-            serviceComponentList.add(new ServiceComponent("Accelerometer", true));
+            serviceComponentList.add(new ServiceComponent("Accelerometer", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_ACCELEROMETER);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Accelerometer", false));
+            serviceComponentList.add(new ServiceComponent("Accelerometer", MODELNAME, false));
         }
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null) {
-            serviceComponentList.add(new ServiceComponent("Temperature", true));
+            serviceComponentList.add(new ServiceComponent("Temperature", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_AMBIENT_TEMPERATURE);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Temperature", false));
+            serviceComponentList.add(new ServiceComponent("Temperature", MODELNAME, false));
         }
 
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
-            serviceComponentList.add(new ServiceComponent("Gyroscope", true));
+            serviceComponentList.add(new ServiceComponent("Gyroscope", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Gyroscope", false));
+            serviceComponentList.add(new ServiceComponent("Gyroscope", MODELNAME, false));
         }
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
-            serviceComponentList.add(new ServiceComponent("Light Sensor", true));
+            serviceComponentList.add(new ServiceComponent("Light Sensor", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_LIGHT);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Light Sensor", true));
+            serviceComponentList.add(new ServiceComponent("Light Sensor", MODELNAME, true));
         }
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null) {
-            serviceComponentList.add(new ServiceComponent("Proximity Sensor", true));
+            serviceComponentList.add(new ServiceComponent("Proximity Sensor", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_PROXIMITY);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Proximity Sensor", false));
+            serviceComponentList.add(new ServiceComponent("Proximity Sensor", MODELNAME, false));
         }
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null) {
-            serviceComponentList.add(new ServiceComponent("Pressure Sensor", true));
+            serviceComponentList.add(new ServiceComponent("Pressure Sensor", MODELNAME, true));
+            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_PRESSURE);
             if (index > -1) {
-                serviceComponentList.get(index).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE).getMinDelay());
+                serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE).getMinDelay());
             }
             numAvailableServices++;
         } else {
-            serviceComponentList.add(new ServiceComponent("Pressure Sensor", false));
+            serviceComponentList.add(new ServiceComponent("Pressure Sensor", MODELNAME, false));
         }
 
         scanDone = true;
@@ -696,7 +703,6 @@ public class ServiceManager {
             if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
                 scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
             }else {
-                Log.d(TAG,"FACCIO PARTIRE ACTIVITY RECOGNITION!!!");
                 cn.startService(intent);
             }
 
@@ -773,10 +779,12 @@ public class ServiceManager {
 
     public void createDeviceFeeds() {
         // Create just the services available for the device
+        String model_name = prefs.getString(MainActivity.MODEL_NAME,"NULL");
+        createActivitiesFeed(model_name);
         List<ServiceManager.ServiceComponent> list;
         list = getServiceComponentAvailableList();
         for (int i=0; i<list.size(); i++) {
-            createServiceFeed(list.get(i), MainActivity.MODEL_NAME);
+            createServiceFeed(list.get(i), model_name);
         }
     }
 

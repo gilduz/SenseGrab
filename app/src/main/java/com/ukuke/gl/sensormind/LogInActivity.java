@@ -112,7 +112,6 @@ public class LogInActivity extends Activity {
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
                 prefs.edit().commit();
                 ServiceManager.getInstance(LogInActivity.this).createDeviceFeeds();
-                ServiceManager.getInstance(LogInActivity.this).createActivitiesFeed(MainActivity.MODEL_NAME);
                 launchMQTTService();
                 Intent intent = new Intent(LogInActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

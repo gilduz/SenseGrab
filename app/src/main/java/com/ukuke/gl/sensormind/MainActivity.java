@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static String MODEL = android.os.Build.MODEL.replaceAll("\\s","");
-    public static String MODEL_NAME; //TODO passare a shared preferences, sia qui che in tutti i posti dove viene usato, GILDOCULOECULOCHINONCLODICECULO!!!!!
+    public static final String MODEL_NAME = "ModelName";
     public static final boolean MANAGE_MULTIPLE_CONFIGURATION = false;//TODO finire di implemetare l'utilizzo di questa variabile per differenziare la gestione a singola configurazione o configurazioni multiple dentro a configuration activity
     private static long back_pressed;
     public static final boolean HEAVY_LOG = false;
@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
 
     String username;
     String password;
+    String modelName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +70,6 @@ public class MainActivity extends Activity {
         // Check shared preferences
         View v = new View(this);
         initEverything();
-        ANDROID_ID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-        MODEL_NAME = MODEL + "_" + ANDROID_ID;
-        Log.d(TAG, "Device identifier: " + MODEL_NAME);
     }
 
     private void initEverything() {
@@ -81,9 +79,16 @@ public class MainActivity extends Activity {
         // Get credentials if stored on shared preferences
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
+        modelName = prefs.getString(MODEL_NAME, "NULL");
+        if (modelName.equals("NULL")) {
+            ANDROID_ID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+            modelName = MODEL + "_" + ANDROID_ID;
+            prefs.edit().putString(MODEL_NAME,modelName).apply();
+        }
+        Log.d(TAG, "Device identifier: " + modelName);
         INTERVAL_DELETE_SENT_DATA = Integer.parseInt(prefs.getString("dbFrequency", "1800"));
         INTERVAL_TRANSFER_TO_SENSORMIND = Integer.parseInt(prefs.getString("syncFrequency", "300"));
-        if (INTERVAL_TRANSFER_TO_SENSORMIND <= 300) {
+        if (INTERVAL_TRANSFER_TO_SENSORMIND <= 301) {
             INTERVAL_TRANSFER_TO_DB = INTERVAL_TRANSFER_TO_SENSORMIND - 2; //set the interval as a bit less of the other interval
         } else {
             INTERVAL_TRANSFER_TO_DB = 300;
@@ -302,21 +307,21 @@ public class MainActivity extends Activity {
                 toggleButton.setChecked(false);
             }
 
-            toggleButton.setOnClickListener( new View.OnClickListener() {
-                                                 @Override
-                                                 public void onClick(View v) {
-                                                     ServiceManager.ServiceComponent.Configuration configuration = currentServiceComponent.configurationList.get(0);
-                                                     if (toggleButton.isChecked()) {
-                                                         currentServiceComponent.setActiveConfiguration(configuration);
-                                                         //ServiceManager.getInstance(MainActivity.this).addServiceComponentActive(currentServiceComponent);
-                                                         ServiceManager.getInstance(MainActivity.this).startScheduleService(currentServiceComponent);
-                                                     } else {
-                                                         ServiceManager.getInstance(MainActivity.this).stopScheduleService(currentServiceComponent);
-                                                         currentServiceComponent.setActiveConfiguration(null);
-                                                     }
-                                                     ServiceManager.getInstance(MainActivity.this).addOrUpdateConfigurationServiceToDB(currentServiceComponent,configuration, toggleButton.isChecked());
-                                                 }
-                                             }
+            toggleButton.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    ServiceManager.ServiceComponent.Configuration configuration = currentServiceComponent.configurationList.get(0);
+                                                    if (toggleButton.isChecked()) {
+                                                        currentServiceComponent.setActiveConfiguration(configuration);
+                                                        //ServiceManager.getInstance(MainActivity.this).addServiceComponentActive(currentServiceComponent);
+                                                        ServiceManager.getInstance(MainActivity.this).startScheduleService(currentServiceComponent);
+                                                    } else {
+                                                        ServiceManager.getInstance(MainActivity.this).stopScheduleService(currentServiceComponent);
+                                                        currentServiceComponent.setActiveConfiguration(null);
+                                                    }
+                                                    ServiceManager.getInstance(MainActivity.this).addOrUpdateConfigurationServiceToDB(currentServiceComponent, configuration, toggleButton.isChecked());
+                                                }
+                                            }
             );
 
             TextView myText = (TextView) itemView.findViewById(R.id.item_textView);
