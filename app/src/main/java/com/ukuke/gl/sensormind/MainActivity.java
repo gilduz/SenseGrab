@@ -51,12 +51,13 @@ public class MainActivity extends Activity {
     public static final String IP_MQTT = "137.204.213.190";
     public static final int PORT_MQTT = 1884;
     public static String MODEL = android.os.Build.MODEL.replaceAll("\\s","");
-    public static String MODEL_NAME;
+    public static String MODEL_NAME; //TODO passare a shared preferences, sia qui che in tutti i posti dove viene usato, GILDOCULOECULOCHINONCLODICECULO!!!!!
     public static final boolean MANAGE_MULTIPLE_CONFIGURATION = false;//TODO finire di implemetare l'utilizzo di questa variabile per differenziare la gestione a singola configurazione o configurazioni multiple dentro a configuration activity
     private static long back_pressed;
     public static final boolean HEAVY_LOG = false;
     public long LAST_SCHEDULE_DELETE;
     public static String ANDROID_ID;
+    private ListView listView = null;
 
     String username;
     String password;
@@ -74,6 +75,7 @@ public class MainActivity extends Activity {
     }
 
     private void initEverything() {
+        listView = (ListView) findViewById(R.id.listViewMain);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ServiceManager.getInstance(MainActivity.this).initializeFromDB();
         // Get credentials if stored on shared preferences
@@ -89,7 +91,9 @@ public class MainActivity extends Activity {
 
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
-        toggle.setChecked(prefs.getBoolean("enableGrabbing", false));
+        toggle.setChecked(prefs.getBoolean("enableGrabbing", true)); //TODO SICURO A TRUE!=??!?!?
+        toggle.setVisibility(View.GONE);
+        prefs.edit().putBoolean("enableGrabbing", true).apply();
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
         prefs.edit().putBoolean("HEAVY_LOG", HEAVY_LOG).apply();
@@ -167,42 +171,42 @@ public class MainActivity extends Activity {
     }
 
     public void onClickedToggle(View view) {
-        ToggleButton toggleButton;
-        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
-
-        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
-
-        if (toggleButton.isChecked()) {
-            startScheduleAllActiveServices();
-            //launchMQTTService();
-            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
-        }
-        else {
-            // STOP all schedules
-            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            //Intent intent = new Intent(this, MQTTService.class);
-            //PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            //scheduler.cancel(scheduledIntent);
-
-            ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
-
-            //stopMQTTService();
-
-            ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
-            for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
-                ServiceManager.ServiceComponent service;
-                service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
-                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
-            }
-            if (prefs.getBoolean("HEAVY_LOG",false)) {
-                if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
-                    Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
-                }
-            }
-            //stopService(new Intent(this, SensorBackgroundService.class));
-        }
-
-
+//        ToggleButton toggleButton;
+//        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
+//
+//        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
+//
+//        if (toggleButton.isChecked()) {
+//            startScheduleAllActiveServices();
+//            //launchMQTTService();
+//            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
+//        }
+//        else {
+//            // STOP all schedules
+//            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//            //Intent intent = new Intent(this, MQTTService.class);
+//            //PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//            //scheduler.cancel(scheduledIntent);
+//
+//            ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
+//
+//            //stopMQTTService();
+//
+//            ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
+//            for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
+//                ServiceManager.ServiceComponent service;
+//                service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
+//                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
+//            }
+//            if (prefs.getBoolean("HEAVY_LOG",false)) {
+//                if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+//                    Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+//                }
+//            }
+//            //stopService(new Intent(this, SensorBackgroundService.class));
+//        }
+//
+//
     }
 
     public void startScheduleAllActiveServices() {
@@ -248,77 +252,72 @@ public class MainActivity extends Activity {
     }
 
     private void registerClickCallback() {
-        ListView list = (ListView) findViewById(R.id.listViewMain);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        //ListView list = (ListView) findViewById(R.id.listViewMain);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
                                     int position, long id) {
                 // Go to Configuration Activity to modify current active configuration
                 Intent intent = new Intent(getApplicationContext(), ConfigurationActivity.class);
-                intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getSensorType());
+                intent.putExtra(AddDeviceActivity.TYPE_SENSOR, ServiceManager.getInstance(MainActivity.this).getServiceComponentConfiguredList().get(position).getSensorType());
                 //intent.putExtra(AddDeviceActivity.ENABLES_SENSOR, false);
                 intent.putExtra(AddDeviceActivity.MODIFY_CONFIGURATION, true);
-                intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position).getActiveConfiguration().getDbId());
+                intent.putExtra(ConfigurationActivity.CONFIGURATION_DB_ID, ServiceManager.getInstance(MainActivity.this).getServiceComponentConfiguredList().get(position).configurationList.get(0).getDbId());
                 startActivity(intent);
             }
+
+
         });
     }
 
     private void populateListView() {
         ArrayAdapter<ServiceManager.ServiceComponent> adapter = new MyListAdapter();
-        ListView list = (ListView) findViewById(R.id.listViewMain);
-        list.setAdapter(adapter);
+        //ListView list = (ListView) findViewById(R.id.listViewMain);
+        listView.setAdapter(adapter);
     }
-
-    class ServiceHandler extends Handler
-    {
-        @Override
-        public void handleMessage(Message msg)
-        {
-            switch (msg.what)
-            {
-                case MQTTService.SUBSCRIBE: 	break;
-                case MQTTService.PUBLISH:		break;
-                case MQTTService.REGISTER:		break;
-                default:
-                    super.handleMessage(msg);
-                    return;
-            }
-
-            Bundle b = msg.getData();
-            if (b != null)
-            {
-                Boolean status = b.getBoolean(MQTTService.STATUS);
-                if (status == false)
-                {
-                    Log.d(TAG,"Fail");
-                }
-                else
-                {
-                    Log.d(TAG, "Success");
-                }
-            }
-        }
-    }
-
-
 
     private class MyListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent> {
         public MyListAdapter() {
-            super(MainActivity.this, R.layout.item_view, ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList());
+            super(MainActivity.this, R.layout.item_view_check, ServiceManager.getInstance(MainActivity.this).getServiceComponentConfiguredList());
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             View itemView = convertView;
             if (itemView == null) {
-                itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
+                itemView = getLayoutInflater().inflate(R.layout.item_view_check, parent, false);
             }
 
-            ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(position);
+            final ServiceManager.ServiceComponent currentServiceComponent = ServiceManager.getInstance(MainActivity.this).getServiceComponentConfiguredList().get(position);
 
             ImageView imageView = (ImageView) itemView.findViewById(R.id.item_imageView);
             imageView.setImageResource(currentServiceComponent.getComponentImageID());
+
+            final ToggleButton toggleButton = (ToggleButton) itemView.findViewById(R.id.item_toggle);
+
+            if (currentServiceComponent.getActiveConfiguration() != null) {
+                toggleButton.setChecked(true);
+            }
+            else {
+                toggleButton.setChecked(false);
+            }
+
+            toggleButton.setOnClickListener( new View.OnClickListener() {
+                                                 @Override
+                                                 public void onClick(View v) {
+                                                     ServiceManager.ServiceComponent.Configuration configuration = currentServiceComponent.configurationList.get(0);
+                                                     if (toggleButton.isChecked()) {
+                                                         currentServiceComponent.setActiveConfiguration(configuration);
+                                                         //ServiceManager.getInstance(MainActivity.this).addServiceComponentActive(currentServiceComponent);
+                                                         ServiceManager.getInstance(MainActivity.this).startScheduleService(currentServiceComponent);
+                                                     } else {
+                                                         ServiceManager.getInstance(MainActivity.this).stopScheduleService(currentServiceComponent);
+                                                         currentServiceComponent.setActiveConfiguration(null);
+                                                     }
+                                                     ServiceManager.getInstance(MainActivity.this).addOrUpdateConfigurationServiceToDB(currentServiceComponent,configuration, toggleButton.isChecked());
+                                                 }
+                                             }
+            );
 
             TextView myText = (TextView) itemView.findViewById(R.id.item_textView);
             myText.setText(currentServiceComponent.getDysplayName());
@@ -326,25 +325,6 @@ public class MainActivity extends Activity {
             return itemView;
         }
 
-    }
-
-    private void createAllFeeds() {
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_x","null", MODEL_NAME + "/accelerometer/x",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_y","null", MODEL_NAME + "/accelerometer/y",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Accelerometer_z","null", MODEL_NAME + "/accelerometer/z",2);
-
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_x","null", MODEL_NAME + "/gyroscope/x",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_y","null", MODEL_NAME + "/gyroscope/y",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Gyroscope_z","null", MODEL_NAME + "/gyroscope/z",2);
-
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_x","null", MODEL_NAME + "/magnetometer/x",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_y","null", MODEL_NAME + "/magnetometer/y",2);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Magnetometer_z","null", MODEL_NAME + "/magnetometer/z",2);
-
-        ServiceManager.getInstance(MainActivity.this).createFeed("Light","lux", MODEL_NAME + "/light",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Pressure","hPa", MODEL_NAME + "/pressure",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Proximity","null", MODEL_NAME + "/proximity",1);
-        ServiceManager.getInstance(MainActivity.this).createFeed("Temperature","null", MODEL_NAME + "/temperature",1);
     }
 
     private void launchMQTTService() {

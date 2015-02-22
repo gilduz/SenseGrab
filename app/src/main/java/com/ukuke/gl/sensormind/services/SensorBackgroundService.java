@@ -285,8 +285,13 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         DataSample dataSample;
         ServiceManager.ServiceComponent.Configuration conf;
         try {
-            ServiceManager.ServiceComponent component = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentActiveBySensorType(event.sensor.getType());
-            conf = component.getActiveConfiguration();
+            ServiceManager.ServiceComponent component = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentAvailableBySensorType(event.sensor.getType());
+            if (component.getActiveConfiguration() == null) {
+                return;
+            }
+            else {
+                conf = component.getActiveConfiguration();
+            }
             String path = conf.getPath();
             //String path = component.getDefaultPath();//TODO Sistemare path configurazione... non lo trova
 
@@ -401,7 +406,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         if (isActivitySamplingRunning) {
             myUnregisterReceiver();
             Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
-            PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, ServiceManager.SENSOR_TYPE_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, mActivityRecognitionPendingIntent);
             //unregisterReceiver(resultReceiver);
             isActivitySamplingRunning = false;

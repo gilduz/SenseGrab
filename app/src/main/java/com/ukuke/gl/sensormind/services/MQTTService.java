@@ -663,7 +663,7 @@ public class MQTTService extends Service {
                             //Log.d(TAG, "MIAPATH:" + sample.getFeedPath());
 
                             if (sample.getFeedPath().compareTo(MainActivity.MODEL_NAME + ServiceManager.PATH_MOST_PROBABLE_ACTIVITY) == 0 ) {
-                                // Send also the associated string
+                                // Send also the associated string for most_probable_activity
                                 String stringValue = null;
                                 switch (Math.round(sample.getValue_1())) {
                                     case 0: stringValue = "In vehicle"; break;

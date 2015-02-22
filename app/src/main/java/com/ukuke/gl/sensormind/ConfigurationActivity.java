@@ -234,7 +234,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
         streamSwitch.setChecked(false); //default: streaming is not active.
 
-        topic.setText("MQTT Topic: " + "/" + prefs.getString("username","USER") + "/v1/bm/" +serviceComponent.getDefaultPath());
+        topic.setText("MQTT Topic: /" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath());
+        Log.d(TAG,serviceComponent.getDefaultPath());
 
         // Hide different settings for different sensors
         switch (typeSensor){
@@ -384,7 +385,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         if (dbId == activeConfigurationId && isAModify){
             //I'm updating the active configuration
             serviceComponent.setActiveConfiguration(configuration);
-            ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
+            //ServiceManager.getInstance(ConfigurationActivity.this).addServiceComponentActive(serviceComponent);
             ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, configuration, true);
             if (prefs.getBoolean("enableGrabbing",false)) {
                 ServiceManager.getInstance(ConfigurationActivity.this).startScheduleService(serviceComponent);
@@ -418,7 +419,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         if (dbId == activeConfigurationId && isAModify){
             //I'm deleting the active configuration, so stop the service
             ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-            ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+            //ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
             serviceComponent.setActiveConfiguration(null);
             Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
         }
@@ -432,7 +433,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         // Stop the service
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
-        ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+        //ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         serviceComponent.setActiveConfiguration(null);
         Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
 
@@ -516,7 +517,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         if (dbId == activeConfigurationId){
                             //I'm deleting the active configuration, so stop the service
                             ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-                            ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+                            //ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
                             serviceComponent.setActiveConfiguration(null);
                             Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
                         }
@@ -568,7 +569,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
                         if (dbId == activeConfigurationId && isAModify) {
                             //Is current active configuration, deactivating
                             ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-                            ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+                            //ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
                             serviceComponent.setActiveConfiguration(null);
                             buttonDeactivate.setVisibility(View.GONE);
                         }
@@ -756,7 +757,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private void deactivate() {
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-        ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
+        //ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         serviceComponent.setActiveConfiguration(null);
         Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
         activeConfigurationId=-1;
