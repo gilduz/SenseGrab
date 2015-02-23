@@ -628,11 +628,11 @@ public class ServiceManager {
             }
 
 
-            if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
+            //if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
                 scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, scheduledIntent);
-            }else {
-                cn.startService(intent);
-            }
+            //}else {
+            //    cn.startService(intent);
+            //}
 
         }
     }
@@ -652,12 +652,15 @@ public class ServiceManager {
 
         PendingIntent scheduledIntent = PendingIntent.getService(cn, component.getSensorType() + OFFSET_INTENT, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        //if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
+        scheduler.cancel(scheduledIntent);
+        //}
+
+        //if ((component.getActiveConfiguration().getInterval()==0) || (component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
         if ((component.getActiveConfiguration().getInterval()==0) || (component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
             cn.startService(intent);
         }
-        if (!(component.getSensorType() == SENSOR_TYPE_ACTIVITY)) {
-            scheduler.cancel(scheduledIntent);
-        }
+
     }
 
     public void stopFluentSampling() {
