@@ -246,32 +246,29 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
             case Sensor.TYPE_AMBIENT_TEMPERATURE:
                 windowSetting.setVisibility(View.GONE);
                 streamSwitch.setVisibility(View.GONE);
-                //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath();
                 feedUri = serviceComponent.getDefaultPath();
                 break;
             case ServiceManager.SENSOR_TYPE_ACTIVITY:
                 windowSetting.setVisibility(View.GONE);
                 streamSwitch.setVisibility(View.GONE);
                 radioMillis.setVisibility(View.GONE);
-                //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath()+"/";
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
             default: //Streaming sensors
                 //seekWin.setMax(((5*1000*1000)/relativeMinMicroS)-MIN_WIN); // for the max value depending on min delay and number of samples in 5 seconds
-                //feedUri = "/" + prefs.getString("username","USER") + "/v1/bm/" + serviceComponent.getDefaultPath()+"/";
                 feedUri = serviceComponent.getDefaultPath()+"/";
                 break;
         }
 
         if (!isAModify) {
             //NEW CONFIGURATION
-            buttonDeactivate.setVisibility(View.GONE);
-            //configuration = new ServiceManager.ServiceComponent.Configuration();
+            buttonDeactivate.setVisibility(View.GONE); // Stop button invisible
             setDefaultValues();
         } else {
             //MODIFYING OLD CONFIGURATION
             buttonSave.setText("Update");
             setValuesFromConfigurationById(dbId);
+            // If it's the current active configuration show Stop button
             if (dbId==activeConfigurationId) buttonDeactivate.setVisibility(View.VISIBLE);
         }
 
@@ -304,12 +301,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         switch (id) {
             /*case R.id.Conf_load_conf:
                 alertLoadList();
@@ -331,7 +324,6 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     @Override
     public void onBackPressed() {
         backToMain();
-        //super.onBackPressed();
     }
 
     //---------------------------SAVE---------------------------------
@@ -449,6 +441,8 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     //-------------------------LOAD------------------------------
 
+    // Managing multiple configurations this alert can be used for
+    // loading a configuration and modify it from configuration activity
     private void alertLoadList() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         ListView list = new ListView(getApplicationContext());
@@ -483,6 +477,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
         alertLoadList.show();
     }
 
+    // Adapter for alertLoadList
     private class ConfigurationListAdapter extends ArrayAdapter<ServiceManager.ServiceComponent.Configuration> {
         public ConfigurationListAdapter() {
             super(getApplicationContext(), R.layout.alert_item_view, serviceComponent.configurationList);
@@ -546,15 +541,15 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
 
     //------------------------SAVE NO RUN--------------------------
 
+    // Alert for saving a configuration without setting it as active, used for multiple configuration
     private void alertSaveNoRun(){
         //Alert for activation
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String message;
         if (dbId == activeConfigurationId && isAModify) {
+            // In this case the active configuration will be stopped
             message = "Do you want to overwrite the current configuration?";
-            //message = "This is current active configuration, if you want to save and launch click Launch;" +
-            //        "/n saving now will stop acquisition, are you sure to stop and overwrite current configuration?";
-        } else message = "Do you want to overwrite the current configuration?\"";//"Are you sure to stop and overwrite current configuration without launching it?";
+        } else message = "Do you want to overwrite the current configuration?\"";
         builder.setMessage(message)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -607,12 +602,10 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     }
 
     public void onClickedImage(View view) {
+        // Go to the feed on Sensormind website
         String username = prefs.getString("username", null);
         String uri = MainActivity.URL_BROWSER_SENSORMIND + "/feed/" + username + "/" + feedUri + "?username=" + prefs.getString("username","USERNAME")+ "&password=" + prefs.getString("password","PASSWORD");
         Log.d(TAG, "Request webpage: "+ uri);
-        //String uri = MainActivity.URL_BROWSER_SENSORMIND + feedUri+"?username=" + prefs.getString("username","USERNAME")+ "&password=" + prefs.getString("password","PASSWORD");
-        //String uri = MainActivity.URL_BROWSER_SENSORMIND + feedUri;
-        //Log.i(TAG,uri);
         if (username != null) {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW,
                     Uri.parse(uri));
@@ -680,6 +673,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     }
 
     private int getProgressSeekSamp(int millis, int radioId){
+        // Conversion from millis to right sampling seekbar value
         switch (radioId){
             case R.id.Conf_radioMill:
                 seekSamp.setMax(maxSeekSampMillis/STEP_MILLIS);
@@ -719,6 +713,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     }
 
     private long getMillis(int progress, int radioId){
+        // Conversion from sampling seekbar to milliseconds
         switch (radioId){
             case R.id.Conf_radioMill:
                 return progress*STEP_MILLIS+usedMinMillis;
@@ -733,6 +728,7 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     }
 
     private long getTextSampValue(int progress, int radioId){
+        // Get sampling value for visualization
         switch (radioId){
             case R.id.Conf_radioMill:
                 return progress*STEP_MILLIS+usedMinMillis;
@@ -757,7 +753,6 @@ public class ConfigurationActivity extends Activity /*implements OnClickListener
     private void deactivate() {
         ServiceManager.getInstance(ConfigurationActivity.this).addOrUpdateConfigurationServiceToDB(serviceComponent, serviceComponent.getActiveConfiguration(), false);
         ServiceManager.getInstance(ConfigurationActivity.this).stopScheduleService(serviceComponent);
-        //ServiceManager.getInstance(ConfigurationActivity.this).removeServiceComponentActive(typeSensor);
         serviceComponent.setActiveConfiguration(null);
         Toast.makeText(getApplicationContext(), "Service removed", Toast.LENGTH_LONG).show();
         activeConfigurationId=-1;

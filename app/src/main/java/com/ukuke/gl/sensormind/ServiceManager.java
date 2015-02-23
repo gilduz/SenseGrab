@@ -32,8 +32,6 @@ public class ServiceManager {
 
     private static ServiceManager mInstance = null;
     private List<ServiceComponent> serviceComponentList = new ArrayList<>();
-//    private List<ServiceComponent> serviceComponentConfiguredList = new ArrayList<>();
-//    private List<ServiceComponent> serviceComponentActiveList = new ArrayList<>();
 
     public static final String PATH_ACTIVITY_IN_VEHICLE = "/activity/in_vehicle";
     public static final String PATH_ACTIVITY_ON_BICYCLE = "/activity/on_bicycle";
@@ -59,7 +57,7 @@ public class ServiceManager {
     int OFFSET_INTENT = 199;
 
 
-    private boolean USE_DB = false;
+    private boolean USE_DB = false; // this will be set to true in initialize from db
     DbHelper dbHelper;
 
     ServiceManager(Context cn) {
@@ -89,9 +87,13 @@ public class ServiceManager {
         private static String modelName;
         boolean logging = false;
 
+        // Components
+
         private Configuration activeConfiguration = null;
 
         public List<Configuration> configurationList = new ArrayList<>();
+
+        // Methods
 
         public void setActiveConfiguration(Configuration activeConfiguration) {
             this.activeConfiguration = activeConfiguration;
@@ -225,8 +227,6 @@ public class ServiceManager {
                     componentImageID = R.drawable.ic_close_grey600_48dp;
                     break;
             }
-
-
         }
 
         public int getSensorType() {
@@ -261,6 +261,8 @@ public class ServiceManager {
             return activeConfiguration;
         }
 
+        // Subclass Configuration
+
         public static class Configuration {
 
             private long interval = 1000;
@@ -270,11 +272,14 @@ public class ServiceManager {
             private boolean attachGPS;
             private int dbId = -1;
 
-
+            // create an empty configuration
             Configuration() {
             }
 
+            // create a complete configuration
             Configuration(String configurationName, String path, long interval, int window, boolean attachGPS) {
+                // DbId non c'è perché se è una nuova
+                // configurazione quell'id ancora non esiste
                 this.configurationName = configurationName;
                 this.interval = interval;
                 this.window = window;
@@ -335,96 +340,20 @@ public class ServiceManager {
     public List<ServiceComponent> getServiceComponentList() {
         return serviceComponentList;
     }
-//
-//    @Deprecated
-//    public int initializeFromDB_old() {
-//        USE_DB = true;
-//        dbHelper = new DbHelper(cn);
-//        int numConf = dbHelper.numberOfConfigurations();
-//        Log.d("Service Manager", "Found in DB " + numConf + " configurations");
-//        if (numConf > 0) {
-//            //setTransferToDbInterval(MainActivity.INTERVAL_TRANSFER_TO_DB);
-//            Cursor cursor;
-//            ArrayList<String> array_list = new ArrayList<>();
-//            array_list = dbHelper.getAllConfigurationsWithoutOrder();
-//            for (int i = 0; i < array_list.size(); i++) {
-//                int k = i + 1;
-//                cursor = dbHelper.getConfCursorByName(array_list.get(i).toString());
-//                cursor.moveToFirst();
-//
-//                int sensorType = cursor.getInt(cursor.getColumnIndex(DbHelper.Samp_conf_type));
-//                int interval = cursor.getInt(cursor.getColumnIndex(DbHelper.Samp_conf_time));
-//                int window = cursor.getInt(cursor.getColumnIndex(DbHelper.Samp_conf_window));
-//
-//                if (!cursor.isClosed()) {
-//                    cursor.close();
-//                }
-//
-//                ServiceComponent service = getServiceComponentAvailableBySensorType(sensorType);
-//                ServiceComponent.Configuration configuration;
-//                configuration = new ServiceComponent.Configuration();
-//
-//                configuration.setInterval(interval);
-//                configuration.setConfigurationName("DAMMI UN NOME");
-//                //configuration.setPath("/Path/1");
-//                configuration.setPath(service.getDefaultPath());
-//
-//                configuration.setAttachGPS(true);
-//                configuration.setWindow(window);
-//
-//                service.addConfiguration(configuration); //TODO: Prendere il gps da database
-//                service.setActiveConfiguration(configuration);
-//                addServiceComponentActive(service); // TODO: Gestire + configurazioni in un servizio
-//
-//                startScheduleService(service);
-//            }
-//        }
-//
-//
-//        return 0;
-//    }
 
     public int initializeFromDB() {
         USE_DB = true;
         dbHelper = new DbHelper(cn);
 
+        // metodo chiamato qui di seguito crea da solo
+        // la struttura replicando in service manager
+        // ciò che è salvato su database
         int numConf = dbHelper.populateServiceComponentListWithAllConfigurations(serviceComponentList);
 
         Log.d(TAG,"Found " + numConf + " configurations in Db");
 
-        //serviceComponentConfiguredList.clear();
-
-        for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
-            ServiceComponent serviceComponent = getServiceComponentAvailableList().get(i);
-            if (serviceComponent.getActiveConfiguration() != null) {
-                //addServiceComponentActive(getServiceComponentAvailableList().get(i));
-                //startScheduleService(getServiceComponentAvailableList().get(i));
-            }
-            if (serviceComponent.configurationList.size()>0) {
-                //serviceComponentConfiguredList.add(serviceComponent);
-            }
-        }
-
-
-
         return 0;
     }
-
-//    public void addServiceComponentActive(ServiceComponent serviceComponent) {
-//        boolean alreadyExists;
-//        if (getServiceComponentActiveBySensorType(serviceComponent.sensorType) == null) {//.getDysplayName() == "NULL") {
-//            serviceComponentActiveList.add(serviceComponent);
-//        }
-//    }
-
-//    public void removeServiceComponentActive(int sensorType) {
-//
-//        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
-//            if (serviceComponentActiveList.get(i).getSensorType() == sensorType) {
-//                serviceComponentActiveList.remove(i);
-//            }
-//        }
-//    }
 
     private int getListIndexFromSensorType (List<ServiceComponent> list, int sensorType){
         for (int i = 0; i < list.size(); i++) {
@@ -451,8 +380,6 @@ public class ServiceManager {
                 return service;
             }
         }
-        //ServiceComponent service_NULL = new ServiceComponent("NULL", false);
-        //return service_NULL;
         return null;
     }
 
@@ -468,6 +395,8 @@ public class ServiceManager {
     }
 
     public List<ServiceComponent> getServiceComponentConfiguredList() {
+        // ritorna una lista di service component
+        // per cui esiste almeno una configurazione
         List<ServiceComponent> listConfigured = new ArrayList<>();
         for (int i = 0; i < getServiceComponentAvailableList().size(); i++) {
             if(getServiceComponentAvailableList().get(i).configurationList.size()>0) {
@@ -488,6 +417,8 @@ public class ServiceManager {
     }
 
     public List<ServiceComponent> getServiceComponentUnusedList() {
+        // ritorna una lista di componenti per cui
+        // non esiste nemmeno una configurazione
         List<ServiceComponent> mList = new ArrayList<>();
         for (int i = 0; i < serviceComponentList.size(); i++) {
             if ((serviceComponentList.get(i).exists) && (serviceComponentList.get(i).configurationList.size()==0)) {
@@ -496,17 +427,6 @@ public class ServiceManager {
         }
         return mList;
     }
-
-//    public ServiceComponent getServiceComponentActiveBySensorName(String name) {
-//        ServiceComponent service = new ServiceComponent("NULL", true);
-//
-//        for (int i = 0; i < serviceComponentActiveList.size(); i++) {
-//            if (serviceComponentActiveList.get(i).getDysplayName() == name) {
-//                service = serviceComponentActiveList.get(i);
-//            }
-//        }
-//        return service;
-//    }
 
     public int populateServiceComponentList() {
         serviceComponentList.clear();
@@ -525,7 +445,6 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null) {
             serviceComponentList.add(new ServiceComponent("Magnetic Field", MODELNAME, true));
-            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_MAGNETIC_FIELD);
             if (index > -1) {
                 serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD).getMinDelay());
@@ -537,7 +456,6 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
             serviceComponentList.add(new ServiceComponent("Accelerometer", MODELNAME, true));
-            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_ACCELEROMETER);
             if (index > -1) {
                 serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER).getMinDelay());
@@ -549,7 +467,6 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE) != null) {
             serviceComponentList.add(new ServiceComponent("Temperature", MODELNAME, true));
-            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_AMBIENT_TEMPERATURE);
             if (index > -1) {
                 serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE).getMinDelay());
@@ -562,7 +479,6 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             serviceComponentList.add(new ServiceComponent("Gyroscope", MODELNAME, true));
-            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_GYROSCOPE);
             if (index > -1) {
                 serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE).getMinDelay());
@@ -574,7 +490,6 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT) != null) {
             serviceComponentList.add(new ServiceComponent("Light Sensor", MODELNAME, true));
-            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_LIGHT);
             if (index > -1) {
                 serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT).getMinDelay());
@@ -598,7 +513,6 @@ public class ServiceManager {
 
         if (sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE) != null) {
             serviceComponentList.add(new ServiceComponent("Pressure Sensor", MODELNAME, true));
-            //serviceComponentList.get(numAvailableServices).setModelName(prefs.getString(MainActivity.MODEL_NAME,"NULL"));
             index=getListIndexFromSensorType(serviceComponentList,Sensor.TYPE_PRESSURE);
             if (index > -1) {
                 serviceComponentList.get(numAvailableServices).setMinDelay(sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE).getMinDelay());
@@ -613,6 +527,7 @@ public class ServiceManager {
     }
 
     public void setTransferToDbInterval(int sec) {
+        // Set alarm for transfer to db
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         Bundle args = new Bundle();
@@ -630,6 +545,7 @@ public class ServiceManager {
     }
 
     public void setDeleteOldDataInterval(int sec) {
+        // Set alarm for delete from db
         AlarmManager scheduler = (AlarmManager) cn.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(cn, SensorBackgroundService.class);
         Bundle args = new Bundle();
@@ -640,6 +556,7 @@ public class ServiceManager {
     }
 
     public void startScheduleService(ServiceComponent component) {
+        // Set alarms for active configurations
         ServiceComponent.Configuration configuration;
         configuration = component.getActiveConfiguration();
 
@@ -747,16 +664,8 @@ public class ServiceManager {
         cn.startService(intent);
     }
 
-    @Deprecated
-    public void addConfigurationServiceToDB_old(ServiceComponent component, ServiceComponent.Configuration configuration) {
-        if (USE_DB) {
-            dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
-        }
-    }
-
     public void addOrUpdateConfigurationServiceToDB(ServiceComponent component, ServiceComponent.Configuration configuration, boolean isActive) {
         if (USE_DB) {
-//            dbHelper.newConfiguration(component.getDysplayName(), component.getSensorType(), (int) configuration.getInterval(), "sec", configuration.getWindow(), false);
             dbHelper.addOrUpdateConfiguration(configuration, component, isActive);
         }
     }
@@ -764,12 +673,6 @@ public class ServiceManager {
     public void removeConfigurationServiceToDB(ServiceComponent.Configuration configuration) {
         if (USE_DB) {
             dbHelper.deleteConfigurationById(configuration.getDbId());
-        }
-    }
-    @Deprecated
-    public void removeConfigurationServiceToDB_old(ServiceComponent component, ServiceComponent.Configuration configuration) {
-        if (USE_DB) {
-            dbHelper.deleteConfigurationByName(configuration.getConfigurationName());
         }
     }
 
@@ -850,28 +753,6 @@ public class ServiceManager {
         new createFeed_asynk().execute(params);
     }
 
-//    private class createFeed_asynk extends AsyncTask<String, Void, String> {
-//
-//        @Override
-//        protected String doInBackground(String... params) {
-//            boolean test;
-//            API = new SensormindAPI(prefs.getString("username","test_3"), prefs.getString("password","test_3"));
-//            allFeedList = API.createFeed(String label, boolean is_static_located, String measure_unit, String s_uid, int type_id)
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            Log.d(TAG, allFeedList.size() + " feeds sync!");
-//        }
-//
-//        @Override
-//        protected void onPreExecute() {}
-//
-//        @Override
-//        protected void onProgressUpdate(Void... values) {}
-//    }
-
     private class getAllFeed_asynk extends AsyncTask<String, Void, String> {
 
         @Override
@@ -934,7 +815,4 @@ public class ServiceManager {
         protected void onProgressUpdate(Void... values) {
         }
     }
-
-
-
 }

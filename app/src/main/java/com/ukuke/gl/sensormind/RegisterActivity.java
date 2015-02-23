@@ -1,5 +1,3 @@
-// TODO LEO! Nel xml mi sistemi il fatto che l'immagine sale con la tastiera invece di rimanere ancorata al fondo?! thanks
-
 package com.ukuke.gl.sensormind;
 
 import android.app.Activity;
@@ -11,7 +9,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -23,20 +20,12 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.ukuke.gl.sensormind.R;
 import com.ukuke.gl.sensormind.services.MQTTService;
-import com.ukuke.gl.sensormind.services.SensorBackgroundService;
 import com.ukuke.gl.sensormind.support.SensormindAPI;
-
-import java.security.Provider;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
 
 public class RegisterActivity extends Activity implements AdapterView.OnItemSelectedListener {
 
     private static final String TAG = RegisterActivity.class.getSimpleName();
-    SensormindAPI API;
     EditText editText_username;
     EditText editText_password;
     EditText editText_firstname;
@@ -49,12 +38,11 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     boolean validRegistration = false;
     Spinner spinner;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         editText_username = (EditText) findViewById(R.id.editText_username);
@@ -64,15 +52,14 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
         editText_lastname = (EditText) findViewById(R.id.editText_lastName);
         editText_email = (EditText) findViewById(R.id.editText_email);
 
-        // Timezone
+        // Timezone: set the spinner from array resource
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.timezone_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner = (Spinner) findViewById(R.id.spinner);
         spinner.setAdapter(adapter);
+        // Set the listener, in this case this activity implements the listener
         spinner.setOnItemSelectedListener(this);
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -83,22 +70,21 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        // Actually there isn't a menu in this activity
+        /*if (id == R.id.action_settings) {
             return true;
-        }
+        }*/
 
         return super.onOptionsItemSelected(item);
     }
 
     public void onClickedRegisterButton(View view) {
+        // Check if password is repeated correctly
         if (editText_password.getText().toString().compareTo(editText_password_bis.getText().toString()) == 0) {
-            new logIn_asynk().execute();
+            // Perform registration on asynk task
+            new register_asynk().execute();
         }
         else {
             Toast.makeText(getApplicationContext(), "Please check the password", Toast.LENGTH_LONG).show();
@@ -106,10 +92,12 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     }
 
     public void onClickedImage(View view) {
+        // Go to sensormind web site
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(MainActivity.URL_BROWSER_SENSORMIND));
         startActivity(browserIntent);
     }
 
+    // Listener method for timezone spinner
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         timezone = Integer.toString(pos+1);
         if (prefs.getBoolean("HEAVY_LOG",false)) {
@@ -121,7 +109,7 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
         // Do nothing
     }
 
-    private class logIn_asynk extends AsyncTask<String, Void, String> {
+    private class register_asynk extends AsyncTask<String, Void, String> {
 
         @Override
         protected String doInBackground(String... params) {
@@ -133,16 +121,19 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
 
         @Override
         protected void onPostExecute(String result) {
+            // if registration fails put false in logged in, otherwise put true
             prefs.edit().putBoolean("loggedIn", validRegistration).apply();
 
             if (validRegistration) {
                 Log.d(TAG,"Registration successful");
+                // Registration performed
                 Toast.makeText(getApplicationContext(), "Registration succeed!", Toast.LENGTH_LONG).show();
                 prefs.edit().putString("username",editText_username.getText().toString()).apply();
                 prefs.edit().putString("password",editText_password.getText().toString()).apply();
-                prefs.edit().commit();
+                // try to create device feeds (if they already exist nothing happens)
                 ServiceManager.getInstance(RegisterActivity.this).createDeviceFeeds();
                 launchMQTTService();
+                // Back to main
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }
@@ -150,7 +141,6 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
                 Log.d(TAG,"Registration failed");
                 Toast.makeText(getApplicationContext(), "Registration failed!", Toast.LENGTH_LONG).show();
             }
-            prefs.edit().commit();
         }
 
         @Override
@@ -163,6 +153,7 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
     private void launchMQTTService() {
         if (prefs.getBoolean("loggedIn",false)) {
             Log.d(TAG, "Activate Mqtt service");
+            // Set repeating alarm for data sync getting the sync interval from shared preferences
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(this, MQTTService.class);
 

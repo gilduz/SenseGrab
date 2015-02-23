@@ -32,8 +32,6 @@ public class SensormindAPI {
     private String password;
     private static final String TAG = SensormindAPI.class.getSimpleName();
 
-
-
     public SensormindAPI(String user, String password)
     {
         this.user = user;
@@ -108,7 +106,6 @@ public class SensormindAPI {
         try
         {
             res = makeHTTPRequest("GET", REGISTER_NEW_ACCOUNT_SERVICE, content);
-            //JsonObject jsonObject = null;
             JsonObject jsonObject = new Gson().fromJson(res.getContent(), JsonObject.class);
             String s = jsonObject.get("success").getAsString();
             if (s.equals("true"))
@@ -151,7 +148,6 @@ public class SensormindAPI {
                 String s = jsonObject.get("success").getAsString();
                 if (s.equals("true")) {
                     ret = true;
-
                 }
             } catch (Exception e) {}
         }

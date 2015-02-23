@@ -13,8 +13,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
-//public class DeviceCapabilitiesActivity extends ActionBarActivity {
 public class DeviceCapabilitiesActivity extends Activity {
 
     @Override

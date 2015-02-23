@@ -67,25 +67,27 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Check shared preferences
         View v = new View(this);
         initEverything();
     }
 
     private void initEverything() {
+        back_pressed = System.currentTimeMillis()-10000;
         listView = (ListView) findViewById(R.id.listViewMain);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         ServiceManager.getInstance(MainActivity.this).initializeFromDB();
         // Get credentials if stored on shared preferences
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
+
+        // Set the model name if not yet stored in shared preferences
         modelName = prefs.getString(MODEL_NAME, "NULL");
         if (modelName.equals("NULL")) {
             ANDROID_ID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
             modelName = MODEL + "_" + ANDROID_ID;
             prefs.edit().putString(MODEL_NAME,modelName).apply();
         }
-        Log.d(TAG, "Device identifier: " + modelName);
+        //Log.d(TAG, "Device identifier: " + modelName);
         INTERVAL_DELETE_SENT_DATA = Integer.parseInt(prefs.getString("dbFrequency", "1800"));
         INTERVAL_TRANSFER_TO_SENSORMIND = Integer.parseInt(prefs.getString("syncFrequency", "300"));
         if (INTERVAL_TRANSFER_TO_SENSORMIND <= 301) {
@@ -96,8 +98,9 @@ public class MainActivity extends Activity {
 
         ToggleButton toggle;
         toggle = (ToggleButton) findViewById(R.id.toggleButton);
-        toggle.setChecked(prefs.getBoolean("enableGrabbing", true)); //TODO SICURO A TRUE!=??!?!?
+        toggle.setChecked(prefs.getBoolean("enableGrabbing", true)); // THIS IS THE HIDDEN MAIN TOGGLE
         toggle.setVisibility(View.GONE);
+        // WITH HIDDEN MAIN TOGGLE PUT DEFAULT VALUE TRUE, for other classes reading this value as condition to do things...
         prefs.edit().putBoolean("enableGrabbing", true).apply();
         prefs.edit().putString("ip_MQTT",IP_MQTT).apply();
         prefs.edit().putInt("port_MQTT",PORT_MQTT).apply();
@@ -105,7 +108,7 @@ public class MainActivity extends Activity {
 
         LAST_SCHEDULE_DELETE = prefs.getLong("last_delete",-1);
         if (LAST_SCHEDULE_DELETE == -1 || (System.currentTimeMillis()-LAST_SCHEDULE_DELETE)>(INTERVAL_DELETE_SENT_DATA*1000)) {
-            // Delete non yet scheduled or current - last is greater than interval
+            // Delete non yet scheduled or (current - last) is greater than interval
             // Schedule it now
             ServiceManager.getInstance(this)
                     .setDeleteOldDataInterval(INTERVAL_DELETE_SENT_DATA);
@@ -122,14 +125,13 @@ public class MainActivity extends Activity {
         if ((prefs.getBoolean("loggedIn",false)) && (prefs.getBoolean("enableGrabbing",false))) {
             startScheduleAllActiveServices();
         }
-
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        // Set visible logout or login if it's logged in it's not
         MenuItem item_login = menu.findItem(R.id.action_log_in);
         MenuItem item_logout = menu.findItem(R.id.action_logout);
-
         item_login.setVisible(!prefs.getBoolean("loggedIn",false));
         item_logout.setVisible(prefs.getBoolean("loggedIn", false));
         return super.onPrepareOptionsMenu(menu);
@@ -151,7 +153,6 @@ public class MainActivity extends Activity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_device_capabilities) {
-
             Intent intent = new Intent(this, DeviceCapabilitiesActivity.class);
             startActivity(intent);
         }
@@ -176,42 +177,42 @@ public class MainActivity extends Activity {
     }
 
     public void onClickedToggle(View view) {
-//        ToggleButton toggleButton;
-//        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
-//
-//        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
-//
-//        if (toggleButton.isChecked()) {
-//            startScheduleAllActiveServices();
-//            //launchMQTTService();
-//            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
-//        }
-//        else {
-//            // STOP all schedules
-//            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//            //Intent intent = new Intent(this, MQTTService.class);
-//            //PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//            //scheduler.cancel(scheduledIntent);
-//
-//            ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
-//
-//            //stopMQTTService();
-//
-//            ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
-//            for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
-//                ServiceManager.ServiceComponent service;
-//                service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
-//                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
-//            }
-//            if (prefs.getBoolean("HEAVY_LOG",false)) {
-//                if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
-//                    Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
-//                }
-//            }
-//            //stopService(new Intent(this, SensorBackgroundService.class));
-//        }
-//
-//
+        // This method is called on click of the main of/off toggle button
+        // NOW THAT TOGGLE IS HIDDEN BECAUSE OF THE PRESENCE OF TOGGLES ON EACH ENTRY OF THE LIST
+        /*ToggleButton toggleButton;
+        toggleButton = (ToggleButton) findViewById(R.id.toggleButton);
+
+        prefs.edit().putBoolean("enableGrabbing", toggleButton.isChecked()).apply();
+
+        if (toggleButton.isChecked()) {
+            startScheduleAllActiveServices();
+            //launchMQTTService();
+            ServiceManager.getInstance(MainActivity.this).setTransferToDbInterval(INTERVAL_TRANSFER_TO_DB);
+        }
+        else {
+            // STOP all schedules
+            AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            //Intent intent = new Intent(this, MQTTService.class);
+            //PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            //scheduler.cancel(scheduledIntent);
+
+            ServiceManager.getInstance(MainActivity.this).stopFluentSampling();
+
+            //stopMQTTService();
+
+            ServiceManager.getInstance(MainActivity.this).stopTransferToDb();
+            for (int i = 0; i < ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size(); i++) {
+                ServiceManager.ServiceComponent service;
+                service = ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().get(i);
+                ServiceManager.getInstance(MainActivity.this).stopScheduleService(service);
+            }
+            if (prefs.getBoolean("HEAVY_LOG",false)) {
+                if (ServiceManager.getInstance(MainActivity.this).getServiceComponentActiveList().size() > 0) {
+                    Toast.makeText(this, "Acquisition stopped", Toast.LENGTH_LONG).show();
+                }
+            }
+            //stopService(new Intent(this, SensorBackgroundService.class));
+        }*/
     }
 
     public void startScheduleAllActiveServices() {
@@ -228,6 +229,7 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed()
     {
+        // Set two seconds as timeout for double back press to exit
         if (back_pressed + 2000 > System.currentTimeMillis()) super.onBackPressed();
         else Toast.makeText(getBaseContext(), "Press once again to exit!", Toast.LENGTH_SHORT).show();
         back_pressed = System.currentTimeMillis();
@@ -257,7 +259,7 @@ public class MainActivity extends Activity {
     }
 
     private void registerClickCallback() {
-        //ListView list = (ListView) findViewById(R.id.listViewMain);
+        // Set the listener for the list view
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked,
@@ -299,7 +301,7 @@ public class MainActivity extends Activity {
             imageView.setImageResource(currentServiceComponent.getComponentImageID());
 
             final ToggleButton toggleButton = (ToggleButton) itemView.findViewById(R.id.item_toggle);
-
+            // When reopening the main activity see if the current service component is active an set the toggle
             if (currentServiceComponent.getActiveConfiguration() != null) {
                 toggleButton.setChecked(true);
             }
@@ -307,13 +309,13 @@ public class MainActivity extends Activity {
                 toggleButton.setChecked(false);
             }
 
+            // Set the click listener for each toggle button in the list view
             toggleButton.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View v) {
                                                     ServiceManager.ServiceComponent.Configuration configuration = currentServiceComponent.configurationList.get(0);
                                                     if (toggleButton.isChecked()) {
                                                         currentServiceComponent.setActiveConfiguration(configuration);
-                                                        //ServiceManager.getInstance(MainActivity.this).addServiceComponentActive(currentServiceComponent);
                                                         ServiceManager.getInstance(MainActivity.this).startScheduleService(currentServiceComponent);
                                                     } else {
                                                         ServiceManager.getInstance(MainActivity.this).stopScheduleService(currentServiceComponent);
@@ -351,23 +353,5 @@ public class MainActivity extends Activity {
         //Log.d(TAG, "Deactivate Mqtt service");
         stopService(new Intent(this, MQTTService.class));
         //}
-    }
-
-    /*private void descheduleMQTTService () {
-        Log.d(TAG, "Deschedule Mqtt service");
-        AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, MQTTService.class);
-        //TODO finire qua
-        PendingIntent scheduledIntent = PendingIntent.getService(this, 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        scheduler.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), INTERVAL_TRANSFER_TO_SENSORMIND * 1000, scheduledIntent);
-    }
-*/
-    public class MyReceiver extends BroadcastReceiver {
-        //TODO Istanziare all'avvio del telefono
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "Launch services after boot");
-            initEverything();
-        }
     }
 }

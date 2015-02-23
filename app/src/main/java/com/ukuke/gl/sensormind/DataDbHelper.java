@@ -6,11 +6,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-//import android.os.Environment;
+//import android.os.Environment; // for saving on external memory
 
 import com.ukuke.gl.sensormind.support.DataSample;
 
-//import java.io.File;
+//import java.io.File; // for saving on external memory
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +19,7 @@ import java.util.List;
  */
 public class DataDbHelper extends SQLiteOpenHelper {
 
-    private static final String TAG = RegisterActivity.class.getSimpleName();
-
+    private static final String TAG = DataDbHelper.class.getSimpleName();
 
     // DB name, comment which you won't use
     // Internal database
@@ -68,14 +67,12 @@ public class DataDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // delete tables
-        // dbHelper.execSQL("drop table if exists"+Samp_type_table);
         db.execSQL("drop table if exists " + Data_table);
         // create new tables
         onCreate(db);
     }
 
     // Adapter methods
-
 
     //---------------INSERT METHODS----------------------
 
@@ -152,9 +149,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public int numberOfUnsentEntries() {
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent + " = 0");
-        // se non va quello sopra usare questo:
-        /*Cursor res = dbHelper.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 0", null );
-        int num = res.getCount();*/
         closeDb();
         return num;
     }
@@ -162,9 +156,6 @@ public class DataDbHelper extends SQLiteOpenHelper {
     public int numberOfSentEntries() {
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_sent + " = 1");
-        // se non va quello sopra usare questo:
-        /*Cursor res = dbHelper.rawQuery( "select * from "+Data_table+" where "+Data_sent+" = 1", null );
-        int num = res.getCount();*/
         closeDb();
         return num;
     }
@@ -177,6 +168,11 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     public int numberOfCompleteUnsentArraysOnFeed(String feed) {
+        // This method has to be modified because it returns
+        // the right value for arrays of the same sensor type
+        // but return an higher value if there are arrays
+        // of different sensor type, that's why sometimes
+        // getFirstArray... returns an empty list
         db = this.getReadableDatabase();
         int num = (int) DatabaseUtils.queryNumEntries(db, Data_table, Data_idFeed + " = '" + feed +
                 "' and " + Data_arrayCount + " = 0 and "+ Data_sent + " = 0");
@@ -216,7 +212,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    private Cursor getAllPossibleElementsOfAnArray(Cursor currentRow) {//TODO verificare il funzionamento, non va!!!
+    private Cursor getAllPossibleElementsOfAnArray(Cursor currentRow) {
         String feed = currentRow.getString(currentRow.getColumnIndex(Data_idFeed));
         int id = currentRow.getInt(currentRow.getColumnIndex(Data_id));
         String query = "select * from " + Data_table + " where " + Data_idFeed +
@@ -227,7 +223,7 @@ public class DataDbHelper extends SQLiteOpenHelper {
         return res;
     }
 
-    private Cursor getAllPossibleElementOfAnArrayByFeedAndId(String feed, int id) {//TODO completare e verificare il funzionamento
+    private Cursor getAllPossibleElementOfAnArrayByFeedAndId(String feed, int id) {
         db = this.getReadableDatabase();
         Cursor res = db.rawQuery("select * from " + Data_table + " where " + Data_idFeed +
                 " = '" + feed + "' and " + Data_id + " > " + Integer.toString(id) +
@@ -399,6 +395,9 @@ public class DataDbHelper extends SQLiteOpenHelper {
     }
 
     //---------------POPULATE METHODS--------------------
+
+    // These methods are the same of upper arraylist,
+    // but these populate a list created externally
 
     public void populateAllUnsentDataSamples(List<DataSample> list) {
         db = this.getReadableDatabase();

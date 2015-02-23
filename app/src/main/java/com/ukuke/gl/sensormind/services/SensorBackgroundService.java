@@ -40,8 +40,6 @@ import com.ukuke.gl.sensormind.support.DataSample;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.google.android.gms.location.ActivityRecognitionResult;
-import com.google.android.gms.location.DetectedActivity;
 
 public class SensorBackgroundService extends Service implements SensorEventListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -101,7 +99,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
         Bundle args = null;
 
-        int sensorType = -1;// = Sensor.TYPE_LIGHT;
+        int sensorType = -1;
 
         try {
             args = intent.getExtras();
@@ -158,12 +156,14 @@ public class SensorBackgroundService extends Service implements SensorEventListe
         if (launchSensorAcquisition) {
             switch (sensorType) {
                 case ServiceManager.SENSOR_TYPE_ACTIVITY:
+                    // Se arriva un intent per activity rec.
+                    // con window = 0 allora disattivalo
                     intervalActivity = window;
                     if (window == 0 ) {
                         deActivateActivityRecognition();
                     }
                     else{
-                        // Usa window come intervallo di acquisizione
+                        // Usa window come intervallo di acquisizione per le attività
                         activateActivityRecognition(window);
                         attachGPS_activity = attachGPS;
                     }
@@ -201,8 +201,6 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                 mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
             }
         }
-
-
         return START_STICKY;
     }
 
@@ -224,7 +222,12 @@ public class SensorBackgroundService extends Service implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        // Aggiungi alla lista in ram
         addDataSampleToList(event);
+        // Se il sensore è di tipo array allora indrementa
+        // l'indice, altrimenti metti -1
+        // Se non è attivo lo streaming deregistra il listener
+        // subito dopo l'acquisizione
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 counterAccelerometer++;
@@ -272,7 +275,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     private void myRegisterReceiver() {
         IntentFilter filter = new IntentFilter(ActivityRecognitionIntentService.KEY_BROADCAST_RESULT);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
-        // Receivere per le activity detection
+        // Receiver per le activity detection
         resultReceiver = new MyResultReceiver();
         registerReceiver(resultReceiver, filter);
     }
@@ -282,18 +285,28 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     }
 
     public synchronized void addDataSampleToList(SensorEvent event) {
+        // Aggiungi il campione alla lista,
+        // avendo cura di inserire la location se
+        // richiesto e di comprendere index dell'array
+        // per i dati di tipo array
         DataSample dataSample;
         ServiceManager.ServiceComponent.Configuration conf;
         try {
+            // Seleziona il component dal sensor type dell'event
             ServiceManager.ServiceComponent component = ServiceManager.getInstance(SensorBackgroundService.this).getServiceComponentAvailableBySensorType(event.sensor.getType());
             if (component.getActiveConfiguration() == null) {
+                // Se per quel component non c'è una
+                // configurazione attiva allora esci
+                // Questo per evitare la null pointer exception quando
+                // fermi l'acquisizione e viene eliminata la
+                // configurazione attiva, accade soprattutto
+                // con lo streaming
                 return;
             }
             else {
                 conf = component.getActiveConfiguration();
             }
             String path = conf.getPath();
-            //String path = component.getDefaultPath();//TODO Sistemare path configurazione... non lo trova
 
             switch (event.sensor.getType()) {
                 case Sensor.TYPE_LIGHT:
@@ -355,7 +368,8 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                         Log.v(TAG, listDataSample.size() + ": SENSOR MAGNETOMETER: \t" + event.values[0] + " \t " + event.values[1] + " \t " + event.values[2]);
                     if (attachGPS_magn)
                         dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), lastLatitude, lastLongitude);
-                    dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), null, null);
+                    else
+                        dataSample = new DataSample(path, event.values[0], event.values[1], event.values[2], counterMagnetometer, System.currentTimeMillis(), null, null);
                     listDataSample.add(dataSample);
                     break;
             }
@@ -432,6 +446,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         //TODO: Se la connessione ai servizi google fallisce....che si fa?
+        // Fare retry entro un timeout?
     }
 
     private class saveListSampleOnDb extends AsyncTask<String, Void, String> {
