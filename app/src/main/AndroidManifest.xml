@@ -109,12 +109,14 @@
         -->
         <activity
             android:name=".support.AboutActivity"
-            android:label="@string/title_activity_about" >
+            android:label="@string/title_activity_about"
+            android:noHistory="true">
         </activity>
         <activity
             android:name=".DisclaimerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_disclaimer"
+            android:noHistory="true"
             android:theme="@style/FullscreenTheme" >
         </activity>
 

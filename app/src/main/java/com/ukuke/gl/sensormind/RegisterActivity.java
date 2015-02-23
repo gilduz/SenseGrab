@@ -80,6 +80,15 @@ public class RegisterActivity extends Activity implements AdapterView.OnItemSele
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        //Back to main
+        Intent intent=new Intent(getApplicationContext(),MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(intent);
+    }
+
     public void onClickedRegisterButton(View view) {
         // Check if password is repeated correctly
         if (editText_password.getText().toString().compareTo(editText_password_bis.getText().toString()) == 0) {
