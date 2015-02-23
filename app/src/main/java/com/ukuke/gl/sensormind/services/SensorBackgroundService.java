@@ -160,9 +160,11 @@ public class SensorBackgroundService extends Service implements SensorEventListe
                     // con window = 0 allora disattivalo
                     intervalActivity = window;
                     if (window == 0 ) {
+                        enableActivity = false;
                         deActivateActivityRecognition();
                     }
                     else{
+                        enableActivity = true;
                         // Usa window come intervallo di acquisizione per le attività
                         activateActivityRecognition(window);
                         attachGPS_activity = attachGPS;
@@ -402,17 +404,20 @@ public class SensorBackgroundService extends Service implements SensorEventListe
     @Override
     public void onConnected(Bundle connectionHint) {
         updateLocation();
-        activateActivityRecognition(intervalActivity);
+        if (enableActivity) {
+            activateActivityRecognition(intervalActivity);
+        }
     }
 
     private void activateActivityRecognition(long interval) {
-        if (mGoogleApiClient.isConnected() && (!isActivitySamplingRunning)) {
+        if (mGoogleApiClient.isConnected() && (!isActivitySamplingRunning) && enableActivity) {
             myRegisterReceiver();
             Intent intent = new Intent(this, ActivityRecognitionIntentService.class);
             PendingIntent mActivityRecognitionPendingIntent = PendingIntent.getService(this, ServiceManager.SENSOR_TYPE_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            //ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, interval, mActivityRecognitionPendingIntent);
-            ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 0, mActivityRecognitionPendingIntent);
+            ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, interval, mActivityRecognitionPendingIntent);
+            //ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates(mGoogleApiClient, 0, mActivityRecognitionPendingIntent);
             isActivitySamplingRunning = true;
+            enableActivity = true;
         }
     }
 
@@ -424,6 +429,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(mGoogleApiClient, mActivityRecognitionPendingIntent);
             //unregisterReceiver(resultReceiver);
             isActivitySamplingRunning = false;
+            enableActivity = false;
         }
     }
 

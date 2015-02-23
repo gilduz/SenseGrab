@@ -336,7 +336,7 @@ public class MainActivity extends Activity {
 
     private void launchMQTTService() {
         if (prefs.getBoolean("loggedIn",false)) {
-            Log.d(TAG, "Activate Mqtt service");
+            //Log.d(TAG, "Activate Mqtt service");
             AlarmManager scheduler = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(this, MQTTService.class);
 
