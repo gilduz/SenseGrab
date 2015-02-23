@@ -61,7 +61,7 @@ public class MainActivity extends Activity {
 
     String username;
     String password;
-    String modelName;
+    //String modelName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +80,6 @@ public class MainActivity extends Activity {
         username = prefs.getString("username", "NULL");
         password = prefs.getString("password", "NULL");
 
-        // Set the model name if not yet stored in shared preferences
-        modelName = prefs.getString(MODEL_NAME, "NULL");
-        if (modelName.equals("NULL")) {
-            ANDROID_ID = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-            modelName = MODEL + "_" + ANDROID_ID;
-            prefs.edit().putString(MODEL_NAME,modelName).apply();
-        }
         //Log.d(TAG, "Device identifier: " + modelName);
         INTERVAL_DELETE_SENT_DATA = Integer.parseInt(prefs.getString("dbFrequency", "1800"));
         INTERVAL_TRANSFER_TO_SENSORMIND = Integer.parseInt(prefs.getString("syncFrequency", "300"));

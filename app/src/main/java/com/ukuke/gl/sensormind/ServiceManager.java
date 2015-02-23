@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.ukuke.gl.sensormind.services.SensorBackgroundService;
@@ -65,6 +66,15 @@ public class ServiceManager {
         prefs = PreferenceManager.getDefaultSharedPreferences(cn);
         populateServiceComponentList();
         initializeFromDB();
+    }
+
+    public void setModelName() {// Set the model name if not yet stored in shared preferences
+        String modelName = prefs.getString(MainActivity.MODEL_NAME, "NULL");
+        if (modelName.equals("NULL")) {
+            MainActivity.ANDROID_ID = Settings.Secure.getString(cn.getContentResolver(), Settings.Secure.ANDROID_ID);
+            modelName = MainActivity.MODEL + "_" + MainActivity.ANDROID_ID;
+            prefs.edit().putString(MainActivity.MODEL_NAME, modelName).apply();
+        }
     }
 
     public static ServiceManager getInstance(Context cn) {
@@ -432,6 +442,7 @@ public class ServiceManager {
         serviceComponentList.clear();
         int numAvailableServices = 0;
 
+        setModelName();
         String MODELNAME = prefs.getString(MainActivity.MODEL_NAME, "NULL");
 
         // Add activity for all
