@@ -593,10 +593,10 @@ public class MQTTService extends Service {
                             obj_3.put("t", listData.get(0).getTimestamp());
                         }
 
-                        if (listData.get(listData.size()).getTimestamp() != null) {
-                            obj_1.put("tf", listData.get(listData.size()).getTimestamp());
-                            obj_2.put("tf", listData.get(listData.size()).getTimestamp());
-                            obj_3.put("tf", listData.get(listData.size()).getTimestamp());
+                        if (listData.get(listData.size()-1).getTimestamp() != null) {
+                            obj_1.put("tf", listData.get(listData.size()-1).getTimestamp());
+                            obj_2.put("tf", listData.get(listData.size()-1).getTimestamp());
+                            obj_3.put("tf", listData.get(listData.size()-1).getTimestamp());
                         }
 
                         String path = "/" + username + "/v1/bm/" + listData.get(0).getFeedPath();
