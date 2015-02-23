@@ -200,7 +200,7 @@ public class SensorBackgroundService extends Service implements SensorEventListe
             }
             if (sensorType != ServiceManager.SENSOR_TYPE_ACTIVITY) {
                 Sensor sensor = mSensorManager.getDefaultSensor(sensorType);
-                mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+                mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
             }
         }
         return START_STICKY;
